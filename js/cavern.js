@@ -2325,7 +2325,7 @@ function dropExcessGoods(){
     var totalToDrop = getCaravanCarrying() - getCaravanCapacity();
     var lines = [];
     if ( totalToDrop <= 0){
-        return lines;
+        return {lines: [], stats: []};
     }
     lines.push('OVERWEIGHT: Carrying ' + getCaravanCarrying() + '/' + getCaravanCapacity());
     var dropObj = {}
@@ -2356,7 +2356,9 @@ function dropExcessGoods(){
         console.log("dropped everything and it wasn't enough!");
     }
     lines.push(`We are forced to reduce the weight we are carrying...`);
-    return lines.concat(settleLedger());
+    var ledgerObj = settleLedger();
+    ledgerObj.lines = lines.concat(ledgerObj.lines);
+    return ledgerObj;
 }
 
 function dinnerFlavorText(hadDinner){
@@ -2441,7 +2443,7 @@ function dinnerFlavorText(hadDinner){
     ];
     var index = clamp(trailGame.caravan.morale + trailGame.caravan.rations,0,13);
     index = hadDinner !== false ? index : index - 5;
-    addToLedger( shuffle(msgs[clamp(index,0,13)]).shift() );
+    return( shuffle(msgs[clamp(index,0,13)]).shift() );
 }
 
 function healthUpdate(){
@@ -2497,17 +2499,20 @@ function numAnimalDinners(){
 }
 
 function dinnerTime(){
+    var lines = [];
+    var resultsObj = {events: lines, ledgerLines: [], ledgerStats: []};
     if (trailGame.caravan.morale <= 2){
         addSickness(true,'despair');
     } else {
         cureSickness(true,'despair');
     }
     if (trailGame.caravan.daysSinceLastMeal === 0){
-        return [];
+        //return [];
+        return resultsObj;
     }
     var dinnerAmount = getLeaderDinner();
     if( trailGame.caravan.food < dinnerAmount ){
-        addToLedger(`There isn't enough food to feed everyone!`);
+        lines.push(`There isn't enough food to feed everyone!`);
 
         var eatenGoods = {};
         trailGame.goodsBySellPrice.map(function(goodsName){
@@ -2521,11 +2526,11 @@ function dinnerTime(){
             }
         });
         if (Object.keys(eatenGoods).length){
-           addToLedger(`We eat ${sentenceForm(eatenGoods)} from our wares.`);
+           lines.push(`We eat ${sentenceForm(eatenGoods)} from our wares.`);
         }
 
         if (dinnerAmount > 0){
-            dinnerFlavorText(false);
+            lines.push(dinnerFlavorText(false));
             removeMorale(Math.ceil(trailGame.caravan.daysSinceLastMeal / 3));
             if( (trailGame.caravan.morale <= 4 || true) && Object.keys(trailGame.animals).length && !trailGame.caravan.isVegetarian){
                 slaughterAnimals(dinnerAmount);
@@ -2533,7 +2538,7 @@ function dinnerTime(){
                 addSickness(true,'starvation');
             }
         } else {
-            dinnerFlavorText(true);
+            lines.push(dinnerFlavorText(true));
         }
     } else {
         cureSickness(true,'starvation');
@@ -2555,14 +2560,17 @@ function dinnerTime(){
         }
         addMorale(moraleBonus);
         addHealth(healthBonus,healthBonus,true);
-        dinnerFlavorText(true);
+        lines.push(dinnerFlavorText(true));
     }
     removeFood(dinnerAmount);
     var animalDinners = numAnimalDinners();
     if (animalDinners > 0){
         feedAnimals(animalDinners);
     }
-    return settleLedger();
+    ledgerObj = settleLedger();
+    resultsObj.ledgerLines = ledgerObj.lines;
+    resultsObj.ledgerStats = ledgerObj.stats;
+    return resultsObj;
 }
 
 function slaughterAnimals(foodNeeded){
@@ -4536,8 +4544,8 @@ function settleLedger(){
         }
         delete trailGame.ledger[key];
     });
-    var combined = first.concat(second);
-    return scrubLines(combined);
+    var resultsObj = {lines: scrubLines(first), stats: scrubLines(second)};
+    return resultsObj;
 }
 
 // text functions
@@ -5507,7 +5515,7 @@ function dayPhase(eventName,argsObj){
     }
     var events = window[eventName](argsObj);
     var updates = settleLedger();
-    linesObj = {events: scrubLines(events), ledger: scrubLines(updates)}
+    linesObj = {events: scrubLines(events), ledgerLines: updates.lines, ledgerStats: updates.stats}
     return linesObj;
 }
 
@@ -5515,17 +5523,23 @@ function nightPhase(){
     if (trailGame.lostGame){
         return;
     }
-    var linesObj = {}
-    linesObj.ledger = settleLedger();
-    linesObj.health = healthUpdate();
-    linesObj.dinner = [];
-    linesObj.dropped = [];
+    var linesObj = { events: [], ledgerLines: [], ledgerStats: []}
+    var looseEnds = settleLedger();
+    linesObj.ledgerLines = looseEnds.lines;
+    linesObj.ledgerStats = looseEnds.stats;
+    linesObj.events = healthUpdate().lines;
     if ( Object.keys(trailGame.leaders).length <= 0){
         trailGame.lostGame = true;
         return linesObj;
     }
-    linesObj.dinner = dinnerTime();
-    linesObj.dropped = dropExcessGoods();
+    var dinnerObj = dinnerTime();
+    linesObj.events = linesObj.events.concat(dinnerObj.events);
+    linesObj.ledgerLines = linesObj.ledgerLines.concat(dinnerObj.ledgerLines);
+    linesObj.ledgerStats = linesObj.ledgerStats.concat(dinnerObj.ledgerStats);
+
+    var droppedLedger = dropExcessGoods();
+    linesObj.ledgerLines = linesObj.ledgerLines.concat(droppedLedger.lines);
+    linesObj.ledgerStats = linesObj.ledgerStats.concat(droppedLedger.stats);
     return linesObj;
 }
 
@@ -6643,17 +6657,35 @@ function textArrayToP(textArray,className){
     return pTag
 }
 
+function addTextArrayToLog(textArray,className){
+   if (textArray.length){
+        trailGame.UI.log.append(textArrayToP(textArray,className));
+    } 
+}
+
 function runAndLogEvent(functionName,argsObj){
     if ( Object.keys(trailGame.leaders).length <= 0 ){
         console.log('NEW CARAVAN\n----');
         trailGame.UI.log.append(textArrayToP(['NEW CARAVAN']));
         functionName = 'loadUp';
     }
+
+    trailGame.UI.log.append(document.createElement("hr"));
+    var headline = document.createElement("h3");
+    headline.className = 'day number';
+    headline.append(`Day ${trailGame.caravan.daysElapsed}`);
+    trailGame.UI.log.append(headline);
+
     var dayLines = dayPhase(functionName,argsObj);
-    trailGame.UI.log.append(textArrayToP(dayLines.events,'day events'));
-    trailGame.UI.log.append(textArrayToP(dayLines.ledger,'day ledger'));
+    addTextArrayToLog(dayLines.events,'day events');
+    addTextArrayToLog(dayLines.ledgerLines,'day updates');
+    addTextArrayToLog(dayLines.ledgerStats,'day stats');
+
     var nightLines = nightPhase();
-    trailGame.UI.log.append(textArrayToP(nightLines));
+    addTextArrayToLog(nightLines.events,'night events');
+    addTextArrayToLog(nightLines.ledgerLines,'night updates');
+    addTextArrayToLog(nightLines.ledgerStats,'night stats');
+    
     trailGame.UI.window.scrollTop = trailGame.UI.window.scrollHeight;
 }
 
@@ -6671,17 +6703,11 @@ function cliEvent(functionName,argsObj){
     }
     console.log("---");
     var nightLines = nightPhase();
+    if (nightLines.events.length){
+        console.log( listForm(nightLines.events) );
+    }
     if (nightLines.ledger.length){
         console.log( listForm(nightLines.ledger) );
-    }
-    if (nightLines.health.length){
-        console.log( listForm(nightLines.health) );
-    }
-    if (nightLines.dinner.length){
-        console.log( listForm(nightLines.dinner) );
-    }
-    if (nightLines.dropped.length){
-        console.log( listForm(nightLines.dropped) );
     }
 }
 
@@ -6864,50 +6890,14 @@ function getCartList(){
     return `You decide to purchase ${receipt} for ${trailGame.temp.cart.actualValue} silver.`;
 }
 
-function getStartMessage(){
-    initialPurchase(trailGame.temp.cart);
-    var moreThanOne = Object.keys(trailGame.leaders).length > 1;
-    var party = moreThanOne ? 'and company ' : '';
-    var verb = moreThanOne ? 'set' : 'sets';
-    settleLedger();
-    return `${trailGame.caravan.founder._name} ${party}${verb} off on their journey!`
-}
-
-function clearBitsyArr(prefix,length,value){
-    var arrayOfVarNames = []
-    for (var i = 1; i <= length; i++) {
-        var varName = prefix + i;
-        arrayOfVarNames.push(varName);
-        bitsySet(varName,value);
-    }
-    return arrayOfVarNames;
-}
-
-function bitsyEvent(eventName,argsObj){
-    var dayVars = clearBitsyArr('day',15,"");
-    var nightVars = clearBitsyArr('night',15,"");
-    var dayLines = dayPhase(eventName,argsObj) || [];
-    var nightLines = nightPhase() || [];
-    if ( trailGame.lostGame ){
-        bitsySet('lostGame',1);
-    }
-    bitsySet(dayVars,dayLines);
-    bitsySet(nightVars,nightLines);
-    var dayLineToggles = [];
-    dayVars.map(function(dayNum,index){
-        var isLine = dayLines[index] === undefined ? 0 : 1;
-        dayLineToggles.push(isLine);
-    });
-    var nightLineToggles = [];
-    nightVars.map(function(nightNum,index){
-        var isLine = nightLines[index] === undefined ? 0 : 1;
-        nightLineToggles.push(isLine);
-    });
-    var bitsyDayToggles = clearBitsyArr('isLineDay',15,0);
-    var bitsyNightToggles = clearBitsyArr('isLineNight',15,0);
-    bitsySet(bitsyDayToggles,dayLineToggles);
-    bitsySet(bitsyNightToggles,nightLineToggles);
-}
+// function getStartMessage(){
+//     initialPurchase(trailGame.temp.cart);
+//     var moreThanOne = Object.keys(trailGame.leaders).length > 1;
+//     var party = moreThanOne ? 'and company ' : '';
+//     var verb = moreThanOne ? 'set' : 'sets';
+//     settleLedger();
+//     return `${trailGame.caravan.founder._name} ${party}${verb} off on their journey!`
+// }
 
 newCaravan();
 
