@@ -18,7 +18,7 @@ body {
   display: flex;
   flex-direction: column; }
 
-.window {
+div#window {
   flex: 2;
   margin-bottom: 0.5rem;
   overflow: scroll;
@@ -33,7 +33,12 @@ body {
 div#log {
   padding: 1rem;
   letter-spacing: 0.5px;
-  line-height: 1.1; }
+  line-height: 1.05; }
+  div#log .events {
+    margin-bottom: 0.25em; }
+  div#log .ledger {
+    margin-top: 0.25em;
+    color: #a786b1; }
 
 ul#controls {
   display: flex;

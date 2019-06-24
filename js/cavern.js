@@ -185,28 +185,6 @@ function spacesToDashes(string){
     return string.replace(/ /g, '-');
 }
 
-function bitsySet(varNames,values){
-    if (typeof(varNames) === "string"){
-        window.bitsyVariableMap.set(varNames,values);
-    } else if (Array.isArray(varNames)) {
-        for (var i = varNames.length - 1; i >= 0; i--) {
-            var varName = varNames[i];
-            if (Array.isArray(values)){
-                if ( values[i] !== undefined ){
-                    window.bitsyVariableMap.set(varName,values[i]);
-                }
-            } else {
-                 window.bitsyVariableMap.set(varName,values);
-            }
-        }
-    }
-    return values;
-}
-
-function bitsyGet(varName){
-    return window.bitsyVariableMap.get(varName);
-}
-
 function clamp(value,min, max) {
   return Math.min(Math.max(value, min), max);
 };
@@ -231,32 +209,9 @@ function debug(value){
     console.log("GAME DEBUG MESSAGE: " + value);
 }
 
-// name set functions
-
-function noUndefined(bitsyVar){
-    var value = String(bitsyGet(bitsyVar));
-    value = (value === "undefined") ? "" : value;
-    return value;
-}
-
-function addCharTo(bitsyVar,string){
-    var value = noUndefined(bitsyVar);
-    bitsySet(bitsyVar, toTitleCase(value + string));
-}
-
-function delCharFrom(bitsyVar){
-    var value = noUndefined(bitsyVar);
-    value = value.substring(0,value.length - 1);
-    bitsySet(bitsyVar, value);
-}
-
-
 // global variables
 
 var trailGame = {};
-
-// used to store complex variables needed for Bitsy i/o
-trailGame.temp = {};
 
 trailGame.gods = {
     "The Deep Saints": {
@@ -2369,11 +2324,11 @@ function getCaravanStarving(){
 function dropExcessGoods(){
     var totalToDrop = getCaravanCarrying() - getCaravanCapacity();
     var lines = [];
+    if ( totalToDrop <= 0){
+        return lines;
+    }
     lines.push('OVERWEIGHT: Carrying ' + getCaravanCarrying() + '/' + getCaravanCapacity());
     var dropObj = {}
-    if ( totalToDrop <= 0){
-        return '';
-    }
     var goodsList = trailGame.goodsBySellPrice.slice();
     while ( totalToDrop > 0 && goodsList.length > 0){
         var goodToCheck = goodsList.shift();
@@ -2394,13 +2349,12 @@ function dropExcessGoods(){
     if ( totalToDrop > 0 ){
         var foodToDrop = clamp(totalToDrop,0,trailGame.caravan.food);
         removeFood(foodToDrop);
-        dropObj['food'] = lampsToDrop;
+        dropObj['food'] = foodToDrop;
         totalToDrop -= foodToDrop;
     }
     if ( totalToDrop > 0 ){
         console.log("dropped everything and it wasn't enough!");
     }
-    //lines.push(`We are forced to drop ${sentenceForm(dropObj)}...`);
     lines.push(`We are forced to reduce the weight we are carrying...`);
     return lines.concat(settleLedger());
 }
@@ -2549,7 +2503,7 @@ function dinnerTime(){
         cureSickness(true,'despair');
     }
     if (trailGame.caravan.daysSinceLastMeal === 0){
-        return "";
+        return [];
     }
     var dinnerAmount = getLeaderDinner();
     if( trailGame.caravan.food < dinnerAmount ){
@@ -5552,32 +5506,27 @@ function dayPhase(eventName,argsObj){
         eventName = 'eventGameOver';
     }
     var events = window[eventName](argsObj);
-    lines = lines.concat(events);
     var updates = settleLedger();
-    lines = lines.concat(updates);
-    return scrubLines(lines);
+    linesObj = {events: scrubLines(events), ledger: scrubLines(updates)}
+    return linesObj;
 }
 
 function nightPhase(){
     if (trailGame.lostGame){
         return;
     }
-    var lines = [];
-    var turnResults = settleLedger();
-    lines = lines.concat(turnResults);
-    var health = healthUpdate();
-    lines = lines.concat(health);
+    var linesObj = {}
+    linesObj.ledger = settleLedger();
+    linesObj.health = healthUpdate();
+    linesObj.dinner = [];
+    linesObj.dropped = [];
     if ( Object.keys(trailGame.leaders).length <= 0){
-        //lines.push('The entire caravan has perished.');
-        //lines.push('GAME OVER');
         trailGame.lostGame = true;
-        return lines;
+        return linesObj;
     }
-    var dinnerBill = dinnerTime();
-    lines = lines.concat(dinnerBill);
-    var dropList = dropExcessGoods();
-    lines = lines.concat(dropList);
-    return scrubLines(lines);
+    linesObj.dinner = dinnerTime();
+    linesObj.dropped = dropExcessGoods();
+    return linesObj;
 }
 
 // subEvents
@@ -6674,14 +6623,38 @@ function loadUp(){
     return [`Randomly Loaded Up A Caravan!`];
 }
 
-function deckAll(eventName,argsObj){
-    if ( Object.keys(trailGame.leaders).length <= 0 ){
-        console.log('NEW CARAVAN');
-        eventName = 'loadUp';
+// output functions
+
+trailGame.UI = {};
+trailGame.UI.log = document.body.querySelector('#log');
+trailGame.UI.window = document.body.querySelector('#window');
+
+function textArrayToP(textArray,className){
+    var pTag = document.createElement("p");
+    if (className !== undefined){
+        pTag.className = className;
     }
-    argsObj = argsObj || {};
-    eventName = eventName || getRandomEvent();
-    return window[eventName](argsObj);
+    textArray.map(function(lineOfText,index){
+        pTag.append(lineOfText);
+        if (index < textArray.length){
+            pTag.append(document.createElement("br"));
+        }
+    });
+    return pTag
+}
+
+function runAndLogEvent(functionName,argsObj){
+    if ( Object.keys(trailGame.leaders).length <= 0 ){
+        console.log('NEW CARAVAN\n----');
+        trailGame.UI.log.append(textArrayToP(['NEW CARAVAN']));
+        functionName = 'loadUp';
+    }
+    var dayLines = dayPhase(functionName,argsObj);
+    trailGame.UI.log.append(textArrayToP(dayLines.events,'day events'));
+    trailGame.UI.log.append(textArrayToP(dayLines.ledger,'day ledger'));
+    var nightLines = nightPhase();
+    trailGame.UI.log.append(textArrayToP(nightLines));
+    trailGame.UI.window.scrollTop = trailGame.UI.window.scrollHeight;
 }
 
 // debug functions
@@ -6692,10 +6665,24 @@ function cliEvent(functionName,argsObj){
         functionName = 'loadUp';
     }
     var dayLines = dayPhase(functionName,argsObj);
-    console.log(listForm(dayLines));
+    console.log(listForm(dayLines.events));
+    if (dayLines.ledger.length){
+        console.log( listForm(dayLines.ledger) );
+    }
     console.log("---");
     var nightLines = nightPhase();
-    console.log( listForm(nightLines) );
+    if (nightLines.ledger.length){
+        console.log( listForm(nightLines.ledger) );
+    }
+    if (nightLines.health.length){
+        console.log( listForm(nightLines.health) );
+    }
+    if (nightLines.dinner.length){
+        console.log( listForm(nightLines.dinner) );
+    }
+    if (nightLines.dropped.length){
+        console.log( listForm(nightLines.dropped) );
+    }
 }
 
 function killAll(){

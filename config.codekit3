@@ -58,11 +58,11 @@
 		"bF": 0,
 		"ft": 64,
 		"ma": 0,
-		"mi": 1,
-		"oA": 0,
+		"mi": 0,
+		"oA": 1,
 		"oAP": "/js/cavern-min.js",
-		"oF": 0,
-		"sC": 3,
+		"oF": 1,
+		"sC": 0,
 		"tS": 0
 		},
 	"/README.md": {
@@ -1990,7 +1990,7 @@
 		"bundleFormat": 0,
 		"createSourceMap": 0,
 		"minifyOutput": 1,
-		"syntaxCheckerStyle": 3,
+		"syntaxCheckerStyle": 0,
 		"transpilerStyle": 0
 		},
 	"languageDefaultsJSON": {

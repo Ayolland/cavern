@@ -55,7 +55,7 @@ body{
     flex-direction: column;
 }
 
-.window{
+div#window{
 	flex: 2;
 	margin-bottom: $column-padding-width;
 
@@ -74,7 +74,20 @@ div#log{
 	padding: 2 * $column-padding-width;
 
 	letter-spacing: 0.5px;
-    line-height: 1.1;
+    line-height: 1.05;
+
+    .day{
+
+    }
+
+    .events{
+    	margin-bottom: 0.25em;
+    }
+
+    .ledger{
+    	margin-top: 0.25em;
+    	color: lighten($plum, 25%);
+    }
 }
 
 ul#controls{
