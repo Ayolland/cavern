@@ -4,6 +4,7 @@ html {
 body {
   background-color: #664870;
   background-image: url("../assets/images/marble.png");
+  background-position: 50vw 0;
   margin: 0; }
   body * {
     font-family: 'Serpent', Serif; }

@@ -54,6 +54,17 @@
 		"oAP": "/index.html",
 		"oF": 0
 		},
+	"/js/cavern.js": {
+		"bF": 0,
+		"ft": 64,
+		"ma": 0,
+		"mi": 1,
+		"oA": 0,
+		"oAP": "/js/cavern-min.js",
+		"oF": 0,
+		"sC": 3,
+		"tS": 0
+		},
 	"/README.md": {
 		"cB": 0,
 		"cS": 0,
@@ -85,6 +96,14 @@
 		"oF": 2,
 		"oS": 0,
 		"uL": 1
+		},
+	"/source.json": {
+		"ft": 524288,
+		"oA": 1,
+		"oAP": "/source-min.json",
+		"oF": 0,
+		"oO": 0,
+		"oS": 1
 		}
 	},
 "hooks": [

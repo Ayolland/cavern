@@ -1,0 +1,460 @@
+{
+	"metal":["iron", "lead", "bronze", "brass", "steel", "copper", "silver", "gold", "platinum"],
+	"precious_metal":["copper", "silver", "gold", "platinum"],
+	"base_metal":["iron", "lead", "bronze", "brass", "steel"],
+	"metal_adjective":["iron", "lead", "bronze", "brass", "steel", "copper", "silver", "golden", "platinum"],
+	"ore_metal":["iron", "copper", "silver"],
+	"gem":["diamond", "ruby", "emerald", "sapphire", "agate", "amethyst", "quartz", "turquoise", "amber", "pearl", "coral", "garnet", "onyx", "jade"],
+	"mineable_gem":["diamond", "ruby", "emerald", "sapphire", "agate", "amethyst", "garnet"],
+	"stone":["obsidian", "sandstone", "calcite", "marble", "#gem#", "basalt", "granite", "salt"],
+	"normal_stone":["obsidian", "sandstone", "calcite", "marble",  "basalt", "granite", "salt"],
+	"equipment":["turtle cage", "fishing rod", "ladder", "explosive squib", "gas mask", "pickaxe", "machete", "spider-silk rope", "piton", "compass", "plumb bob", "mystic sextant", "dowsing rod", "flare", "cooking pot", "harness", "bell", "blanket", "medicine", "lantern"],
+	"alcohol":["deepwater whiskey", "spiderwine", "mushroom ale", "Magol's best absinthe", "grub mead", "Roshian gin"],
+	"drug":["moth dust", "incubus saliva", "pineal extract", "crystal sunlight", "Magol's root", "the mother leaf", "black milk", "centipede venom"],
+	"cheese":["fungaloid-cheese-like-paste", "Roshian blue cheese", "zebraphant mozzarella", "hell cheddar", "spider camel parmesan"],
+	"commodity":["spices", "fresh water", "#alcohol#", "grub honey", "pemmican", "iron rations", "#drug#", "crude oil", "salt", "hanging tea", "#cheese#", "kefir", "animal fodder", "tud teeth", "jerky", "infernal coffee", "#turtle_common# eggs"],
+	"ingredient":["spices", "#alcohol#", "grub honey", "pemmican", "iron rations", "salt", "hanging tea", "#cheese#", "kefir", "jerky", "infernal coffee"],
+	"craft":["mollusk shell pendant", "bone figurine", "spider-silk bracelet", "fungus pillow", "hex quilt", "mushroom cap bowl", "mandrake doll"],
+	"trade_goods":["#craft.s#", "#commodity#", "#equipment.s#"],
+	"metal_or_stone":["#metal#", "#stone#"],
+	"large_treasure":["flawless #gem# the size of a child's head", "heavy #normal_stone# disk used as currency", "masterful #stone# sculpture of #religious_figure_image#", "locked #metal_adjective# book full of truenames", "overflowing chest of #precious_metal#", "basket of #turtle_rare# eggs"],
+	"food":["thief tentacle soup", "barbecued zebraphant ribs", "king mushroom hash", "grub cake", "yeti heart", "fungaloid-sweet-fluid", "raging hot curry", "fried cave chicken"],
+	"language":["serpent speech", "the demon cant", "fungaloid-external-encodation", "crab dialect"],
+	"money":["serpent medallion", "hex ribbon", "#precious_metal# coin", "Roshian Lira", "turtle token"],
+	"magic":["ice", "fire", "void", "storm"],
+	"common_turtle_type":["mud", "spotted", "brown", "green", "mottled", "grass", "horned", "moss"],
+	"rare_turtle_type":["king", "psi", "ghost", "blue", "skull", "winged", "seven-headed"],
+	"turtle_any":["#common_turtle_type# turtle", "#common_turtle_type# turtle", "#common_turtle_type# turtle", "#common_turtle_type# turtle", "#stone# turtle", "#stone# turtle", "#stone# turtle", "#stone# turtle", "#base_metal# turtle", "#base_metal# turtle", "#base_metal# turtle", "#precious_metal# turtle", "#magic# turtle", "#magic# turtle", "#rare_turtle_type# turtle"],
+	"turtle_common":["#common_turtle_type# turtle", "#normal_stone# turtle", "#base_metal# turtle"],
+	"turtle_rare":["#precious_metal# turtle", "#magic# turtle", "#gem# turtle", "#rare_turtle_type# turtle"],
+	"curiosity":["a preserved tud larva", "a bright blue variant of the yellow-spotted thief", "an ancient precursor to the #small_creature# trapped in amber", "a ring of #stone# through which can be seen #random_teleport#", "#food.a# prepared for an ancient queen which is as fresh as the night it was first prepared", "a seashell that whispers prayers to #religious_figure#", "#metal_adjective.a# organ that emulates the human voice"],
+	"lights":["torches of ever-burning witch fire", "jars of fireflies", "luminescent balls of fungus", "glowing shards of crystal", "hellfire lanterns"],
+
+	"trade":["#commodity# for #equipment.s#", "#commodity# for #craft.s#", "#gem# for #alcohol#", "#craft.s# for #food#", "#money.s# for #pack_animal.s#", "#commodity# for #money.s#"],
+
+	"bad_teleport":["a hell of ice", "an infinity of writhing worms", "a trackless desert", "the time after time", "the court of Magol", "a lightless labyrinth covering the surface of a vast black sphere", "the center of the sun", "an airless mountaintop"],
+
+	"good_teleport":["an expansive treasury filled with #precious_metal#", "glistening garden spires floating in a lambent pink sky", "a jeweled oasis in a perfumed desert", "#idyll#"],
+
+	"random_teleport":["#bad_teleport#", "#good_teleport#"],
+
+	"idyll":["an enchanted wood", "an endless scintillating grassland situated on the inner surface of a vast flying ring", "the glades of the sacred moon", "an orchard in a hidden valley", "mossy isles with high, sheltered cliffs"],
+
+	"he_she":["he", "she"],
+	"him_her":["him", "her"],
+	"his_her":["his", "her"],
+	"man_woman":["man", "woman"],
+	"king_queen":["king", "queen"],
+
+	"rumor_true":["wizards have a currency based on rapidly guessing true names",
+		"tud tadpoles can eat their broodmates and grow to enormous sizes",
+		"the Deep Saints were actually con artists",
+		"puppeteer spiders are not spiders but necromancers whose heads have swollen into arachnoid shapes",
+		"a prysmatic worm can emit light invisible to the human eye",
+		"rogue tuds have left their colonies of their own free will",
+		"the crab folk are breeding their messiah back into existence",
+		"puppeteer spider zombies will continue to move for up to seven days after you cut their umbilicals",
+		"the Hanged One wanders the underworld, taking the guise of a mortal",
+		"the surface world is home to an animal called a \"greyhound\" that looks like a snout goblin running about on four legs",
+		"he calls, and the worms answer",
+		"Magol fears the Hanged One, as only the Hanged One can send him back to Hell",
+		"spiderwine is made by spiders, not from them"],
+
+	"surface_world_rumor":["folk hopping about on one leg",
+		"cannibals around every corner",
+		"that it's completely lifeless",
+		"nothing but purple jelly",
+		"a terrible and cruel god known as \"the sky\""],
+
+	"rumor_false":["serpent girls eat their mates",
+		"there is a secret song that will end the world",
+		"there is a special breed of red tud with teeth harder than diamond",
+		"the Turtle Father lives on in the belly of #colossal_beast.a#",
+		"gorgons need to feed their hair",
+		"carrots from the surface will sometimes grow deep enough to penetrate the caverns below",
+		"prysmatic worms take your soul after they kill you",
+		"the Purple Mask is none other than Magol himself",
+		"if you journey to the surface world, you'll find #surface_world_rumor#",
+		"tuds do have eyes. In their mouths",
+		"elves are real",
+		"the fungaloids all emerge from single giant mushroom hidden deep within their territory"],
+
+	"rumor":["#rumor_false#", "#rumor_true#"],
+
+	"joke_tud":["tuds eating their own young", "a tud following careless instructions to the letter", "a tud eating something disgusting", "a tud #entertainer#"],
+	"joke_serpent":["an enlightened hydra buying a sweater", "a high gorgon commissioning  a portrait", "a serpent cultist shedding #his_her# skin"],
+	"joke_fungaloid":["three bureaucratic fungaloids", "a fungaloid \"rescuing\" a puppy", "fungaloids' odd swaying motions", "a fungaloid who manages to become the savior of Rosh through entirely selfish actions"],
+	"joke_wizard":["a wizard who summons #foocubus.a# to escort #him_her# to the ball", "the volatility of the wizards' truename currency"],
+	"joke_demon":["#foocubus.a# and a zebraphant", "a gassy sulfur imp", "a grief elemental that runs a wedding chapel"],
+	"joke_misc":["a shop owned by a puppeteer spider", "the strange customs of the surface world", "ZOX attempting to perform the simplest of tasks"],
+
+	"joke":["#joke_serpent#", "#joke_tud#", "#joke_fungaloid#", "#joke_wizard#", "#joke_demon#", "#joke_misc#"],
+
+	"small_creature":["grave worm", "hallucinogenic beetle", "dusk moth", "eldritch larva", "rock mole", "#gem# elemental", "fossil mite", "sweet grub", "singing trilobite", "snail"],
+	"pet":["spore pup", "cat", "land crab", "fungaloid-small-quadruped", "cave chicken"],
+	"pet_desc":["well-groomed", "prize-winning", "well-fed", "sickly-looking", "hungry"],
+	"colossal_pass":["somewhere above us", "somewhere below us", "somewhere in the distance", "on the opposite side of #open_non_traversable.a#"],
+	"colossal_beast":["magma kraken", "abyssal whale", "core worm", "tectonic dragon", "primordial beast", "star god", "mountain elemental"],
+	"megabeast":["filth ogre", "rainbow worm", "sphinx", "pit mauler", "flue harpy"],
+	"undead_desc":["bleeding", "blood-soaked", "restless", "noxious", "shrieking", "whispering", "cannibal", "slavering", "hollow-eyed", "desperate"],
+	"undead":["skeleton", "vampyre", "wraith", "ghoul", "wight", "corpse-worm", "spectre", "phantasm"],
+
+	"haunted" : ["haunted", "stalked", "patrolled", "plagued"],
+	"haunted_place":["gothic castle", "abandoned hut", "dusty graveyard", "forgotten crypt-tunnel", "barrow mound", "ancient pyramid", "gaping black portal", "desecrated temple", "ancient battlefield"],
+
+	"runes_desc":["glowing", "long-defaced", "moss covered", "cryptic", "indecipherable", "curling", "cursed", "holy"],
+
+	"hut_material":["mother-stone", "mushroom-cap", "wattle and daub", "surface-wood", "dilapidated", "gaily painted", "fungus log", "overgrown", "eccentric"],
+	"hermit_surround":["oddly shaped skulls", "a quaint mushroom garden", "unnervingly realistic statues", "priceless gems, strewn carelessly about", "#trade_goods# put out for sale or trade", "idols to an invented god", "shrines of every religion", "refuse", "#pet_desc# #pet.s#"],
+
+	"ancient_civ":["the Mertocenian Empire", "fungaloid precursors", "the long-fingered ones", "the arachnoid pharoahs", "the Shrieking Chorus"],
+
+	"beacon_form":["flaming", "interplanar", "crystalline", "cranio-form", "musical", "humming", "electromagnetic"],
+	"beacon_desc":["forever broadcasting its final warning", "long ago smashed by the enemies of #ancient_civ#", "its purpose forgotten", "its power slowly dwindling", "which comes suddenly to life", "left by #ancient_civ#", "casting out a chaotic signal"],
+
+	"obs_study":["that which moves within the core", "the far-away surface world", "the unseen and impertinent dance of solar and planetary bodies", "the far future and distant past", "the migrations of #small_creature.s#", "the shifting of the plates", "the alignment of the planes", "powerful psychic emanations", "the ineffable power of silence", "the true names of strange spirits", "the dissected corpse of #colossal_beast.a#"],
+
+	"tower_form":["spindly", "squat", "sunken", "leaning", "cracked", "crenelated", "hanging", "fallen", "horizontal", "spiral", "hexagonal", "cylindrical", "rectangular"],
+	"tower_history":["where suicides once came to jump", "made by unknown builders", "which is the abandoned outpost of #ancient_civ#", "which was once home to a powerful #wizard#", "where perpetrators of the most heinous crimes were kept", "built upon a foundation of corpses", "which once crawled about on insectile legs", "where lives an exiled witch #king_queen#"],
+
+	"religious_figure":["the Deep Saints", "ZOX", "the Turtle Father", "Sister Serpent-Eyes", "the Hanged One", "Gravity", "the Air-Bringer", "the Purple Mask", "the First Crab"],
+	"religious_figure_image":["the Deep Saints", "the Turtle Father", "Sister Serpent-Eyes", "the Purple Mask", "the First Crab"],
+	"positive_exclamation":["good tidings", "thank #religious_figure#", "blessed be #religious_figure#", "praise be", "fortunes abound"],
+	"water_source":["hidden cache", "lake", "trickling flow", "deep well", "geyser", "secluded pool", "floating orb"],
+
+	"good_finding":["a rich vein of #ore_metal# ore", "a cluster of #mineable_gem.s#", "#water_source.a# of fresh water", "a pocket of sweet air", "an abandoned stash of #trade_goods#", "a cask of #alcohol# by the roadside", "a lost #pet#. #caravan_member.capitalize# decides to adopt it", "a natural hot spring", "#turtle_rare.a#. There is some disagreement as to who will keep it"],
+
+	"bridge_form":["crumbling", "carven", "well-trod", "long forgotten", "hanging"],
+	"river_fluid":["protoplasm", "blood", "black water", "churning mist", "magma", "ice"],
+	"chasm_desc":["howling", "yawning", "endless black", "eerily silent", "wind-swept", "ghost-haunted", "sulfurous", "bat infested"],
+	"stream_desc":["tranquil", "trickling", "sweet-smelling", "rushing", "crystal clear", "dried up", "muddy"],
+	"pipe_desc":["humming", "gurgling", "clanking", "bulging", "cracked", "ruptured"],
+	"bridge_over":["river of #river_fluid#", "#chasm_desc# chasm", "#stream_desc# stream", "rift in the fabric of reality", "pulsing ley line", "crackling electrical cable", "#pipe_desc# #metal# pipe"],
+	"bridge_over_dangerous":["river of #river_fluid#", "#chasm_desc# chasm", "rift in the fabric of reality", "pulsing ley line", "crackling electrical cable"],
+
+	"open_traversable":["lost city of #metal_or_stone#", "petrified forest", "magma furnace", "frigid glacier", "weightless void", "vast, shadowy plain"],
+	"open_non_traversable":["subterranean sea", "bottomless pit", "canyon filled with innumerable bones", "swamp of #river_fluid#"],
+	"plummet_into":["subterranean sea", "bottomless pit", "magma furnace"],
+
+	"open_feature":["#open_traversable#", "#open_non_traversable#"],
+
+	"closed_feature":["crystal cavern", "fungus garden", "labyrinth of #normal_stone#", "complex of #metal_adjective# corridors", "abandoned dungeon", "lost library", "cave of living flesh"],
+
+	"any_traversable":["#open_traversable#", "#closed_feature#"],
+	
+	"stair_form":["massive", "worn", "uneven", "crumbling", "smooth", "narrow", "twisting", "spiraling", "slime-coated"],
+	"stair_desc":["through a layer of #normal_stone#", "overlooking #open_feature.a#", "behind a cascade of #river_fluid#", "along a #chasm_desc# chasm", "around a #tower_form# pillar"],
+	"stairs":["ascend #stair_form.a# staircase #stair_desc#", "descend #stair_form.a# staircase #stair_desc#"],
+
+	"odd_feature_interact":["it cries out to us in the dark", "a few go to investigate, but they are not heard from again", "we ignore it, and try to forget", "we pass it by unbidden", "some stay behind to worship", "we leave marks to warn others"],
+
+	"horror_face_desc":["entranced", "screaming", "rictused", "chanting"],
+
+	"truly_odd_feature":["pulsing fragment of the sun", "complete #colossal_beast# fossil, cradled against the earth", "large, intricate #metal# machine crackling with eldritch energy", "asteroid from the starry reaches, speckled with flawless #mineable_gem.s#", "outcropping of #stone# carved in the perfect likeness of #religious_figure_image#", "floating, toroidal flow of #river_fluid#", "enormous, seething nest of #small_creature.s#", "towering #stone# monolith", "#tower_form# castle, teleported down from the surface world", "massive skeleton sitting atop a throne of #metal#", "vast alkaline field, littered with the bones of angels", "massive, #horror_face_desc# face rising from a pool of #river_fluid#", "tomb carved with spiderous shapes"],
+
+"travel_road":["ancient road worn to rubble. Occasionally we see worm-eaten signs written in an antiquated form of #language#", "road paved with slabs of #normal_stone#", "prohibitively narrow road, and must unburden the zebraphants to pass", "road paved with skulls", "road lit with #lights#"],
+
+	"traversal": ["cross a #bridge_form# #stone# bridge over #bridge_over.a#", "follow #bridge_over.a# for a while", "skirt the edge of #open_feature.a#", "traverse #metal_adjective.a# catwalk over #open_feature.a#", "#stairs#", "travel along #travel_road.a#"],
+
+	"ancient_soldier_remains": ["the withered forms of fungaloid precursors", "Mertocenian armor", "the distinctive skeletons of the long-fingered ones", "the exoskeletons of great arachnoids", "the serrated beaks of singing horrors"],
+
+	"structure" : ["#haunted_place.a# #haunted# by #undead_desc# #undead.s#", "standing stones inscribed with #runes_desc# runes", "a hermit's #hut_material# hut, surrounded by #hermit_surround#", "#metal_adjective.a# observatory set up to study #obs_study#", "#beacon_form.a# beacon, #beacon_desc#", "#tower_form.a# #stone# tower #tower_history#", "#hut_material.a# monastery constructed by the followers of #religious_figure#", "a hastily abandoned camp with a few #equipment.s# strewn about", "#truly_odd_feature.a#. #odd_feature_interact.capitalize#", "an ancient battlefield strewn with #ancient_soldier_remains#"],
+
+	"position":["chaplain", "quartermaster", "navigator", "arbiter", "cook", "surgeon", "captain", "cooper", "scribe", "guide", "prefect of the guard", "chief engineer"],
+
+	"tud_individual":["rogue tud", "tud emissary"],
+	"tud_group":["trader", "explorer", "brood porter", "miner"],
+
+	
+	"serpent_group":["flagellant", "acolyte", "brute", "death-spitter"],
+	"serpent_individual":["high gorgon of the serpent cult", "enlightened hydra of the serpent cult"],
+	"serpent_fighter":["high gorgon", "hydra", "brute", "death-spitter"],
+
+	"fungaloid_group":["musketeer", "bureaucrat", "legionary"],
+	"fungaloid_individual":["centurion", "overseer", "agent"],
+	"fungaloid_fighter":["musketeer", "legionary", "centurion"],
+
+	"foocubus":["incubus", "succubus"],
+	"demon_group":["blood knight"],
+	"demon_individual":["helldog tamer", "sulfur imp", "incubus", "succubus", "grief elemental", "forge beast"],
+	"demon_fighter":["blood knight", "helldog tamer", "forge beast"],
+	"any_demon":["helldog tamer", "sulfur imp", "incubus", "succubus", "grief elemental", "forge beast", "blood knight"],
+
+	"crab_group":["pilgrim", "scribe", "wrestler"],
+	"crab_individual":["logician", "mutant", "spawner"],
+	"crab_fighter":["wrestler", "mutant"],
+
+	"snout_group":["archer", "bean farmer", "irregular"],
+	"snout_individual":["sprinter", "mayor", "howler"],
+	"snout_fighter":["archer", "irregular"],
+
+	"priest":["priest", "priestess"],
+	"entertainer":["piper", "harper", "singer", "dancer", "jester", "juggler", "acrobat", "drummer", "horn player", "storyteller", "actor", "mime"],
+	"wizard":["#magic# wizard", "#magic# witch", "sorcerer", "sorceress", "warlock", "conjurer", "summoner", "artificer", "geomancer", "necromancer", "alchemist", "pyromancer", "demonologist"],
+
+	"individual":["philosopher", "#priest# of #religious_figure#", "#entertainer#", "#tud_individual#", "#serpent_individual#", "engineer", "#wizard#", "fungaloid #fungaloid_individual#", "#demon_individual#", "crab folk #crab_individual#", "snout goblin #snout_individual#"],
+	"human_individual":["philosopher", "#priest# of #religious_figure#", "#entertainer#", "engineer", "#wizard#"],
+
+	"group":["pilgrim", "aristocrat", "tud #tud_group#", "serpent cult #serpent_group#", "fungaloid #fungaloid_group#", "#human_fighter_group#", "explorer", "adventurer", "miner", "#demon_group#", "crab folk #crab_group#", "turtle catcher", "snout goblin #snout_group#", "scholar"],
+	"human_group":["pilgrim", "aristocrat", "mercenary", "explorer", "adventurer", "miner", "turtle catcher", "scholar"],
+	"caravan_fighter":["mercenary", "adventurer", "guard", "fungaloid #fungaloid_fighter#", "serpent cult #serpent_fighter#", "#demon_fighter#", "knight", "amazon", "crab folk #crab_fighter#", "snout goblin #snout_fighter#"],
+	"human_fighter_group":["mercenary", "knight", "amazon"],
+
+	"caravan_member":["#individual.a#", "one of the #group.s#", "our #position#"],
+	"human_caravan_member":["#human_individual.a#", "one of the #human_group.s#", "our #position#"],
+	"any_human":["#human_group#", "#human_fighter_group#", "#human_individual#"],
+	"human_noncombatant":["#human_group#", "#human_individual#"],
+
+	"attractive_trait":["bold stride", "piercing eyes", "statuesque form", "lustrous hair", "cautious sweetness", "raucous humor", "poetic tongue", "sharp wit"],
+	"attractive_trait_2":["a bold stride", "piercing eyes", "a statuesque body", "lustrous hair", "a kind heart", "a raucous sense of humor", "a poetic tongue", "a sharp wit", "talented hands"],
+	"true_love_quality":["red-headed", "blonde", "brown-haired", "raven haired", "freckled", "fair-skinned", "dark-skinned", "wealthy", "clever", "athletic", "stylish"],
+
+	"former_fate":["was too argumentative", "succumbed to a strange parasitic disorder", "went back to school to become #wizard.a#", "had seen too many horrors for one life", "retired to #hut_material.a# cabin beside #open_feature.a#", "was trampled by #pack_animal.a#", "plummeted into #plummet_into.a#", "was maimed in a brawl with #caravan_fighter.a#"],
+
+	"new_pos_desc":["#he_she# hails from the surface lands, and still, at times, longs for the touch of the sun", "I believe I have already fallen in love with #his_her# #attractive_trait#", "some say #he_she# is actually #wizard.a#", "#he_she# also moonlights as #entertainer.a#", "we found #him_her# down the bottom of a pit with nothing but #equipment.a#", "one of the #group.s# told me #he_she# has a problem with #drug#, though", "the last one #former_fate#"],
+
+	"new_join":["#individual.a.capitalize# has joined our caravan", "we have taken on a new #position#. #new_pos_desc.capitalize#", "a group of #group.s# has joined us"],
+
+	"holy_day":["Sister Serpent-Eyes' ascendance", "the magnetic solstice", "the founding of Ulm-Rosh", "the #position#'s birthday", "the week of the Saints", "Banishment Day"],
+
+	"sex_change":["changes from a man to a woman", "changes from a woman to a man",
+					"changes from a man to a woman", "changes from a woman to a man",
+					"changes from a man to a woman", "changes from a woman to a man",
+					"changes from a man to a woman", "changes from a woman to a man",
+					"changes from a man to a woman", "changes from a woman to a man",
+					"changes in some subtle way."],
+
+	"death_clock_helper":["is inconsolable", "dismisses it as mere superstition", "maintains an unbroken visage"],
+
+	"mutation":["#he_she# sprouts a third eye from their forehead", "#he_she# grows a squirming purple tentacle from their armpit", "#his_her# leg twists into an unwieldy lump of flesh", "#his_her# hand transforms into a lobster claw", "shaggy white hair sprouts from every surface of #his_her# body", "#he_she# grows a pair of leathery wings"],
+	"power":["telekinesis", "the power to discern truth from falsehoods", "command over the beasts of the earth", "the ability to regenerate #his_her# body from grievous injury"],
+
+	"sword_personality":["mischievous", "bloodthirsty", "gallant", "irreverent", "somber", "selfish", "demonic"],
+	"sword_type":["rapier", "claymore", "saber", "falchion", "khopesh", "scimitar", "katana", "macuahuitl"],
+
+	"cat_desc":["small", "mangy", "fat", "old"],
+	"cat_desc_2":["gray", "tabby", "orange", "black", "white", "hairless"],
+
+	"quest":["seek out the high #wizard#", "rescue a prisoner from #stone.a# tower", "recover #large_treasure.a# from the heart of #closed_feature.a#", "free the slaves of #metal.a# city", "slay #colossal_beast.a#", "journey to #bad_teleport#", "find a mystic gate beyond which lies #idyll#", "defeat an army of #caravan_fighter.s#", "catch every type of turtle"],
+
+	"set_fortune":["[fortune_card:The Amethyst Djinn][fortune_effect:a violet djinn appears and pronounces \"#rumor.capitalize#\"]",
+		"[fortune_card:The Emerald Djinn][fortune_effect:a green djinn appears and swears to guard the #fortune_told# forevermore]",
+		"[fortune_card:The Ruby Djinn][fortune_effect:a red djinn appears and grants the #fortune_told# a single wish]",
+		"[fortune_card:ZOX][fortune_effect:the #fortune_told# is taken beyond the stars to the laboratory of ZOX]",
+		"[fortune_card:The Body][fortune_effect:the #fortune_told# #sex_change#]",
+		"[fortune_card:Nemesis][fortune_effect:the #fortune_told# is chilled to discover that an evil clone is hunting #him_her# down]",
+		"[fortune_card:Death Clock][fortune_effect:the fortune teller pronounces that the #he_she# will die in exactly one year's time. The #fortune_told# #death_clock_helper#]",
+		"[fortune_card:The Princess][fortune_effect:#he_she# watches in horror as #mutation#]",
+		"[fortune_card:The Queen][fortune_effect:#he_shes# is granted #power#]",
+		"[fortune_card:The Heart][fortune_effect:the #fortune_told# sees an image of their true love; #true_love_quality.a# #man_woman# with #attractive_trait_2#]",
+		"[fortune_card:The Summit][fortune_effect:#large_treasure.a# materializes out of thin air]",
+		"[fortune_card:The Squid][fortune_effect:the fortune teller informs the #fortune_told# that they must submerge in brine each night as they transform into a tentacled monstrosity]",
+		"[fortune_card:The Sword][fortune_effect:the fortune teller gives the #fortune_told# #sword_personality.a# talking #sword_type#]",
+		"[fortune_card:Zealotry][fortune_effect:the #fortune_told# becomes a devoted follower of #religious_figure#]",
+		"[fortune_card:The Stump][fortune_effect:the #fortune_told# has a vision of an idyllic cottage in #idyll#. #he_she.capitalize# sets out to find it the very next day]",
+		"[fortune_card:Silence][fortune_effect:the #fortune_told# loses #his_her# voice forever]",
+		"[fortune_card:Horror][fortune_effect:that night the #fortune_told# has nightmares about #bad_teleport#. Upon awakening #he_she# tells me \"#rumor_true.capitalize#.\"]",
+		"[fortune_card:The Ring][fortune_effect:the #fortune_told# leaves the caravan that night telling us #he_she# must #quest#]",
+		"[fortune_card:The Broken Sword][fortune_effect:the #fortune_told# swears never to harm another living thing]",
+		"[fortune_card:The King][fortune_effect:a troop of #caravan_fighter.s# appears and swears fealty to the #him_her#]",
+		"[fortune_card:The Cat][fortune_effect:the #fortune_told# turns into #cat_desc.a# #cat_desc_2# cat]",
+		"[fortune_card:The Codex][fortune_effect:#he_she# learns to speak #language#]"
+	],
+
+	"fortune_draw":["Our #fortune_told# draws \"#fortune_card#\" from the deck. #fortune_effect.capitalize#"],
+	"fortune":["#[#set_fortune#]fortune_draw#"],
+
+	"directions":["through #closed_feature.a# and out into #open_traversable.a#", "along #bridge_over.a# until we reach #open_non_traversable.a#"],
+
+	"heroic_trait":["lonely", "doomed", "noble", "sanguine", "fearless"],
+
+	"dirge_topic":["the fall of #ancient_civ#", "the death of #any_human.a#"],
+	"ballad_topic":["#human_fighter_group.a# who must #quest#", "the romance between #heroic_trait.a# #human_fighter_group# and #true_love_quality.a# #human_noncombatant# with #attractive_trait_2#"],
+
+	"song":["dirge about #dirge_topic#", "ballad about #ballad_topic#"],
+
+	"play_topic":["the day-to-day life of #human_noncombatant.a#",
+		"#any_demon.s# in Magol's Court",
+		"#individual.a# who ventures to the surface world only to find #surface_world_rumor#",
+		"a group of orphaned children who live among the tuds",
+		"the foundation of Rosh",
+		"how the Deep Saints first met"],
+
+	"set_performance":["[performers_special:singer][perform_special:sing #song.a#]",
+							"[performers_special:actor][perform_special:perform a play about #play_topic#]",
+							"[performers_special:jester][perform_special:tell us a joke about #joke#]"],
+
+	"performance":["#performers_special.s# perform. They #perform_special#"],
+
+	"rest_stop":["to watch a troupe of #[#set_performance#]performance#", "at a shrine to #religious_figure#", "to consult our charts", "to gaze across #open_non_traversable.a#", "and hunker down while #colossal_beast.a# passes #colossal_pass#", "to let the children catch #small_creature.s#", "to converse with a party of #group.s#", "to celebrate #holy_day#", "to explore #open_traversable.a#", "to consult a fortune teller. #[fortune_told:#position#]fortune#", "to re-shoe our #pack_animal.s#", "at #hut_material.a# inn. I have an extra helping of #food#", "to ask directions of #individual.a#. They tell us we must travel #directions#", "to trade #trade#", "to investigate a mountebank's cart of curiosities. I see #curiosity#"],
+
+	"serpent_eyes_origin":["midwife", "surgeon", "mathematician", "prostitute"],
+
+	"school_info_serpent":["that Sister Serpent-Eyes began her life as a human #serpent_eyes_origin#", "that there are seven stages of human/reptilian ascendance", "about Serpent Cult numerology", "that pleasure is not to be shunned", "a bit about #math_field#"],
+
+	"school_info_crab":["\"The First Crab once was; the First Crab will be again\"", "about the heritability of certain traits", "about the majesty of asymmetric existence", "about the horrors of mind-controlling parasites"],
+
+	"school_info_fungaloid":["about the poetry of unadorned speech", "that it is better not to resist", "that fungaloid quadrupeds are just as intelligent as the bipeds, but play the part of animals"],
+
+	"school_info_geomancer":["that powerful forces lie at the intersections of ley lines", "that the core is always in motion", "that there are precisely thirteen artificial mountains at present time"],
+
+	"school_info_demonologist":["that hell dogs perish without the lost souls chained to their bodies", "that blood knights are poured from vats of blood into cursed suits of armor", "that no mortal can travel the demon roads without paying the toll"],
+	"school_info_turtle":["that under no circumstances should one force turtles to fight one another", "that turtle breeders across the underworld are racing to create new, exotic breeds of turtle", "a koan: \"The rarest turtle of all is hidden beneath a large and heavy cart. What does it take to move it?\" I ponder this", "that one of the students is being punished for drawing a preposterous turtle with cannons coming out of its back", "that the traditional practice of keeping turtles inside \"turtle balls\" is now widely frowned upon"],
+
+	"set_school_info":[
+		"[school_runner:the Serpent Cult][school_info:#school_info_serpent#]",
+		"[school_runner:the crab folk][school_info:#school_info_crab#]",
+		"[school_runner:the fungaloid hegemony][school_info:#school_info_fungaloid#]",
+		"[school_runner:the geomancer's guild][school_info:#school_info_geomancer#]",
+		"[school_runner:demonologists][school_info:#school_info_demonologist#]",
+		"[school_runner:the turtle catcher's union][school_info:#school_info_turtle#]"
+	],
+
+	"school_desc":["#school_runner#; the teacher tells me #school_info#"],
+
+	"city_event":["I hear a joke about #joke#", "a pair of shifty characters try to sell us #large_treasure.a#", "a madman tries to tell me that #rumor#", "the caravan almost leaves without me", "the #position# and I have a soak at the bathhouse", "I pay my respects at a temple to #religious_figure#", "perfumed courtesans trawl for customers among the #human_fighter_group.s#", "I stop into a school run by #[#set_school_info#]school_desc#", "the streets are full of stray #pet.s#", "it is known for its #commodity#", "#drug# addiction is a serious problem here", "it was originally built by #ancient_civ#"],
+
+	"city":["hanging city above #open_feature.a#", "city of #metal_or_stone#", "village of #hut_material# houses", "settlement carved into a cliff along a #chasm_desc# chasm", "village with a #bridge_over# running down the middle", "port city on a sea of #river_fluid#", "city on the back of a great crawling thing", "city carved into the corpse of #colossal_beast.a#"],
+
+	"gate":["#metal_adjective# gate shaped like the mouth of #colossal_beast.a#", "#normal_stone# gate guarded by #caravan_fighter.s#. They demand to be paid #money.s#", "gate watched over by two #normal_stone# sphinxes with #gem# eyes"],
+
+	"pass_through":["we pass through #city.a#. #city_event.capitalize#", "we pass through #city.a#. #city_event.capitalize#", "we pass through #gate.a#", "we pass through #any_traversable.a#", "we pass through #normal_stone.a# tunnel carved by #colossal_beast.a#", "we ford #stream_desc.a# river", "we cross paths with a migratory swarm of #small_creature.s#", "we pass through a territory patrolled by #caravan_fighter.s#", "we book passage on a #book_passage#"],
+
+	"puppeteer_attack":["pulls #caravan_member# up a #normal_stone# chimney", "surrounds our vanguard with its zombies", "devours one of our #pack_animal.s#"],
+
+	"sphinx_body":["the body of a cave lion", "the body of a six-legged tiger", "a body of piercing ice", "a body of green flame", "a floating skull in place of its head", "three cycloptic heads"],
+	"riddle_answer":["time", "mankind", "nothing", "a river", "a mountain", "forty-two", "xyzzy", "an egg", "wind", "blue", "love"],
+	"riddle_result":["no one has the answer. The creature takes #caravan_member# as punishment", "#caravan_member# shouts out \"#riddle_answer#!\", but they are incorrect. The sphinx devours them", "Thinking quickly, #caravan_member# gives the beast the correct answer: \"#riddle_answer#\". #positive_exclamation.capitalize#"],
+	"sphinx_react":["places a hex on them", "hisses and spits at us", "shouts obscenities in return", "slinks away into the darkness"],
+
+	"payout":["handful of #mineable_gem.s#", "ingot of #precious_metal#", "jug of #alcohol#", "parcel of #drug#", "finely crafted #craft#", "purse of #money.s#"],
+
+	"troll_desc":["wart-covered", "shaggy", "two-headed", "odoriferous", "wrinkled", "cantankerous", "horned", "cycloptic"],
+	"assaults":["assaults", "mugs", "accosts", "ambushes"],
+	"troll_res":["the #position# pays #him_her# off with #payout.a#", "#he_she# injures several #group.s# before being chased off by the guards", "#he_she# quickly backs down upon seeing the size of our party"],
+
+	"troll_encounter":["#troll_desc.a# troll #assaults# us as we try to cross #bridge_form.a# bridge. #troll_res.capitalize#", "#troll_desc.a# troll chases us through #any_traversable.a#, shouting obscenities in #language#"],
+
+	"caravan_target":["#caravan_member#", "a shipment of #commodity#", "one of our #pack_animal.s#"],
+
+	"rainbow_position":["floats over #open_feature.a#", "emerges from #closed_feature.a#"],
+	"green_effect":["causing vivid hallucinations", "making us turn on each other", "causing the #wizard#'s spells to misfire", "and we flee in terror", "and afterward the #position# cannot even remember #his_her# name"],
+	"rainbow_effect":["flashes red, healing the wounds made by our arrows", "emits a beam of orange light which vaporizes #caravan_target#", "emits a cone of yellow light which turns a group of #group.s# to #normal_stone#", "dazzles us with streamers of green light, #green_effect#", "shimmers with blue light, splitting into multiple illusory copies", "emits an erratic mote of indigo light which banishes our #position# to #bad_teleport#", "sparkles with violet light, summoning strange creatures"],
+
+	"ZOX_encounter":["it is searching for #gem#", "it inquires about #curiosity#", "it asks only for the highest quality #drug#", "it impales #caravan_member# on the end of its rapier and promptly disappears", "it lurks in the distance, shouting miscellany as we cross through #open_traversable.a#", "it speaks only to one of the #wizard.s#, attacking anyone else who dares approach", "it shouts \"#rumor.capitalize#!\""],
+
+	"sphinx_encounter":["a sphinx with #sphinx_body# leaps in front of the caravan and demands we answer its riddle. #riddle_result.capitalize#", "we catch sight of a sphinx perched on #normal_stone.a# outcropping across #chasm_desc.a# chasm. One of the #caravan_fighter.s# takes a shot at it, and it #sphinx_react#", "we catch sight of a litter of sphinx kittens playing in #open_traversable.a# below us. The navigator lends me #his_her# spyglass, and I see that each has #sphinx_body#"],
+
+	"beast_encounter":["a puppeteer spider #puppeteer_attack#", "#sphinx_encounter#", "#troll_encounter#", "a prysmatic worm #rainbow_position#. It #rainbow_effect#", "a yellow-spotted thief makes off with #payout.a#", "our party is harried by #undead_desc# #undead.s#", "we cross paths with an agent of ZOX. #ZOX_encounter.capitalize#"],
+
+	"pack_animal":["zebraphant", "spider camel", "fungaloid-large-quadraped", "pack millipede", "skeletal steed"],
+
+	"communicable_disease":["spore fever", "ghoul rot", "black stripe", "mole pox", "demon flu", "rune rash", "moth cough"],
+
+	"mantrap":["crushed beneath the descending ceiling", "impaled on slender spikes", "disintegrated by a gout of acid", "burnt to a charred husk"],
+
+	"misfortune":["one of our #pack_animal.s# stumbles, taking it and a load of #commodity# down #chasm_desc.a# chasm", "#human_caravan_member# contracts #communicable_disease#, and it soon spreads to all of the #human_group.s#", "#caravan_member# falls into a #bridge_over_dangerous#", "our way is blocked by a #bridge_over_dangerous#, and we have to make a detour through #any_traversable.a#", "we get lost in #closed_feature.a#", "deep in #closed_feature.a#, #caravan_member# springs a trap and is #mantrap#", "we're running out of #equipment.s#"],
+
+	"visions_react":["I blink, and it is gone", "at camp, I see only strangers in the faces of my friends", "somehow, I yearn for it", "I do not sleep at all that night"],
+
+	"drug_result":["overall, not a bad experience", "I now believe it may have been spiked with something else", "bad choice", "I think I took way too much", "transcendental", "didn't feel much of anything. Must have been a bad batch"],
+
+	"tud_food":["cooking grease", "rotten eggs", "ripe cheese", "slime mold", "snails"],
+
+	"mingle_tuds":["they are calm, undemanding", "one sketches a geometric pattern into a piece of slate with their fingernail", "I share some #tud_food# with them", "one gives me a tooth"],
+
+	"snake_kind":["anaconda", "pit viper", "spitting cobra", "rattlesnake"],
+
+	"math_field":["differential equations", "integrals", "quaternions", "knot theory", "the Game of Life", "context-free grammars"],
+
+	"mingle_serpent":["their frenetic music puts me into a trance", "I am seduced, but not unwillingly", "I trade #precious_metal# for serpent medallions", "I get to hold #snake_kind.a#", "one tries to teach me about #math_field#, but I can't honestly say I understood"],
+
+	"mingle_fungaloid":["they stand in a swaying line, vibrating intensely", "they let me fire one of their guns", "they aren't very forthcoming", "I get to pet a fungaloid-diminutive-quadruped"],
+
+	"mingle_amazon":["one shoots a king mushroom off the top of my head from fifty meters", "I lose a succession of arm-wrestling matches", "they tell stories of #idyll#"],
+
+	"mingle_snout":["they sing in howling chorus", "they play games of strategy with wooden pawns", "one gives me a bird made of folded paper", "I present them with a gift of #cheese#, and they are extremely grateful"],
+
+	"kink_object":["melted candle wax", "a whip", "a pair of iron manacles", "a feather"],
+
+	"mingle_demon":["one of the forge beasts has broken down again", "I sit among a pack of helldogs", "let's just say it involved #foocubus.a# and #kink_object#", "a grief elemental shows me how to tie a noose. I just roll my eyes"],
+
+	"mingle":["tuds. #mingle_tuds.capitalize#", "serpent cultists. #mingle_serpent.capitalize#", "fungaloids. #mingle_fungaloid.capitalize#", "amazons. #mingle_amazon.capitalize#", "snout goblins. #mingle_snout.capitalize#", "demons. #mingle_demon.capitalize#"],
+
+	"trap_result":["they are empty", "they are broken", "a yellow-spotted thief has managed to extract the bait, leaving behind only a single severed tentacle", "we've caught a clutch of #small_creature.s#", "at last, we've caught that yellow-spotted thief! It gibbers and writhes", "drat! We've caught someone's #pet#", "we've caught a #turtle_any#"],
+
+	"animal_friend":["one of the #pack_animal.s#", "#pet_desc.a# #pet#"],
+
+	"personal_visit_cook":["#he_she# prepares me a special meal of #food#", "we get into the supply of #alcohol#", "#he_she#'s preparing #tud_food# for the tuds", "#he_she#'s running low on #ingredient#"],
+
+	"personal_visit_arbiter":["#he_she# complains about the #group.s#", "\"Many people don't want to find a solution,\" #he_she# says. \"They just want to argue.\"", "#he_she# tells me about the law codes of #ancient_civ#"],
+
+	"personal_visit_surgeon":["my teeth are all in working order", "#he_she#'s in a melancholy mood after losing #caravan_fighter.a# to gangrene", "#he_she# suspects that someone has been getting into the supply of #drug#", "#he_she# is puzzling over #pack_animal.a# which has keeled over"],
+
+	"personal_visit":["cook. #personal_visit_cook.capitalize#", "arbiter. #personal_visit_arbiter.capitalize#", "surgeon. #personal_visit_surgeon.capitalize#"],
+
+	"personal":["I peer down a #chasm_desc# chasm, catching flashing glimpses of #bad_teleport#. #visions_react.capitalize#", "I befriend #animal_friend#", "one of the #group.s# convinces me to take a hit of #drug#. #drug_result.capitalize#", "I mingle with the #mingle#", "a luminescent moth alights on my hand", "I find #money.a# on the road. #positive_exclamation.capitalize#", "I step in #pack_animal# dung", "I pay a visit to the #personal_visit#"],
+
+	"lost_city_undead_activity":["stalk us through empty streets", "slouch in crumbling buildings", "perch atop high parapets", "watch from gaping windows", "cluster in alcoves"],
+	"frostbite_part":["nose", "ears", "fingers", "toes"],
+
+	"book_volume":["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX"],
+
+	"library_book":["a copy of the truename exchange ledger. As I watch, a new transaction appears on a blank page",
+		"\"The Erotic Adventures of a Rogue Tud\"",
+		"\"The Well of Power: Mystic Rites of the Deep Saints\". Too bad it's written in code",
+		"the cover is bound in gorgeous red leather, still vibrant after all these years. A shame the pages were torn out by vandals",
+		"\"Fungaloid-Obsolete-Legal-Code, Volume #book_volume#\"",
+		"a tablet, really. #stone.a.capitalize# tablet covered in #runes_desc# runes",
+		"\"The Secrets of the Arachnoid Queens\"",
+		"it contains sketches of a great variety of turtles",
+		"\"Ulm-Rosh - An Itinerant's Perspective\"",
+		"it is bound in human skin",
+		"it contains a joke about #joke#",
+		"it claims that #rumor#"],
+
+	"nice_building":["manor", "temple", "palace", "vault"],
+
+	"ship_shape":["manta ray", "cuttlefish", "octopus", "nautilus", "spider", "whale"],
+
+	"lodge_result":["#odd_feature_interact#", "but when we sit down to eat, the food turns to #river_fluid#", "rejoicing, we eat our fill and go to sleep. The next morning, we are dismayed to find that the #human_group.s# are missing from their bedrolls"],
+
+	"place_event_city":["#undead_desc# #undead# #lost_city_undead_activity#", "we find #large_treasure.a# in a crumbling #nice_building#", "we find a ruined temple to #religious_figure#", "our surgeon speculates that the population was wiped out by #communicable_disease#", "pockets of #river_fluid# can be seen here and there among the ruined buildings", "one of the scholars says it was constructed by #ancient_civ#"],
+	"place_event_forest":["strange shapes move among the spindly grey trees", "we pass by a witch's spider-legged hut", "we hear shrieking laughter", "I pick an apple made of #normal_stone#", "we find a tree with a beating black heart. #odd_feature_interact.capitalize#"],
+	"place_event_glacier":["yetis hurl burning pine cones", "#human_caravan_member# loses #his_her# #frostbite_part# to frostbite", "we see the outlines of strange creatures preserved beneath the ice", "we come across an eerie lodge, and are surprised to find a feast of #food# laid out within. #lodge_result.capitalize#"],
+	"place_event_void":["we come upon a philosopher's cottage on a planetoid of #normal_stone#", "we pass an asteroid composed entirely of #gem#", "the wails of some unearthly creature echo forever", "we discover a strange #metal_adjective# ship fashioned in the shape of #ship_shape.a#"],
+	"place_event_living":["we harvest pineal fluid", "an immune cell envelops someone's beloved #pet#", "some of the #human_group.s# fry up meat cut from the walls, but I am loathe to try it"],
+	"place_event_library":["I discover a book. #library_book.capitalize#", "on one shelf, I find #curiosity#", "drat, the books are ruined by an infestation of #small_creature.s#"],
+	"place_event_plain":["we are pursued by a rogue zebraphant", "a stalactite crashes to the ground nearby, spooking a few #pack_animal.s#, but leaving us otherwise unharmed. #positive_exclamation.capitalize#", "we hear the whistle of a distant demon train"],
+
+	"place_event":["in a lost city of #normal_stone#, #place_event_city#", "deep within a petrified forest, #place_event_forest#", "on a frigid glacier, #place_event_glacier#", "in a weightless void, #place_event_void#", "in a living cave, #place_event_living#", "in an ancient, abandoned library, #place_event_library#", "in a vast, shadowy plain, #place_event_plain#"],
+
+	"corpse_killer":["a filth ogre. The body deteriorates at an advanced pace", "a pit mauler. Few other creatures would leave the body on such a hard-to-reach ledge", "yetis. Scorched before picked clean", "flue harpies. Dropped from on high", "the undead. We cremate the remains"],
+
+	"serpent_symbol":["scales", "slitted eyes", "#snake_kind# tattoo"],
+	"gravity_symbol":["plumb bob", "book of ritual formulae", "leaden pendant"],
+
+	"set_corpse_religion":[
+		"[religious_affiliation:serpent cultist][religious_symbol:#serpent_symbol#][proper_burial:mummify them in accordance with sister serpent eyes' scriptures]",
+		"[religious_affiliation:Gravity worshiper][religious_symbol:#gravity_symbol#][proper_burial:leave them be]",
+		"[religious_affiliation:follower of ZOX][religious_symbol:crystal amulet][proper_burial:send their body through an interdimensional gate]",
+		"[religious_affiliation:Saint follower][religious_symbol:holy portraits][proper_burial:cremate them]"],
+
+	"corpse_disposal":["we can tell they're a #religious_affiliation# by their #religious_symbol#, so we #proper_burial#"],
+
+	"burial_helper":["#[#set_corpse_religion#]corpse_disposal#"],
+
+	"corpse_comment":["starvation", "crushed beneath collapsing rocks", "there is no sign of damage on the body", "looks like the work of #corpse_killer#", "#burial_helper#"],
+
+	"chance_encounter":["we check the traps. #trap_result.capitalize#", "we come across the corpse of #human_group.a#. #corpse_comment.capitalize#", "we pass by a group of adventurers who tell us they must #quest#", "#place_event#", "we pass by a party of #group.s# bearing #lights#"],
+
+	"ferry_direction":["across", "along"],
+
+	"book_passage":["demon railship through #open_traversable.a#", "ferry #ferry_direction# a river of #river_fluid#", "ship crossing a subterranean sea"],
+
+	"origin" : ["We come upon #structure#.", "#positive_exclamation.capitalize#! We've discovered #good_finding#.", "We #traversal#.", "#new_join.capitalize#.", "We stop #rest_stop#.", "We stop #rest_stop#.", "#pass_through.capitalize#.", "#pass_through.capitalize#.", "#beast_encounter.capitalize#.", "#misfortune.capitalize#.", "#chance_encounter.capitalize#.", "#personal.capitalize#."],
+
+	"borigin":["We stop to consult a fortune teller. #[fortune_told:#position#]fortune#."],
+
+	"corigin":["to watch a troupe of #[#set_performance#]performance#"]
+}
