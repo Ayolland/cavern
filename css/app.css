@@ -1,0 +1,56 @@
+html {
+  font-size: 24px; }
+
+body {
+  background-color: #664870;
+  background-image: url("../assets/images/marble.png");
+  margin: 0; }
+  body * {
+    font-family: 'Serpent', Serif; }
+
+.column {
+  box-sizing: border-box;
+  height: 100vh;
+  max-width: 35rem;
+  margin: 0 auto;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column; }
+
+.window {
+  flex: 2;
+  margin-bottom: 0.5rem;
+  overflow: scroll;
+  background-color: black;
+  background-image: url("../assets/images/marble.png");
+  background-attachment: local;
+  color: #ccc;
+  border-width: 0.5rem;
+  border-style: solid;
+  border-color: rgba(26, 18, 28, 0.75) rgba(179, 164, 184, 0.625) rgba(204, 194, 207, 0.7) rgba(51, 36, 56, 0.625); }
+
+div#log {
+  padding: 0.5rem;
+  letter-spacing: 0.5px;
+  line-height: 1.1; }
+
+ul#controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  list-style: none; }
+  ul#controls li {
+    margin: 0; }
+    ul#controls li.full-width {
+      width: 100%;
+      margin-bottom: 0.5rem; }
+      ul#controls li.full-width button {
+        width: 100%; }
+  ul#controls button {
+    font-size: 1em; }
+
+@font-face {
+  font-family: Serpent;
+  src: url("../assets/fonts/serpent.ttf"); }

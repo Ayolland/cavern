@@ -1,0 +1,105 @@
+html{
+	font-size: 24px;
+}
+
+// colors
+$plum: #664870;
+$eggshell: #ccc;
+
+// sizes
+$column-padding-width: 0.5rem;
+
+//mixins
+
+@mixin emboss($border-width: $column-padding-width, $color: rgba(128,128,128,0.5), $inset: true){
+	border-width: $border-width;
+	border-style: solid;
+	$shadow: mix(black, $color);
+	$shadow-mid: mix(black, $color, 25%);
+	$highlight: mix(white, $color, 40%);
+	$highlight-mid: mix(white, $color, 25%);
+	@if ($inset){
+		border-color: $shadow $highlight-mid $highlight $shadow-mid;
+	} @else {
+
+	}
+}
+
+body{
+	background-color: $plum;
+	background-image: url('../assets/images/marble.png');
+	margin: 0;
+
+
+	* {
+		font-family: 'Serpent', Serif;
+	}
+}
+
+.column{
+	box-sizing: border-box;
+    height: 100vh;
+    max-width: 35rem;
+
+    margin: 0 auto;
+    padding: $column-padding-width;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.window{
+	flex: 2;
+	margin-bottom: $column-padding-width;
+
+	overflow: scroll;
+
+	background-color: black;
+	background-image: url('../assets/images/marble.png');
+	background-attachment: local;
+
+	color: $eggshell;
+
+	@include emboss($color: fade-out($plum, 0.5));
+}
+
+div#log{
+	padding: $column-padding-width;
+
+	letter-spacing: 0.5px;
+    line-height: 1.1;
+}
+
+ul#controls{
+
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+
+	margin: 0;
+	padding: 0;
+
+	list-style: none;
+
+	li{
+		margin: 0;
+
+		&.full-width{
+			width: 100%;
+			margin-bottom: $column-padding-width;
+
+			button{
+				width: 100%;
+			}
+		}
+	}
+
+	button{
+		font-size: 1em;
+	}
+}
+
+@font-face {
+  font-family: Serpent;
+  src: url('../assets/fonts/serpent.ttf');
+}
