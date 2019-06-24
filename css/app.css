@@ -30,7 +30,7 @@ body {
   border-color: rgba(26, 18, 28, 0.75) rgba(179, 164, 184, 0.625) rgba(204, 194, 207, 0.7) rgba(51, 36, 56, 0.625); }
 
 div#log {
-  padding: 0.5rem;
+  padding: 1rem;
   letter-spacing: 0.5px;
   line-height: 1.1; }
 
@@ -42,14 +42,33 @@ ul#controls {
   padding: 0;
   list-style: none; }
   ul#controls li {
-    margin: 0; }
+    margin: 0 1% 0.5rem 1%;
+    min-width: 10%; }
     ul#controls li.full-width {
       width: 100%;
-      margin-bottom: 0.5rem; }
+      margin: 0 0 0.5rem 0; }
       ul#controls li.full-width button {
-        width: 100%; }
+        font-size: 1em; }
   ul#controls button {
-    font-size: 1em; }
+    position: relative;
+    width: 100%;
+    background-color: #ccc;
+    background-image: url("../assets/images/marble.png");
+    background-size: 200px;
+    text-shadow: 0 1px 0 white, 0 -1px 0 rgba(0, 0, 0, 0.5);
+    font-size: 0.75em;
+    border-width: 0.12em;
+    border-style: solid;
+    border-color: #e0e0e0 #999999 #666666 #d9d9d9; }
+    ul#controls button:hover, ul#controls button:focus, ul#controls button:active {
+      background-color: #eee;
+      filter: brightness(110%);
+      box-shadow: 0 0 5px #ad48d0;
+      top: 2px; }
+
+button {
+  border-radius: 0;
+  padding: 0.25rem 0.75rem; }
 
 @font-face {
   font-family: Serpent;

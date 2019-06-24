@@ -4,10 +4,16 @@ html{
 
 // colors
 $plum: #664870;
-$eggshell: #ccc;
+$magenta: #ad48d0;
+$dove: #ccc;
+$eggshell: #eee;
 
 // sizes
 $column-padding-width: 0.5rem;
+
+// etc
+
+$marble-bg : url('../assets/images/marble.png');
 
 //mixins
 
@@ -21,13 +27,13 @@ $column-padding-width: 0.5rem;
 	@if ($inset){
 		border-color: $shadow $highlight-mid $highlight $shadow-mid;
 	} @else {
-
+		border-color: $highlight $shadow-mid $shadow $highlight-mid;
 	}
 }
 
 body{
 	background-color: $plum;
-	background-image: url('../assets/images/marble.png');
+	background-image: $marble-bg;
 	margin: 0;
 
 
@@ -55,16 +61,16 @@ body{
 	overflow: scroll;
 
 	background-color: black;
-	background-image: url('../assets/images/marble.png');
+	background-image: $marble-bg;
 	background-attachment: local;
 
-	color: $eggshell;
+	color: $dove;
 
 	@include emboss($color: fade-out($plum, 0.5));
 }
 
 div#log{
-	padding: $column-padding-width;
+	padding: 2 * $column-padding-width;
 
 	letter-spacing: 0.5px;
     line-height: 1.1;
@@ -82,21 +88,44 @@ ul#controls{
 	list-style: none;
 
 	li{
-		margin: 0;
+		margin: 0 1% 0.5rem 1%;
+    	min-width: 10%;
 
 		&.full-width{
 			width: 100%;
-			margin-bottom: $column-padding-width;
+			margin: 0 0 0.5rem 0;
 
 			button{
-				width: 100%;
+				font-size: 1em;
 			}
 		}
 	}
 
 	button{
-		font-size: 1em;
+		position: relative;
+		width: 100%;
+
+		background-color: $dove;
+		background-image: $marble-bg;
+		background-size: 200px;
+		text-shadow: 0 1px 0 white, 0 -1px 0 rgba(0, 0, 0, 0.5);
+
+		font-size: 0.75em;
+
+		@include emboss($color: $dove, $border-width: 0.12em, $inset: false);
+
+		&:hover, &:focus, &:active{
+			background-color: $eggshell;
+			filter: brightness(110%);
+    		box-shadow: 0 0 5px $magenta;
+    		top: 2px;
+		}
 	}
+}
+
+button{
+	border-radius: 0;
+	padding: 0.25rem 0.75rem;
 }
 
 @font-face {
