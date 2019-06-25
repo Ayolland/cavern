@@ -54,22 +54,22 @@ div#log {
     margin-top: 0.25em;
     color: #9b77a7; }
 
-ul#controls {
+.controls {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   margin: 0;
   padding: 0;
   list-style: none; }
-  ul#controls li {
+  .controls li {
     margin: 0 1% 0.5rem 1%;
     min-width: 10%; }
-    ul#controls li.full-width {
+    .controls li.full-width {
       width: 100%;
       margin: 0 0 0.5rem 0; }
-      ul#controls li.full-width button {
+      .controls li.full-width button {
         font-size: 1em; }
-  ul#controls button {
+  .controls button {
     position: relative;
     width: 100%;
     background-color: #ccc;
@@ -81,7 +81,7 @@ ul#controls {
     border-style: solid;
     box-sizing: border-box;
     border-color: #e0e0e0 #999999 #666666 #d9d9d9; }
-    ul#controls button:hover, ul#controls button:focus, ul#controls button:active {
+    .controls button:hover, .controls button:focus, .controls button:active {
       background-color: #eee;
       filter: brightness(110%);
       box-shadow: 0 0 5px #ad48d0;
@@ -99,7 +99,10 @@ ul#controls {
   .modal .column {
     margin-top: -100vh;
     transition: margin-top 0.25s linear; }
-  .modal .content {
+  .modal .modal_content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     width: 100%;
     height: 100%;
     background-color: #3c4448;
@@ -110,6 +113,11 @@ ul#controls {
     border-style: solid;
     box-sizing: border-box;
     border-color: #8a8f91 #2d3336 #1e2224 #6d7376; }
+  .modal .modal_content_textblock {
+    color: #ccc;
+    margin: 0 auto;
+    padding: 0 1em;
+    max-width: 20em; }
   .modal.active {
     background-color: rgba(0, 0, 0, 0.75);
     pointer-events: auto; }

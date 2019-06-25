@@ -114,7 +114,7 @@ div#log{
 
 }
 
-ul#controls{
+.controls{
 
 	display: flex;
 	flex-wrap: wrap;
@@ -176,7 +176,11 @@ ul#controls{
     	transition: margin-top 0.25s linear;
     }
 
-    .content {
+    .modal_content {
+    	display: flex;
+    	flex-direction: column;
+    	justify-content: center;
+
     	width: 100%;
     	height: 100%;
     	background-color: $slate;
@@ -186,6 +190,13 @@ ul#controls{
 
     	@include emboss($color: $slate, $inset: false);
     }
+
+    .modal_content_textblock {
+	    color: $dove;
+	    margin: 0 auto;
+	    padding: 0 1em;
+	    max-width: 20em;
+	}
 
     &.active{
     	background-color: fade-out(black,0.25);

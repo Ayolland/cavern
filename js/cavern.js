@@ -6689,6 +6689,100 @@ function runAndLogEvent(functionName,argsObj){
     trailGame.UI.window.scrollTop = trailGame.UI.window.scrollHeight;
 }
 
+function toggleClass(selector,className){
+    var element = document.querySelector(selector);
+    if ( element !== undefined && element.classList.contains(className) ){
+        element.classList.remove(className);
+    } else if (element !== undefined) {
+        element.classList.add(className);
+    }
+}
+
+function toggleModal(selector){
+    toggleClass(`${selector}.modal`,'active');
+}
+
+function createButton(argsObj){
+    argsObj = argsObj || {};
+    argsObj.useLi = argsObj.useLi === false ? false : true;
+    argsObj.buttonText = argsObj.buttonText || 'button';
+    argsObj.callback = argsObj.callback || function(){alert(`missing callback!`)};
+    var button = document.createElement("button");
+    button.append(argsObj.buttonText);
+    button.addEventListener("click",argsObj.callback);
+    if (argsObj.buttonClassName !== undefined){
+        button.className = argsObj.buttonClassName;
+    }
+    if (argsObj.buttonId !== undefined){
+        button.setAttribute('id',argsObj.buttonId);
+    }
+    if (argsObj.useLi){
+        var li = document.createElement("li");
+        if (argsObj.liClassName !== undefined){
+            li.className = argsObj.liClassName;
+        }
+        li.append(button);
+        return li;
+    } else {
+        return button;
+    }
+}
+
+function createModal(argsObj){
+    argsObj = argsObj || {};
+    argsObj.buttons = argsObj.buttons || [];
+    argsObj.active = argsObj.active === true ? true : false;
+
+    var modal = document.createElement("div");
+    modal.className = 'modal';
+    if (argsObj.modalId !== undefined){
+        modal.setAttribute('id',argsObj.modal);
+    }
+
+    var modalWrapper = document.createElement("div");
+    modalWrapper.className = 'column';
+    modal.append(modalWrapper);
+
+    var modalContent = document.createElement("div");
+    modalContent.className = 'modal_content';
+    modalWrapper.append(modalContent);
+
+    if (argsObj.text !== undefined){
+        var modalText = document.createElement("div");
+        modalText.className = 'modal_content_textblock';
+        modalContent.append(modalText);
+        modalText.innerHTML = argsObj.text;
+    }
+
+    if (argsObj.buttons.length){
+        var modalControls = document.createElement("li");
+        modalControls.className = 'modal_controls controls';
+        modalContent.append(modalControls);
+        argsObj.buttons.map(function(buttonArgs){
+            modalControls.append(createButton(buttonArgs));
+        })
+    }
+
+    document.body.append(modal);
+    if(argsObj.active){
+        modal.classList.add('active');
+    }
+
+    return modal;
+}
+
+function testModal(){
+    createModal({
+        active: true,
+        modalId: 'test',
+        text : '<p>Zombies reversus ab inferno, nam malum cerebro. De carne animata corpora quaeritis. Summus sit​​, morbo vel maleficia? De Apocalypsi undead dictum mauris. Hi mortuis soulless creaturas, imo monstra adventus vultus comedat cerebella viventium. Qui offenderit rapto, terribilem incessu. The voodoo sacerdos suscitat mortuos comedere carnem. Search for solum oculi eorum defunctis cerebro. Nescio an Undead zombies. Sicut malus movie horror.</p>',
+        buttons: [
+            { buttonText: 'Test1' },
+            { buttonText: 'Test2' }
+        ],
+    });
+}
+
 // debug functions
 
 function cliEvent(functionName,argsObj){
