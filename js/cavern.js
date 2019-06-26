@@ -1,11 +1,16 @@
 // TO-DO
-// - create decks
+// - preset parties
+//      - Cake the Black
+//      - Slime Squad
+//      - Reilleys
+// - create voyages
 //      - re-shoe should only happen so often
 // - chasms + bridges
 // - lanterns!
 // - corpses
 //      - can you encounter people who knew them?
 // - trades
+//      - can currently trade things you don't have!!!
 //      - maybe trades should exclude certain goods/animals? IE: same for same
 //      - some merchants can take advantage of you?
 // - roads
@@ -38,6 +43,15 @@
 // - caves (done for now)
 
 // - non-bitsy UI
+//      - switch modals
+//      - destroy modals
+//      - splash modal
+//      - quick-start modal
+//      - status modal
+//      - glossary modal
+//      - settings modal
+//      - about modal
+//      - help modal
 
 // BUGS
 // - banned jobs not working
@@ -1411,6 +1425,43 @@ trailGame.pluralSpecialCases = {
     'eldritch larva' : 'eldritch larvae',
 };
 
+// preset caravans
+
+trailGame.parties = {
+    cakeTheBlack : {
+        title : 'Cake the Black',
+        description: 'Cake runs a tight ship: just them and their two companions, speeding through the darkness laden with precious gems.',
+        leaders : [
+            { 
+                name: 'Cake the Black',
+                job: 'void witch',
+                god: 'The Purple Mask',
+                race: 'Amazon'
+            },{
+                name: 'Corvin',
+                job: 'adventurer',
+                god: 'Sister Serpent-Eyes',
+                race: 'Serpent Cultist'
+            },{
+                name: 'Stephan',
+                job: 'scribe',
+                god: 'Sister Serpent-Eyes',
+                race: 'Serpent Cultist'
+            }
+        ],
+        animals : {
+            'skeletal steed' : 6,
+            'cat' : 2,
+        },
+        goods : {
+            'mystic sextant' : 10,
+            'garnet' : 70,
+            'ruby' : 20,
+            'food' : 200,
+        }
+    }
+}
+
 // leader functions
 
 function generateSubClass(){
@@ -1497,7 +1548,8 @@ function generateName(argsObj){
         'Jer',
         'Mad',
         'Beth',
-        'Don'
+        'Don',
+        'Cor'
     ];
     var midfixes = {
         "Chris": "t",
@@ -1558,7 +1610,9 @@ function generateName(argsObj){
         "ip",
         "as",
         'emy',
-        'ella'
+        'ella',
+        'an',
+        'vin'
     ];
     var suffixes = [
         " Monster",
@@ -1623,7 +1677,16 @@ function addStatObjectToLeader(statObj,leaderObj){
 function generateLeader(argObj){
     argObj = argObj || {};
     var leader = {};
-    if (argObj.job !== undefined || argObj.subClassName !== undefined || argObj.religion !== undefined){
+    if ( argObj.god !== undefined ){
+        argObj.religion = trailGame.gods[argObj.god];
+    }
+    if ( argObj.job !== undefined ){
+        argObj.subClassName = argObj.job;
+    }
+    if ( argObj.race !== undefined ){
+        argObj.cultureName = argObj.race;
+    }
+    if (argObj.subClassName !== undefined || argObj.religion !== undefined){
         var validRacesByJob = [];
         if ((argObj.job || argObj.subClassName) !== undefined){
             validRacesByJob = trailGame.characterClasses.subClasses[(argObj.job || argObj.subClassName)].races;
@@ -4471,7 +4534,10 @@ function generateLoan(argsObj){
     var level = argsObj.level || rollDice(1,10);
     var loan = {};
     var relation = argsObj.relation || (getRandomInt(0,1)===1) ? 'Auntie' : 'Uncle';
-    loan.max = rollDice(2*level,10) * 100;
+    if (argsObj.max !== undefined){
+        level = Math.round(argsObj.max / (1000));
+    }
+    loan.max = argsObj.max || rollDice(2*level,10) * 100;
     loan.interest = 4 + level;
     loan.giver = generateName({prefix: relation});
     return loan;
@@ -6615,6 +6681,26 @@ function getRandomEvent(){
     return shuffle(events).shift();
 }
 
+function loadPremadeParty(partyName){
+    partyName = partyName || shuffle(Object.keys(trailGame.parties));
+    var partyObj = trailGame.parties[partyName];
+    partyObj.leaders.map(function(leaderArgs){
+        addLeader(leaderArgs);
+    });
+    var shoppingList = {};
+    Object.keys(partyObj.animals).map(function(animalClass){
+        addToTrade(shoppingList,partyObj.animals[animalClass],animalClass,trailGame.animalClasses[animalClass].sell);
+    });
+    Object.keys(partyObj.goods).map(function(goodsClass){
+        addToTrade(shoppingList,partyObj.goods[goodsClass],goodsClass,trailGame.goodsClasses[goodsClass].sell);
+    });
+    var loan = generateLoan({max: shoppingList.actualValue});
+    signLoan(loan);
+    initialPurchase(shoppingList);
+
+    return [`${trailGame.caravan.founder._name} sets off on their journey...`];
+}
+
 function loadUp(){
     newCaravan();
     addRandomLeader();
@@ -6627,12 +6713,7 @@ function loadUp(){
     shoppingList[generatePachyderm().animalClass] = rollDice(1,10);
     initialPurchase(shoppingList);
 
-    //addRandomPachyderms();
-    //addRandomGoods();
-    //addRandomGoods();
-
     addFood(rollDice(Object.keys(trailGame.leaders).length) * 2,20);
-    //addLamps(20);
 
     return [`Randomly Loaded Up A Caravan!`];
 }
@@ -6665,9 +6746,8 @@ function addTextArrayToLog(textArray,className){
 
 function runAndLogEvent(functionName,argsObj){
     if ( Object.keys(trailGame.leaders).length <= 0 ){
-        console.log('NEW CARAVAN\n----');
         trailGame.UI.log.append(textArrayToP(['NEW CARAVAN']));
-        functionName = 'loadUp';
+        functionName = 'loadPremadeParty';
     }
 
     trailGame.UI.log.append(document.createElement("hr"));
