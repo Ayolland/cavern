@@ -1,5 +1,5 @@
 html{
-	font-size: 24px;
+	font-size: 22px;
 }
 
 // colors
@@ -8,9 +8,19 @@ $magenta: #ad48d0;
 $dove: #ccc;
 $eggshell: #eee;
 $slate: #3c4448;
+$dusty: #968ca0;
 
 // sizes
 $column-padding-width: 0.5rem;
+
+// fonts
+
+$Nightmare: 'Nightmare', Serif;
+
+@font-face {
+  font-family: Nightmare;
+  src: url('../assets/fonts/NightmareExtended.ttf');
+}
 
 // etc
 
@@ -33,6 +43,48 @@ $marble-bg : url('../assets/images/marble.png');
 	}
 }
 
+// typography
+
+%typography-styles{
+
+	color: $dove;
+
+	letter-spacing: 1px;
+    line-height: 1.25;
+
+	hr{
+    	margin: 0.5em auto;
+    	border: 0;
+    	height: 1px;
+    	background: $magenta;
+    }
+
+    h1 {
+
+    }
+
+    h2{
+
+    }
+
+    h3 {
+    	margin: 0.5em 0 0.25em 0;
+	}
+
+	h4{
+
+	}
+
+	h5{
+		margin: 0 0 1em 0;
+	}
+
+	p {
+    	margin: 0.25em 0 1em 0;
+	}
+
+}
+
 body{
 	background-color: $plum;
 	background-image: $marble-bg;
@@ -41,7 +93,8 @@ body{
 
 
 	* {
-		font-family: 'Serpent', Serif;
+		font-family: $Nightmare;
+		font-weight: 400;
 	}
 }
 
@@ -67,7 +120,6 @@ div#window{
 	background-image: $marble-bg;
 	background-attachment: local;
 
-	color: $dove;
 
 	@include emboss($color: fade-out($plum, 0.5));
 }
@@ -75,21 +127,9 @@ div#window{
 div#log{
 	padding: 2 * $column-padding-width;
 
-	letter-spacing: 0.5px;
-    line-height: 1.05;
-
-    hr{
-    	margin: 0.5em auto;
-    	border: 0;
-    	height: 1px;
-    	background: $magenta;
-    }
+	@extend %typography-styles;
 
     .day{
-
-    	&.number{
-    		margin: 0.5em 0 0.25em 0;
-    	}
 
     	&.events{
     		margin-top: 0.5em;
@@ -140,24 +180,7 @@ div#log{
 	}
 
 	button{
-		position: relative;
-		width: 100%;
-
-		background-color: $dove;
-		background-image: $marble-bg;
-		background-size: 200px;
-		text-shadow: 0 1px 0 white, 0 -1px 0 rgba(0, 0, 0, 0.5);
-
-		font-size: 0.75em;
-
-		@include emboss($color: $dove, $border-width: 0.12em, $inset: false);
-
-		&:hover, &:focus, &:active{
-			background-color: $eggshell;
-			filter: brightness(110%);
-    		box-shadow: 0 0 5px $magenta;
-    		top: 2px;
-		}
+		
 	}
 }
 
@@ -176,10 +199,11 @@ div#log{
     	transition: margin-top 0.25s linear;
     }
 
-    .modal_content {
+    .modal_background {
     	display: flex;
     	flex-direction: column;
     	justify-content: center;
+    	align-items: center;
 
     	width: 100%;
     	height: 100%;
@@ -191,11 +215,28 @@ div#log{
     	@include emboss($color: $slate, $inset: false);
     }
 
+    .modal_scroll-container {
+    	max-width: 20em;
+	    width: calc(100% - 1em);
+	    margin: 0.5em auto;
+	    max-height: calc(100% - 1em);
+	    overflow: scroll;
+
+	    @include emboss($color: $slate, $inset: true, $border-width: 3px);
+	}
+
+    .modal_content{
+    	padding: 0.5em;
+
+    	*:first-child{
+    		margin-top: 0;
+    	}
+
+    	@extend %typography-styles;
+    }
+
     .modal_content_textblock {
-	    color: $dove;
-	    margin: 0 auto;
-	    padding: 0 1em;
-	    max-width: 20em;
+	    //color: $dove;
 	}
 
     &.active{
@@ -211,9 +252,23 @@ div#log{
 button{
 	border-radius: 0;
 	padding: 0.25rem 0.75rem;
-}
 
-@font-face {
-  font-family: Serpent;
-  src: url('../assets/fonts/serpent.ttf');
+	position: relative;
+	width: 100%;
+
+	background-color: $dusty;
+	background-image: $marble-bg;
+	background-size: 200px;
+	text-shadow: 0 1px 0 white, 0 -1px 0 rgba(0, 0, 0, 0.5), 0 0 0.25em white;
+
+	font-size: 0.75em;
+
+	@include emboss($color: $dusty, $border-width: 0.12em, $inset: false);
+
+	&:hover, &:focus, &:active{
+		background-color: lighten($dusty, 0.75);
+		filter: brightness(120%);
+    	box-shadow: 0 0 5px $magenta;
+    	top: 2px;
+	}
 }

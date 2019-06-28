@@ -1,5 +1,25 @@
 html {
-  font-size: 24px; }
+  font-size: 22px; }
+
+@font-face {
+  font-family: Nightmare;
+  src: url("../assets/fonts/NightmareExtended.ttf"); }
+
+div#log, .modal .modal_content {
+  color: #ccc;
+  letter-spacing: 1px;
+  line-height: 1.25; }
+  div#log hr, .modal .modal_content hr {
+    margin: 0.5em auto;
+    border: 0;
+    height: 1px;
+    background: #ad48d0; }
+  div#log h3, .modal .modal_content h3 {
+    margin: 0.5em 0 0.25em 0; }
+  div#log h5, .modal .modal_content h5 {
+    margin: 0 0 1em 0; }
+  div#log p, .modal .modal_content p {
+    margin: 0.25em 0 1em 0; }
 
 body {
   background-color: #664870;
@@ -7,7 +27,8 @@ body {
   background-position: 50vw 0;
   margin: 0; }
   body * {
-    font-family: 'Serpent', Serif; }
+    font-family: "Nightmare", Serif;
+    font-weight: 400; }
 
 .column {
   box-sizing: border-box;
@@ -25,23 +46,13 @@ div#window {
   background-color: black;
   background-image: url("../assets/images/marble.png");
   background-attachment: local;
-  color: #ccc;
   border-width: 0.5rem;
   border-style: solid;
   box-sizing: border-box;
   border-color: rgba(26, 18, 28, 0.75) rgba(179, 164, 184, 0.625) rgba(204, 194, 207, 0.7) rgba(51, 36, 56, 0.625); }
 
 div#log {
-  padding: 1rem;
-  letter-spacing: 0.5px;
-  line-height: 1.05; }
-  div#log hr {
-    margin: 0.5em auto;
-    border: 0;
-    height: 1px;
-    background: #ad48d0; }
-  div#log .day.number {
-    margin: 0.5em 0 0.25em 0; }
+  padding: 1rem; }
   div#log .day.events {
     margin-top: 0.5em; }
   div#log .events {
@@ -69,23 +80,6 @@ div#log {
       margin: 0 0 0.5rem 0; }
       .controls li.full-width button {
         font-size: 1em; }
-  .controls button {
-    position: relative;
-    width: 100%;
-    background-color: #ccc;
-    background-image: url("../assets/images/marble.png");
-    background-size: 200px;
-    text-shadow: 0 1px 0 white, 0 -1px 0 rgba(0, 0, 0, 0.5);
-    font-size: 0.75em;
-    border-width: 0.12em;
-    border-style: solid;
-    box-sizing: border-box;
-    border-color: #e0e0e0 #999999 #666666 #d9d9d9; }
-    .controls button:hover, .controls button:focus, .controls button:active {
-      background-color: #eee;
-      filter: brightness(110%);
-      box-shadow: 0 0 5px #ad48d0;
-      top: 2px; }
 
 .modal {
   position: absolute;
@@ -99,10 +93,11 @@ div#log {
   .modal .column {
     margin-top: -100vh;
     transition: margin-top 0.25s linear; }
-  .modal .modal_content {
+  .modal .modal_background {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     width: 100%;
     height: 100%;
     background-color: #3c4448;
@@ -113,11 +108,20 @@ div#log {
     border-style: solid;
     box-sizing: border-box;
     border-color: #8a8f91 #2d3336 #1e2224 #6d7376; }
-  .modal .modal_content_textblock {
-    color: #ccc;
-    margin: 0 auto;
-    padding: 0 1em;
-    max-width: 20em; }
+  .modal .modal_scroll-container {
+    max-width: 20em;
+    width: calc(100% - 1em);
+    margin: 0.5em auto;
+    max-height: calc(100% - 1em);
+    overflow: scroll;
+    border-width: 3px;
+    border-style: solid;
+    box-sizing: border-box;
+    border-color: #1e2224 #6d7376 #8a8f91 #2d3336; }
+  .modal .modal_content {
+    padding: 0.5em; }
+    .modal .modal_content *:first-child {
+      margin-top: 0; }
   .modal.active {
     background-color: rgba(0, 0, 0, 0.75);
     pointer-events: auto; }
@@ -126,8 +130,20 @@ div#log {
 
 button {
   border-radius: 0;
-  padding: 0.25rem 0.75rem; }
-
-@font-face {
-  font-family: Serpent;
-  src: url("../assets/fonts/serpent.ttf"); }
+  padding: 0.25rem 0.75rem;
+  position: relative;
+  width: 100%;
+  background-color: #968ca0;
+  background-image: url("../assets/images/marble.png");
+  background-size: 200px;
+  text-shadow: 0 1px 0 white, 0 -1px 0 rgba(0, 0, 0, 0.5), 0 0 0.25em white;
+  font-size: 0.75em;
+  border-width: 0.12em;
+  border-style: solid;
+  box-sizing: border-box;
+  border-color: #c0bac6 #716978 #4b4650 #b0a9b8; }
+  button:hover, button:focus, button:active {
+    background-color: #988ea2;
+    filter: brightness(120%);
+    box-shadow: 0 0 5px #ad48d0;
+    top: 2px; }

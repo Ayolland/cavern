@@ -11,8 +11,12 @@
 //      - can you encounter people who knew them?
 // - trades
 //      - can currently trade things you don't have!!!
+//      - should not trade animals that force you to drop anything
 //      - maybe trades should exclude certain goods/animals? IE: same for same
 //      - some merchants can take advantage of you?
+// - fights / alteractions
+//      - bruised ego, broken leg
+//      - winners / losers
 // - roads
 //      - troll subEvent
 //      - ZOX subevent
@@ -56,6 +60,9 @@
 // BUGS
 // - banned jobs not working
 // - despair starvation immunity too easy
+// - eating way too much food?
+// - can currently trade things you don't have // fixed? maybe animals only
+// - spider event 'Papa Rye is undefined wounded'
 
 // helpers
 
@@ -1430,6 +1437,7 @@ trailGame.pluralSpecialCases = {
 trailGame.parties = {
     cakeTheBlack : {
         title : 'Cake the Black',
+        relative: 'Auntie Spider-ella',
         description: 'Cake runs a tight ship: just them and their two companions, speeding through the darkness laden with precious gems.',
         leaders : [
             { 
@@ -1459,6 +1467,98 @@ trailGame.parties = {
             'ruby' : 20,
             'food' : 200,
         }
+    },
+    clanRye : {
+        title: 'Clan Rye',
+        description: `The Rye are a family with a long tradition of turtle-catching. It's a slow march as they drive their herd to market.`,
+        relative: 'Papa Jay Rye',
+        leaders : [
+            { 
+                name: 'Brendon Jr.',
+                job: 'turtle catcher',
+                god: 'Gravity',
+                race: 'Tud'
+            },{
+                name: 'Madlynn',
+                job: 'guide',
+                god: 'The Hanged One',
+                race: 'Roshian'
+            },{
+                name: 'Dr. Brendon Rye',
+                job: 'turtle catcher',
+                god: 'Gravity',
+                race: 'Tud'
+            },{
+                name: 'Kenan',
+                job: 'explorer',
+                god: 'Gravity',
+                race: 'Tud'
+            },{
+                name: 'Large Angimus',
+                job: 'wrestler',
+                god: 'The First Crab',
+                race: 'Crab-Folk'
+            }
+        ],
+        animals : {
+            'zebraphant' : 3,
+            'moss turtle' : 100,
+            'granite turtle': 50,
+            'ghost turtle': 1,
+        },
+        goods : {
+            'mother leaf' : 30,
+            'grub honey' : 100,
+            'jerky' : 40,
+            'food' : 600 ,
+        }
+    },
+    slimeSquad:{
+        title: 'Slime-coated Squadron',
+        relative: 'Uncle Ducko III',
+        description: 'The Slime-coated Squadron is a ragtag band of adventurers. Can they keep the peace on their long journey?',
+        leaders : [
+            { 
+                name: 'Gingham Jay',
+                job: 'singer',
+                god: 'Magol',
+                race: 'Demon'
+            },{ 
+                name: "Lil' Grabthar",
+                job: 'centurion',
+                god: 'Gravity',
+                race: 'Fungaloid'
+            },{ 
+                name: "Bluebell",
+                job: 'brute',
+                god: 'Sister Serpent-Eyes',
+                race: 'Serpent Cultist'
+            },{ 
+                name: "Mirabelle Amethyst",
+                job: 'high gorgon',
+                god: 'Sister Serpent-Eyes',
+                race: 'Serpent Cultist'
+            },{ 
+                name: "Petunia",
+                job: 'howler',
+                god: 'The Hanged One',
+                race: 'Snout Goblin'
+            },{ 
+                name: "Joynar",
+                job: 'mutant',
+                god: 'The First Crab',
+                race: 'Crab-Folk'
+            },
+        ],
+        animals : {
+            'spider camel' : 8,
+        },
+        goods : {
+            'hex quilt' : 50,
+            'bone figurine' : 50,
+            'spider-silk rope' : 50,
+            'food' : 240 ,
+        }
     }
 }
 
@@ -1473,19 +1573,26 @@ function generateSubClass(){
 function generateName(argsObj){
     argsObj = argsObj || {};
     var prefixes = [
-        `The`,
-        `Large`,
-        `Mr.`,
-        `Mx.`,
-        `Ms.`,
-        `Dr.`,
-        `Lil'`,
-        `Old`,
-        `Smelly`,
-        "Cousin",
-        "Uncle",
-        "Auntie",
-        "Ultra"
+        `The `,
+        `Large `,
+        `Mr. `,
+        `Mx. `,
+        `Ms. `,
+        `Dr. `,
+        `Lil' `,
+        `Old `,
+        `Smelly `,
+        "Cousin ",
+        "Uncle ",
+        "Auntie ",
+        "Ultra ",
+        "Papa ",
+        "Mama ",
+        "Mecha",
+        "Spider-",
+        "Rev. ",
+        "Super ",
+        "Dark "
     ]
     var partAs = [
         "Chris",
@@ -1529,7 +1636,7 @@ function generateName(argsObj){
         "Black",
         "Stank",
         "Al",
-        "Mega",
+        "Meg",
         "Skull",
         "Flash",
         "Cake",
@@ -1549,15 +1656,35 @@ function generateName(argsObj){
         'Mad',
         'Beth',
         'Don',
-        'Cor'
+        'Cor',
+        'Ken',
+        'Ang',
+        'Mark',
+        'Jay',
+        'Spider',
+        'God',
+        'Mir',
+        'Gin',
+        'Blue',
+        'Red',
+        'Grab',
+        'Joy',
+        'Petun',
+        'Boo',
+        'Pig',
+        'Gwen',
+        'Duck',
+        'Max',
     ];
     var midfixes = {
         "Chris": "t",
         "Em": "m",
-        //"Ed": "w",
         "Ben": "j",
         "Glen": "d",
-        "Phil": "l"
+        "Phil": "l",
+        "Spider": "-",
+        "Gin": "g",
+        "Meg": 'a',
     };
     var onlyTwoParts = [
         "Sofi",
@@ -1566,7 +1693,12 @@ function generateName(argsObj){
         "Shel",
         "Charl",
         "Eliz",
-        "Clar"
+        "Clar",
+        "God",
+        "Mir",
+        "Grab",
+        "Petun",
+        "Cheas",
     ];
     var partBs = [
         "opher",
@@ -1578,6 +1710,7 @@ function generateName(argsObj){
         "a",
         "don",
         "ie",
+        'ia',
         "any",
         "in",
         "amin",
@@ -1591,7 +1724,7 @@ function generateName(argsObj){
         "wick",
         "otron",
         "smith",
-        "abell",
+        "abelle",
         "imus",
         "amillian",
         "en",
@@ -1612,7 +1745,13 @@ function generateName(argsObj){
         'emy',
         'ella',
         'an',
-        'vin'
+        'vin',
+        'girl',
+        'zilla',
+        'ham',
+        'bell',
+        'thar',
+        'nar',
     ];
     var suffixes = [
         " Monster",
@@ -1620,6 +1759,8 @@ function generateName(argsObj){
         " Smith",
         " Cooper",
         " Sponch",
+        " Rye",
+        ` ${capitalizeFirstLetter(shuffle(partAs)[0])}son`,
         ", PhD",
         ", DDS",
         ", MD",
@@ -1629,6 +1770,8 @@ function generateName(argsObj){
         " the Red",
         " Jr.",
         " III",
+        ` of the ${generateAnimal().animalClass} clan`,
+        ` ${toTitleCase(generateGem())}`,
         ` ${toTitleCase(generateMaterial())}`,
         ` ${toTitleCase(generateMetal())}smith`,
         ` the ${toTitleCase(generateLeviathan())} Killer`
@@ -1642,12 +1785,12 @@ function generateName(argsObj){
     var possiblePrefix = (Math.random() >= 0.9 || argsObj.prefix === true) ? shuffle(prefixes)[0] : '';
     argsObj.prefix = argsObj.prefix === true ? possiblePrefix : argsObj.prefix;
     var prefix = argsObj.prefix || possiblePrefix;
-    prefix = (prefix === '' || argsObj.prefix === false) ? '' : prefix + ' ';
+    prefix = (prefix === '' || argsObj.prefix === false) ? '' : prefix;
 
     argsObj.partB = argsObj.partB === true ? shuffle(partBs)[0] : argsObj.partB;
     var partB = argsObj.partB || (!isOnePart ? shuffle(partBs)[0] : '');
 
-    var possibleSuffix = (Math.random() >= 0.85 || argsObj.suffix === true) ? shuffle(suffixes)[0] : '';
+    var possibleSuffix = (Math.random() >= 0.65 || argsObj.suffix === true) ? shuffle(suffixes)[0] : '';
     argsObj.suffix = argsObj.suffix === true ? possibleSuffix : argsObj.suffix;
     var suffix = argsObj.suffix || possibleSuffix;
     suffix = argsObj.suffix === false ? '' : suffix;
@@ -1786,6 +1929,9 @@ function removeLeader(id,reason){
 
 function getRandomLeader(notThisLeaderId){
     var leaders = Object.keys(trailGame.leaders);
+    if (leaders.length < 1){
+        return generateLeader();
+    }
     leaders = shuffle(leaders);
     var leader = trailGame.leaders[leaders[0]];
     if (notThisLeaderId !== undefined && notThisLeaderId.toString() === leaders[0] && leaders.length > 1){
@@ -3019,21 +3165,20 @@ function getFinalSale(){
 // animal functions
 
 function modAnimals(className,number,removeGoods){
-    removeGoods = (removeGoods === true) ? true : false;
-    if ( typeof(trailGame.animals[className]) === "undefined" ){
+    removeGoods = (removeGoods === true) ? true : false; // not currently used
+    if ( trailGame.animals[className] === undefined ){
         if( number > 0 ){
             trailGame.animals[className] = number;
         } else {
             return;
         }
     } else {
-        trailGame.animals[className] += number;
-    }
-    var newNumber = trailGame.animals[className] + number;
-    if ( newNumber > 0 ){
-        trailGame.animals[className] = newNumber;
-    } else {
-        delete trailGame.animals[className];
+        var newNumber = trailGame.animals[className] + number;
+        if ( newNumber > 0 ){
+            trailGame.animals[className] = newNumber;
+        } else {
+            delete trailGame.animals[className];
+        }
     }
     addToLedger(pluralize(className),number);
     var animalClass = trailGame.animalClasses[className];
@@ -4533,13 +4678,13 @@ function generateLoan(argsObj){
     argsObj = argsObj || {};
     var level = argsObj.level || rollDice(1,10);
     var loan = {};
-    var relation = argsObj.relation || (getRandomInt(0,1)===1) ? 'Auntie' : 'Uncle';
+    var relation = argsObj.relation || shuffle('Auntie','Uncle','Mama','Papa','Cousin')[0];
     if (argsObj.max !== undefined){
         level = Math.round(argsObj.max / (1000));
     }
     loan.max = argsObj.max || rollDice(2*level,10) * 100;
     loan.interest = 4 + level;
-    loan.giver = generateName({prefix: relation});
+    loan.giver = argsObj.name || generateName({prefix: relation});
     return loan;
 }
 
@@ -5560,6 +5705,26 @@ function generateBookTitle(){
         generateRomanceTitle()
     ];
     return shuffle(possibleTitles)[0];
+}
+
+function generateBookLine(){
+    var possibleBooks = [
+        generateSeriousNovelTitle(),
+        generateNonFictionTitle(),
+        generateGuideTitle(),
+        generateEngineeringTitle(),
+        generateYATitle(),
+        generateSelfHelpTitle(),
+        generateRomanceTitle(),
+        generateEvilBookDesc(),
+        generateEvilBiographyDesc(),
+        generateFungaloidBookDesc(),
+        generateBiographyDesc(),
+        generateEmptyBookDesc(),
+        generateTurtleBookDesc(),
+        generatePuzzleBookDesc(),
+    ];
+    return shuffle(possibleBooks)[0];
 }
 
 // event helpers
@@ -6682,7 +6847,8 @@ function getRandomEvent(){
 }
 
 function loadPremadeParty(partyName){
-    partyName = partyName || shuffle(Object.keys(trailGame.parties));
+    newCaravan();
+    partyName = partyName || shuffle(Object.keys(trailGame.parties))[0];
     var partyObj = trailGame.parties[partyName];
     partyObj.leaders.map(function(leaderArgs){
         addLeader(leaderArgs);
@@ -6694,7 +6860,7 @@ function loadPremadeParty(partyName){
     Object.keys(partyObj.goods).map(function(goodsClass){
         addToTrade(shoppingList,partyObj.goods[goodsClass],goodsClass,trailGame.goodsClasses[goodsClass].sell);
     });
-    var loan = generateLoan({max: shoppingList.actualValue});
+    var loan = generateLoan({max: shoppingList.actualValue, name: partyObj.relative});
     signLoan(loan);
     initialPurchase(shoppingList);
 
@@ -6744,7 +6910,7 @@ function addTextArrayToLog(textArray,className){
     } 
 }
 
-function runAndLogEvent(functionName,argsObj){
+function runAndLogEvent(functionName,args){
     if ( Object.keys(trailGame.leaders).length <= 0 ){
         trailGame.UI.log.append(textArrayToP(['NEW CARAVAN']));
         functionName = 'loadPremadeParty';
@@ -6756,7 +6922,7 @@ function runAndLogEvent(functionName,argsObj){
     headline.append(`Day ${trailGame.caravan.daysElapsed}`);
     trailGame.UI.log.append(headline);
 
-    var dayLines = dayPhase(functionName,argsObj);
+    var dayLines = dayPhase(functionName,args);
     addTextArrayToLog(dayLines.events,'day events');
     addTextArrayToLog(dayLines.ledgerLines,'day updates');
     addTextArrayToLog(dayLines.ledgerStats,'day stats');
@@ -6810,7 +6976,6 @@ function createButton(argsObj){
 
 function createModal(argsObj){
     argsObj = argsObj || {};
-    argsObj.buttons = argsObj.buttons || [];
     argsObj.active = argsObj.active === true ? true : false;
 
     var modal = document.createElement("div");
@@ -6823,13 +6988,44 @@ function createModal(argsObj){
     modalWrapper.className = 'column';
     modal.append(modalWrapper);
 
+    var modalBg = document.createElement("div");
+    modalBg.className = 'modal_background';
+    modalWrapper.append(modalBg);
+
+    var modalScroll = document.createElement("div");
+    modalScroll.className = 'modal_scroll-container';
+    modalBg.append(modalScroll);
+
+    var modalContent = argsObj.contentNode || createModalContentContainer();
+    modalScroll.append(modalContent);
+
+    document.body.append(modal);
+    if(argsObj.active){
+        setTimeout(function(){
+            modal.classList.add('active');
+        },1);
+    }
+
+    return modal;
+}
+
+function createModalContentContainer(){
     var modalContent = document.createElement("div");
     modalContent.className = 'modal_content';
-    modalWrapper.append(modalContent);
+    return modalContent;
+}
+
+function dismissActiveModal(){
+    var modal = document.body.querySelector('.modal.active');
+    modal.classList.remove('active');
+}
+
+function createSimpleModal(argsObj){
+    argsObj.buttons = argsObj.buttons || [];
+    var modalContent = createModalContentContainer();
 
     if (argsObj.text !== undefined){
-        var modalText = document.createElement("div");
-        modalText.className = 'modal_content_textblock';
+        var modalText = document.createElement("p");
         modalContent.append(modalText);
         modalText.innerHTML = argsObj.text;
     }
@@ -6841,49 +7037,79 @@ function createModal(argsObj){
         argsObj.buttons.map(function(buttonArgs){
             modalControls.append(createButton(buttonArgs));
         })
-    }
+    };
 
-    document.body.append(modal);
-    if(argsObj.active){
-        modal.classList.add('active');
-    }
+    argsObj.contentNode = modalContent;
+    return createModal(argsObj);
+}
 
-    return modal;
+function createQuickStartModal(){
+    var modalContent = createModalContentContainer();
+
+    Object.keys(trailGame.parties).sort().map(function(partyKey){
+        partyObj = trailGame.parties[partyKey];
+
+        var title = document.createElement("h3");
+        modalContent.append(title);
+        title.append(partyObj.title);
+
+        var description = document.createElement("h5");
+        modalContent.append(description);
+        description.innerHTML = `${partyObj.description}`;
+
+        modalContent.append(createButton({
+            buttonText: `Play as ${partyObj.title}`,
+            useLi: false,
+            callback: function(){
+                dismissActiveModal();
+                setTimeout(function(){
+                    runAndLogEvent('loadPremadeParty',partyKey);
+                },400);
+            },
+        }));
+    });
+
+    return createModal({
+        contentNode: modalContent,
+        active: true,
+    });
 }
 
 function testModal(){
-    createModal({
+    createSimpleModal({
         active: true,
         modalId: 'test',
         text : '<p>Zombies reversus ab inferno, nam malum cerebro. De carne animata corpora quaeritis. Summus sit​​, morbo vel maleficia? De Apocalypsi undead dictum mauris. Hi mortuis soulless creaturas, imo monstra adventus vultus comedat cerebella viventium. Qui offenderit rapto, terribilem incessu. The voodoo sacerdos suscitat mortuos comedere carnem. Search for solum oculi eorum defunctis cerebro. Nescio an Undead zombies. Sicut malus movie horror.</p>',
         buttons: [
-            { buttonText: 'Test1' },
-            { buttonText: 'Test2' }
+            { buttonText: 'Test1', callback: dismissActiveModal },
+            { buttonText: 'Test2', callback: dismissActiveModal }
         ],
     });
 }
 
 // debug functions
 
-function cliEvent(functionName,argsObj){
-    if ( Object.keys(trailGame.leaders).length <= 0 ){
-        console.log('NEW CARAVAN\n----');
-        functionName = 'loadUp';
-    }
-    var dayLines = dayPhase(functionName,argsObj);
-    console.log(listForm(dayLines.events));
-    if (dayLines.ledger.length){
-        console.log( listForm(dayLines.ledger) );
-    }
-    console.log("---");
-    var nightLines = nightPhase();
-    if (nightLines.events.length){
-        console.log( listForm(nightLines.events) );
-    }
-    if (nightLines.ledger.length){
-        console.log( listForm(nightLines.ledger) );
-    }
-}
+// needs to be rebuilt!
+
+// function cliEvent(functionName,argsObj){
+//     if ( Object.keys(trailGame.leaders).length <= 0 ){
+//         console.log('NEW CARAVAN\n----');
+//         functionName = 'loadUp';
+//     }
+//     var dayLines = dayPhase(functionName,argsObj);
+//     console.log(listForm(dayLines.events));
+//     if (dayLines.ledger.length){
+//         console.log( listForm(dayLines.ledger) );
+//     }
+//     console.log("---");
+//     var nightLines = nightPhase();
+//     if (nightLines.events.length){
+//         console.log( listForm(nightLines.events) );
+//     }
+//     if (nightLines.ledger.length){
+//         console.log( listForm(nightLines.ledger) );
+//     }
+// }
 
 function killAll(){
     Object.keys(trailGame.leaders).map(function(id,index){
@@ -6924,6 +7150,22 @@ function addRandomGoods(){
     var goodsClasses = goodsClasses[0];
     var number = getRandomInt(1,100);
     addGoods(goodsClasses,number);
+}
+
+function log100Names(argsObj){
+    var array = [];
+    for (var i = 100; i >= 0; i--) {
+        array.push(generateName(argsObj));
+    }
+    addTextArrayToLog(array);
+}
+
+function log100Books(argsObj){
+    var array = [];
+    for (var i = 100; i >= 0; i--) {
+        array.push('- ' + generateBookLine(argsObj));
+    }
+    addTextArrayToLog(array);
 }
 
 // bitsy I/O functions
