@@ -1562,6 +1562,78 @@ trailGame.parties = {
     }
 }
 
+// card + journey functions
+
+trailGame.cards = {
+    pyramid : {
+        eventFunc: eventCave,
+        args: {caveType: 'haunted', hauntedType: 'ancient pyramid'}
+    },
+    randomTunnel : {
+        eventFunc: eventCave,
+        args: {caveType: 'tunnel'}
+    },
+    safe : {
+        eventFunc : eventSafeFlavor,
+        args: {}
+    }
+}
+
+trailGame.levels = {
+    test : {
+        title : 'Test City',
+        description: `It's just a test level.`,
+        sellMultiplier: 1,
+        legs : {
+            start : {
+                title: 'First Leg',
+                description: 'The initial leg of your journey.',
+                cards : ['safe'],
+                crossroads : ['legA','legB']
+            },
+            legA : {
+                title: 'The Long Road',
+                description: 'A long, safe route.',
+                cards : ['safe','safe','safe','safe','safe','tunnel','tunnel','tunnel','tunnel','tunnel'],
+                crossroads : ['end']
+            },
+            legB : {
+                title: 'The Short Road',
+                description: 'A short, dangerous route.',
+                cards : ['tunnel','tunnel','pyramid'],
+                crossroads : ['end']
+            }
+        }
+    }
+}
+
+function newJourney(journeyName){
+    journeyName = journeyName || shuffle(Object.keys(trailGame.levels))[0];
+
+    trailGame.journey = {...trailGame.levels[journeyName]};
+    loadLegOfJourney();
+}
+
+function loadLegOfJourney(legName){
+    legName = legName || 'start';
+    var leg = trailGame.journey.legs[legName];
+    var cardsToRemove = getRandomInt(0,Math.round(leg.cards.length / 5));
+    leg.deck = shuffle(leg.cards);
+    leg.deck.splice(leg.deck.length - (1 + cardsToRemove),cardsToRemove);
+    trailGame.journey.currentLeg = leg;
+}
+
+function runCardEvent(cardName){
+    cardName = cardName || shuffle(Object.keys(trailGame.cards))[0];
+    var cardObj = trailGame.cards[cardName];
+    return cardObj.eventFunc(cardObj.args);
+}
+
+function runNextCard(){
+    var cardName = trailGame.journey.currentLeg.deck.shift();
+    return runCardEvent(cardName);
+}
+
 // leader functions
 
 function generateSubClass(){
@@ -6501,7 +6573,8 @@ function eventTraps(argsObj){
     var diceResult = rollDice(1,10);
     var trapsCheck = argsObj.trapsResult || clamp(diceResult + Math.round(getCaravanWits() / numberOfLeaders),1,15);
     trapsCheck = diceResult <= 1 && argsObj.trapsResult === undefined ? 1 : trapsCheck;
-    var leaderName = getRandomLeader()._name;
+    var leader = getRandomLeader();
+    var leaderName = leader._name;
     var addendums = [];
     lines.push(`We check our traps.`);
     switch (trapsCheck){
@@ -6571,7 +6644,6 @@ function eventTraps(argsObj){
         break;
         case 12:
         case 13:
-        case 14:
             var turtle = generateTurtle();
             lines.push(`We've caught a ${turtle.animalClass}.`);
             addendums = [
@@ -6580,6 +6652,17 @@ function eventTraps(argsObj){
                 `${leaderName} mutters that we better not eat this one.`
             ];
             addAnimals(turtle.animalClass,1);
+        break;
+        case 14:
+            var gem = generateGem();
+            lines.push(`We've caught ${indefiniteArticle(gem)} elemental!`);
+            addendums = [];
+            if (leader._culture > rollDice(1,4)){
+                lines.push(`${leaderName} thinks it's too cute to kill and harvest! We let it go.`);
+            } else {
+                lines.push(`${leaderName} harvests it for ${pluralize(gem)}.`);
+                addGoods(gem,rollDice(1,4));
+            }
         break;
         case 15:
             subEventDiscovery({findType:'curiosity', verb:'has caught', curiosity: 'a bright blue variant of the yellow-spotted thief.'},lines);
@@ -7003,7 +7086,7 @@ function createModal(argsObj){
     if(argsObj.active){
         setTimeout(function(){
             modal.classList.add('active');
-        },1);
+        },100);
     }
 
     return modal;
@@ -7043,8 +7126,12 @@ function createSimpleModal(argsObj){
     return createModal(argsObj);
 }
 
-function createQuickStartModal(){
+function createPartyChoiceModal(){
     var modalContent = createModalContentContainer();
+
+    var headline = document.createElement("h2");
+    headline.append('Choose Your Party:');
+    modalContent.append(headline);
 
     Object.keys(trailGame.parties).sort().map(function(partyKey){
         partyObj = trailGame.parties[partyKey];
@@ -7063,7 +7150,7 @@ function createQuickStartModal(){
             callback: function(){
                 dismissActiveModal();
                 setTimeout(function(){
-                    runAndLogEvent('loadPremadeParty',partyKey);
+                    createJourneyChoiceModal(partyKey);
                 },400);
             },
         }));
@@ -7073,6 +7160,48 @@ function createQuickStartModal(){
         contentNode: modalContent,
         active: true,
     });
+}
+
+function createJourneyChoiceModal(partyName){
+    var modalContent = createModalContentContainer();
+
+    var headline = document.createElement("h2");
+    headline.append('Choose Your Destination:');
+    modalContent.append(headline);
+
+    Object.keys(trailGame.levels).sort().map(function(levelKey){
+        levelObj = trailGame.levels[levelKey];
+
+        var title = document.createElement("h3");
+        modalContent.append(title);
+        title.append(levelObj.title);
+
+        var description = document.createElement("h5");
+        modalContent.append(description);
+        description.innerHTML = `${levelObj.description}`;
+
+        modalContent.append(createButton({
+            buttonText: `Set Out For ${levelObj.title}`,
+            useLi: false,
+            callback: function(){
+                dismissActiveModal();
+                newJourney(levelKey);
+                setTimeout(function(){
+                    runAndLogEvent('runNextCard',partyName);
+                },400);
+            },
+        }));
+    });
+
+    return createModal({
+        contentNode: modalContent,
+        active: true,
+    });
+
+}
+
+function hookUpMainControls(){
+
 }
 
 function testModal(){
@@ -7151,6 +7280,8 @@ function addRandomGoods(){
     var number = getRandomInt(1,100);
     addGoods(goodsClasses,number);
 }
+
+// twitter flexes
 
 function log100Names(argsObj){
     var array = [];

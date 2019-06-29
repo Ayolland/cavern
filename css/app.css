@@ -14,6 +14,8 @@ div#log, .modal .modal_content {
     border: 0;
     height: 1px;
     background: #ad48d0; }
+  div#log h2, .modal .modal_content h2 {
+    margin: 0.5em 0; }
   div#log h3, .modal .modal_content h3 {
     margin: 0.5em 0 0.25em 0; }
   div#log h5, .modal .modal_content h5 {
