@@ -1565,6 +1565,10 @@ trailGame.parties = {
 // card + journey functions
 
 trailGame.cards = {
+    start : {
+        eventFunc: eventStartJourney,
+        args: {}
+    },
     pyramid : {
         eventFunc: eventCave,
         args: {caveType: 'haunted', hauntedType: 'ancient pyramid'}
@@ -1588,20 +1592,20 @@ trailGame.levels = {
             start : {
                 title: 'First Leg',
                 description: 'The initial leg of your journey.',
-                cards : ['safe'],
-                crossroads : ['legA','legB']
+                cards : ['safe','safe','safe'],
+                exits : ['legA','legB']
             },
             legA : {
                 title: 'The Long Road',
                 description: 'A long, safe route.',
                 cards : ['safe','safe','safe','safe','safe','tunnel','tunnel','tunnel','tunnel','tunnel'],
-                crossroads : ['end']
+                exits : []
             },
             legB : {
                 title: 'The Short Road',
                 description: 'A short, dangerous route.',
                 cards : ['tunnel','tunnel','pyramid'],
-                crossroads : ['end']
+                exits : []
             }
         }
     }
@@ -1630,8 +1634,21 @@ function runCardEvent(cardName){
 }
 
 function runNextCard(){
-    var cardName = trailGame.journey.currentLeg.deck.shift();
-    return runCardEvent(cardName);
+    if(trailGame.journey.currentLeg.deck.length > 0){
+        var cardName = 'start';
+        if (trailGame.caravan.daysElapsed !== 0){
+            cardName = trailGame.journey.currentLeg.deck.shift();
+        }
+        runAndLogEvent('runCardEvent',cardName);
+    } else if (trailGame.journey.currentLeg.exits.length > 1){
+        testModal();
+    } else if (trailGame.journey.currentLeg.exits.length === 1){
+        var legKey = trailGame.journey.currentLeg.exits[0];
+        loadLegOfJourney(legKey);
+        runNextCard();
+    } else {
+        testModal();
+    }
 }
 
 // leader functions
@@ -6843,6 +6860,10 @@ function eventCave(argsObj){
     return lines;
 }
 
+function eventStartJourney(){
+    return [`${trailGame.caravan.founder._name} and their caravan set off on their journey to ${trailGame.journey.title}...`];
+}
+
 function eventGameOver(){
     var lines = [];
     var horde = generateMonsters();
@@ -6946,8 +6967,6 @@ function loadPremadeParty(partyName){
     var loan = generateLoan({max: shoppingList.actualValue, name: partyObj.relative});
     signLoan(loan);
     initialPurchase(shoppingList);
-
-    return [`${trailGame.caravan.founder._name} sets off on their journey...`];
 }
 
 function loadUp(){
@@ -7187,7 +7206,9 @@ function createJourneyChoiceModal(partyName){
                 dismissActiveModal();
                 newJourney(levelKey);
                 setTimeout(function(){
-                    runAndLogEvent('runNextCard',partyName);
+                    loadPremadeParty(partyName);
+                    runNextCard();
+                    //runAndLogEvent('runNextCard',partyName);
                 },400);
             },
         }));
@@ -7200,8 +7221,15 @@ function createJourneyChoiceModal(partyName){
 
 }
 
-function hookUpMainControls(){
+function createCrossroadsModal(){
+    var modalContent = createModalContentContainer();
+}
 
+function hookUpMainControls(){
+    var continueButton = document.body.querySelector('button#continue');
+    continueButton.addEventListener("click",function(){
+        runAndLogEvent('runNextCard');
+    });
 }
 
 function testModal(){
@@ -7447,5 +7475,7 @@ function getCartList(){
 // }
 
 newCaravan();
+hookUpMainControls();
+createPartyChoiceModal();
 
 //loadUp();
