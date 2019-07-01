@@ -1590,21 +1590,26 @@ trailGame.levels = {
         sellMultiplier: 1,
         legs : {
             start : {
-                title: 'First Leg',
-                description: 'The initial leg of your journey.',
                 cards : ['safe','safe','safe'],
-                exits : ['legA','legB']
+                exits : [
+                    {
+                        key: 'legA',
+                        title: 'take the long road', 
+                        description: 'To the south runs a long, but relatively safe path.', 
+                    },
+                    {
+                        key: 'legB',
+                        title: 'take the dangerous road',
+                        description: 'To the north there lies a short, dangerous path.', 
+                    }
+                ]
             },
             legA : {
-                title: 'The Long Road',
-                description: 'A long, safe route.',
-                cards : ['safe','safe','safe','safe','safe','tunnel','tunnel','tunnel','tunnel','tunnel'],
+                cards : ['safe','safe','safe','safe','safe','randomTunnel','randomTunnel','randomTunnel','randomTunnel','randomTunnel'],
                 exits : []
             },
             legB : {
-                title: 'The Short Road',
-                description: 'A short, dangerous route.',
-                cards : ['tunnel','tunnel','pyramid'],
+                cards : ['randomTunnel','randomTunnel','pyramid'],
                 exits : []
             }
         }
@@ -1639,11 +1644,11 @@ function runNextCard(){
         if (trailGame.caravan.daysElapsed !== 0){
             cardName = trailGame.journey.currentLeg.deck.shift();
         }
-        runAndLogEvent('runCardEvent',cardName);
+        runAndLogEvent(runCardEvent,cardName);
     } else if (trailGame.journey.currentLeg.exits.length > 1){
-        testModal();
+        runAndLogEvent(eventStartCrossroads);
     } else if (trailGame.journey.currentLeg.exits.length === 1){
-        var legKey = trailGame.journey.currentLeg.exits[0];
+        var legKey = trailGame.journey.currentLeg.exits[0].key;
         loadLegOfJourney(legKey);
         runNextCard();
     } else {
@@ -2525,6 +2530,8 @@ function newCaravan(){
     trailGame.caravan.lamps = 0;
     trailGame.caravan.daysElapsed = 0;
     trailGame.caravan.daysSinceLastMeal = 0;
+    trailGame.caravan.dayHasBeenPaused = false;
+    trailGame.caravan.dayIsResolution = false;
     trailGame.caravan.rations = 3;
     trailGame.caravan.isVegetarian = false;
     trailGame.caravan.timesRobbed = 0;
@@ -5828,12 +5835,12 @@ function scrubLines(lines){
     return newLines;
 }
 
-function dayPhase(eventName,argsObj){
+function dayPhase(eventFunc,argsObj){
     var lines = [];
     if (trailGame.lostGame){
-        eventName = 'eventGameOver';
+        eventFunc = eventGameOver;
     }
-    var events = window[eventName](argsObj);
+    var events = eventFunc(argsObj);
     var updates = settleLedger();
     linesObj = {events: scrubLines(events), ledgerLines: updates.lines, ledgerStats: updates.stats}
     return linesObj;
@@ -6864,6 +6871,33 @@ function eventStartJourney(){
     return [`${trailGame.caravan.founder._name} and their caravan set off on their journey to ${trailGame.journey.title}...`];
 }
 
+function eventStartCrossroads(){
+    var lines = [];
+    lines.push(`We come to a crossroads.`);
+    trailGame.journey.currentLeg.exits.map(function(exitObj){
+        lines.push(exitObj.description);
+    });
+    trailGame.caravan.dayHasBeenPaused = true;
+    createCrossroadsModal(lines);
+    return lines;
+}
+
+function eventResolveCrossroads(exitObj){
+    var lines = [];
+    if ( exitObj === undefined || typeof(exitObj) !== 'object'){
+        lines.push(shuffle([
+            `${getRandomLeader()._name} throws a stone in the air. We go where it lands.`,
+            `A wild ${getRandomAnimal().animalClass} crosses our path. We take it as a sign.`,
+            `${getRandomLeader()._name} points in a direction. We trust their gut.`
+        ])[0]);
+        exitObj = shuffle(trailGame.journey.currentLeg.exits)[0];
+    }
+    lines.push(`We choose to ${exitObj.title}.`);
+    loadLegOfJourney(exitObj.key);
+    addDays(1);
+    return lines;
+}
+
 function eventGameOver(){
     var lines = [];
     var horde = generateMonsters();
@@ -7012,27 +7046,36 @@ function addTextArrayToLog(textArray,className){
     } 
 }
 
-function runAndLogEvent(functionName,args){
+function runAndLogEvent(funct,args,dayIsResolution){
     if ( Object.keys(trailGame.leaders).length <= 0 ){
         trailGame.UI.log.append(textArrayToP(['NEW CARAVAN']));
-        functionName = 'loadPremadeParty';
+        funct = loadPremadeParty;
     }
 
-    trailGame.UI.log.append(document.createElement("hr"));
-    var headline = document.createElement("h3");
-    headline.className = 'day number';
-    headline.append(`Day ${trailGame.caravan.daysElapsed}`);
-    trailGame.UI.log.append(headline);
+    if (trailGame.caravan.daysElapsed && !dayIsResolution){
+        trailGame.UI.log.append(document.createElement("hr"));
+        var headline = document.createElement("h3");
+        headline.className = 'day number';
+        headline.append(`Day ${trailGame.caravan.daysElapsed}`);
+        trailGame.UI.log.append(headline);
+    }
+    if ( trailGame.caravan.daysElapsed === 0 ){
+        trailGame.caravan.daysElapsed = 1;
+    }
 
-    var dayLines = dayPhase(functionName,args);
+    var dayLines = dayPhase(funct,args);
     addTextArrayToLog(dayLines.events,'day events');
     addTextArrayToLog(dayLines.ledgerLines,'day updates');
     addTextArrayToLog(dayLines.ledgerStats,'day stats');
 
-    var nightLines = nightPhase();
-    addTextArrayToLog(nightLines.events,'night events');
-    addTextArrayToLog(nightLines.ledgerLines,'night updates');
-    addTextArrayToLog(nightLines.ledgerStats,'night stats');
+    if (trailGame.caravan.daysSinceLastMeal < 1 || dayIsResolution){
+        var nightLines = nightPhase();
+        trailGame.caravan.dayIsResolution = false;
+        trailGame.caravan.dayHasBeenPaused = false;
+        addTextArrayToLog(nightLines.events,'night events');
+        addTextArrayToLog(nightLines.ledgerLines,'night updates');
+        addTextArrayToLog(nightLines.ledgerStats,'night stats');
+    }
     
     trailGame.UI.window.scrollTop = trailGame.UI.window.scrollHeight;
 }
@@ -7126,17 +7169,16 @@ function createSimpleModal(argsObj){
     argsObj.buttons = argsObj.buttons || [];
     var modalContent = createModalContentContainer();
 
-    if (argsObj.text !== undefined){
-        var modalText = document.createElement("p");
-        modalContent.append(modalText);
-        modalText.innerHTML = argsObj.text;
+    if (argsObj.textNode !== undefined){
+        modalContent.append(argsObj.textNode);
     }
 
     if (argsObj.buttons.length){
-        var modalControls = document.createElement("li");
+        var modalControls = document.createElement("ul");
         modalControls.className = 'modal_controls controls';
         modalContent.append(modalControls);
         argsObj.buttons.map(function(buttonArgs){
+            buttonArgs.liClassName = buttonArgs.liClassName || 'full-width';
             modalControls.append(createButton(buttonArgs));
         })
     };
@@ -7208,7 +7250,6 @@ function createJourneyChoiceModal(partyName){
                 setTimeout(function(){
                     loadPremadeParty(partyName);
                     runNextCard();
-                    //runAndLogEvent('runNextCard',partyName);
                 },400);
             },
         }));
@@ -7221,22 +7262,41 @@ function createJourneyChoiceModal(partyName){
 
 }
 
-function createCrossroadsModal(){
-    var modalContent = createModalContentContainer();
+function createCrossroadsModal(lines){
+    var modalArgs = {
+        active: true,
+        modalId: 'test',
+        textNode : textArrayToP(lines),
+        buttons: [],
+    };
+    trailGame.journey.currentLeg.exits.map(function(exitObj){
+        var buttonArgs = {
+            buttonText: toTitleCase(exitObj.title),
+            callback: function(){
+                runAndLogEvent(eventResolveCrossroads,exitObj,true);
+            }
+        };
+        modalArgs.buttons.push(buttonArgs);
+    });
+    modalArgs.buttons.push({ buttonText: 'Let Fate Decide', callback: function(){
+        dismissActiveModal();
+        console.log('modal dismissed???')
+        runAndLogEvent(eventResolveCrossroads,undefined,true);
+    }});
+
+    return createSimpleModal(modalArgs);
 }
 
 function hookUpMainControls(){
     var continueButton = document.body.querySelector('button#continue');
-    continueButton.addEventListener("click",function(){
-        runAndLogEvent('runNextCard');
-    });
+    continueButton.addEventListener("click",runNextCard);
 }
 
 function testModal(){
     createSimpleModal({
         active: true,
         modalId: 'test',
-        text : '<p>Zombies reversus ab inferno, nam malum cerebro. De carne animata corpora quaeritis. Summus sit​​, morbo vel maleficia? De Apocalypsi undead dictum mauris. Hi mortuis soulless creaturas, imo monstra adventus vultus comedat cerebella viventium. Qui offenderit rapto, terribilem incessu. The voodoo sacerdos suscitat mortuos comedere carnem. Search for solum oculi eorum defunctis cerebro. Nescio an Undead zombies. Sicut malus movie horror.</p>',
+        textNode : textArrayToP(['Zombies reversus ab inferno, nam malum cerebro. De carne animata corpora quaeritis. Summus sit​​, morbo vel maleficia? De Apocalypsi undead dictum mauris. Hi mortuis soulless creaturas, imo monstra adventus vultus comedat cerebella viventium. Qui offenderit rapto, terribilem incessu. The voodoo sacerdos suscitat mortuos comedere carnem. Search for solum oculi eorum defunctis cerebro. Nescio an Undead zombies. Sicut malus movie horror.']),
         buttons: [
             { buttonText: 'Test1', callback: dismissActiveModal },
             { buttonText: 'Test2', callback: dismissActiveModal }
