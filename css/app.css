@@ -66,6 +66,17 @@ div#log {
   div#log .stats {
     margin-top: 0.25em;
     color: #9b77a7; }
+  div#log .night.events::before {
+    content: "that night, by the fire...";
+    display: block;
+    height: 1.5em;
+    width: 12.5em;
+    margin: 0.25em 0;
+    color: transparent;
+    text-indent: 200vw;
+    background-image: url("../assets/images/campfire.png");
+    background-size: 100%;
+    image-rendering: pixelated; }
 
 .controls {
   display: flex;

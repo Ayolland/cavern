@@ -2530,8 +2530,6 @@ function newCaravan(){
     trailGame.caravan.lamps = 0;
     trailGame.caravan.daysElapsed = 0;
     trailGame.caravan.daysSinceLastMeal = 0;
-    trailGame.caravan.dayHasBeenPaused = false;
-    trailGame.caravan.dayIsResolution = false;
     trailGame.caravan.rations = 3;
     trailGame.caravan.isVegetarian = false;
     trailGame.caravan.timesRobbed = 0;
@@ -2846,6 +2844,7 @@ function dinnerTime(){
             lines.push(dinnerFlavorText(true));
         }
     } else {
+        trailGame.caravan.daysSinceLastMeal = 0;
         cureSickness(true,'starvation');
         var moraleBonus = 0;
         var healthBonus = 0;
@@ -6887,7 +6886,7 @@ function eventResolveCrossroads(exitObj){
     if ( exitObj === undefined || typeof(exitObj) !== 'object'){
         lines.push(shuffle([
             `${getRandomLeader()._name} throws a stone in the air. We go where it lands.`,
-            `A wild ${getRandomAnimal().animalClass} crosses our path. We take it as a sign.`,
+            `A wild ${generateAnimal().animalClass} crosses our path. We take it as a sign.`,
             `${getRandomLeader()._name} points in a direction. We trust their gut.`
         ])[0]);
         exitObj = shuffle(trailGame.journey.currentLeg.exits)[0];
@@ -7047,6 +7046,7 @@ function addTextArrayToLog(textArray,className){
 }
 
 function runAndLogEvent(funct,args,dayIsResolution){
+    dayIsResolution = dayIsResolution === true ? true : false;
     if ( Object.keys(trailGame.leaders).length <= 0 ){
         trailGame.UI.log.append(textArrayToP(['NEW CARAVAN']));
         funct = loadPremadeParty;
@@ -7068,7 +7068,7 @@ function runAndLogEvent(funct,args,dayIsResolution){
     addTextArrayToLog(dayLines.ledgerLines,'day updates');
     addTextArrayToLog(dayLines.ledgerStats,'day stats');
 
-    if (trailGame.caravan.daysSinceLastMeal < 1 || dayIsResolution){
+    if (trailGame.caravan.daysSinceLastMeal > 0 || dayIsResolution){
         var nightLines = nightPhase();
         trailGame.caravan.dayIsResolution = false;
         trailGame.caravan.dayHasBeenPaused = false;

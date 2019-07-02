@@ -25,6 +25,17 @@
 		"oAP": "/assets/fonts/NightmareExtended.ttf",
 		"oF": 0
 		},
+	"/assets/images/campfire.png": {
+		"ft": 32768,
+		"iS": 621,
+		"oA": 0,
+		"oAP": "/assets/images/campfire.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
 	"/assets/images/marble.png": {
 		"ft": 32768,
 		"iS": 93342,
