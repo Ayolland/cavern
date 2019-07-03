@@ -63,6 +63,7 @@
 // - eating way too much food?
 // - can currently trade things you don't have // fixed? maybe animals only
 // - spider event 'Papa Rye is undefined wounded'
+// - dropping food when overweight
 
 // helpers
 
@@ -215,14 +216,14 @@ function capitalizeFirstLetter(string) {
 }
 
 function toTitleCase(str) {
-    return str.replace(/\w\S*/g, function(txt){
-        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    return str.replace(/[\w']+/g, function(txt){
+        return txt.charAt(0).toUpperCase() + txt.substr(1);
     });
 }
 
 function indefiniteArticle(word){
     var letter = word.charAt(0);
-    var article = ("aeiouAEIOU".indexOf(letter) !== -1) ? 'an' : 'a';
+    var article = ("aeiouAEIOU".indexOf(letter) === -1) || letter === '' ? 'a' : 'an';
     return article + ' ' + word;
 }
 
@@ -240,7 +241,7 @@ trailGame.gods = {
         followerPlural: 'acolytes of the Deep Saints',
         objects: ['illuminated icons','code book'],
         markings: [],
-        burial: 'cremate them',
+        burial: 'cremate them on a pyre',
         holiday: 'the week of the Saints',
         canHaveImage: true,
         enemies: ['Gravity'],
@@ -289,7 +290,7 @@ trailGame.gods = {
         objects: ["engraved plumb bob", "book of ritual formulae", "leaden pendant"],
         markings: ["algebraic tattoo"],
         burial: "leave them be",
-        holiday: "the magnetic solstice",
+        holiday: "The Magnetic Solstice",
         canHaveImage: false,
         enemies: ['The Deep Saints','The Turtle-Father'],
         material: 'lead',
@@ -300,8 +301,8 @@ trailGame.gods = {
         followerPlural: 'ancient wind worshipers',
         objects: ["pinwheel","chimes"],
         markings: ["archaic attire"],
-        burial: "say a simple prayer, not knowing what ritual to use",
-        holiday: "strange, archaic holy day",
+        burial: "cremate them and scatter their ashes",
+        holiday: "The Wind Festival",
         canHaveImage: true,
         enemies: [],
         material: 'granite',
@@ -1569,11 +1570,11 @@ trailGame.cards = {
         eventFunc: eventStartJourney,
         args: {}
     },
-    pyramid : {
+    cavePyramid : {
         eventFunc: eventCave,
         args: {caveType: 'haunted', hauntedType: 'ancient pyramid'}
     },
-    randomTunnel : {
+    caveTunnelRandom : {
         eventFunc: eventCave,
         args: {caveType: 'tunnel'}
     },
@@ -1605,11 +1606,21 @@ trailGame.levels = {
                 ]
             },
             legA : {
-                cards : ['safe','safe','safe','safe','safe','randomTunnel','randomTunnel','randomTunnel','randomTunnel','randomTunnel'],
+                cards : ['safe','safe','safe','safe','safe','caveTunnelRandom','caveTunnelRandom','caveTunnelRandom','caveTunnelRandom','caveTunnelRandom'],
                 exits : []
             },
             legB : {
-                cards : ['randomTunnel','randomTunnel','pyramid'],
+                cards : ['caveTunnelRandom','caveTunnelRandom','caveTunnelRandom'],
+                exits : [
+                    {
+                        key: 'legC',
+                        title: 'this should be invisible', 
+                        description: 'This leg is automatic.'
+                    }
+                ]
+            },
+            legC : {
+                cards : ['cavePyramid'],
                 exits : []
             }
         }
@@ -1793,6 +1804,7 @@ function generateName(argsObj){
         "Grab",
         "Petun",
         "Cheas",
+        "Demon",
     ];
     var partBs = [
         "opher",
@@ -5211,6 +5223,11 @@ function generateBookPrefix(getAll){
     return getAll === true ? prefixes : shuffle(prefixes).shift();
 }
 
+function generatePaintingDesc(getAll){
+    var desc = ['beautiful','crude','intricate','detailed','lush','rudimentary'];
+    return getAll === true ? desc : shuffle(desc).shift();
+}
+
 function generateRumor(rumorType){
     rumorType = rumorType && (typeof(rumorType) === "boolean") || rollDice() > 10 ? true : false;
     var surfaceLies = [
@@ -5366,19 +5383,111 @@ function generateCreature(getMany){
     return getMany === true ? creatures : creatures.shift();
 }
 
-function generateSubjectMatter(getMany,culture){
-    var cultureName = culture === undefined ?  generateCulture().name : culture.name;
-    var subjects = shuffle([
+function generateSubjectMatter(argsObj){
+    argsObj = argsObj || {};
+    var cultureName = argsObj.culture === undefined ?  generateCulture().name : argsObj.culture.name;
+    includeSicknesses = argsObj.includeSicknesses === false ? false : true;
+    includeMaterials = argsObj.includeMaterials === false ? false : true;
+    var subjects = [
         generateGood().goodsType,
         generateCreature(),
-        generateLeader()._title,
-        generateLiquid(),
-        generateStone(),
-        generateMetal(),
+        argsObj.job || generateLeader()._title,
         cultureName,
-        shuffle(trailGame.contractableSickneses)[0]
-    ]);
-    return getMany === true ? subjects : subjects.shift();
+    ];
+    if (includeSicknesses){
+        subjects.push(shuffle(trailGame.contractableSickneses)[0]);
+    }
+    if (includeMaterials){
+        subjects = subjects.concat([
+            generateLiquid(),
+            generateStone(),
+            generateMetal(),
+        ]);
+    }
+    subjects = shuffle(subjects);
+    return argsObj.getMany === true ? subjects : subjects.shift();
+}
+
+function generateInnDesc(argObj){
+    argObj = argObj || {};
+    var job = argObj.job || generateSubClass();
+    var subjects = generateSubjectMatter({job: job, getMany:true, includeMaterials: false, includeSicknesses: false});
+    var subjectA = subjects[0];
+    var subjectB = subjects[1];
+    var adjectives = generateAdjective(true);
+    var maybeAdjectiveA = rollDice(1,4) === 4 ? '' : adjectives[0] + ' ';
+    var maybeAdjectiveB = rollDice(1,4) === 4 ? '' : adjectives[1] + ' ';
+    var maybeThe = rollDice(1,4) === 4 ? '' : 'The ';
+    var maybePub = rollDice(1,5) !== 5 ? '' : ' ' + shuffle(['Pub','Inn','Tavern'])[0];
+    var maybeSuperlative = maybePub === '' || rollDice(1,2) === 2 ? '' : ' ' + shuffle(['Cavern-Famous','Famous','Old-Fashioned','Historic','Legendary'])[0];
+    var cultures = generateCulture(true);
+    var food = argObj.food || rollDice(1,4) !== 4 ? generateFood() : `${cultures[0]}-${cultures[1]} Fusion`;
+    var restaurant = shuffle(['Shack','Place','Hut','Joint','Stand','Restaurant'])[0];
+    var name = argObj.name || generateName();
+    var innNames = [
+        `The ${maybeAdjectiveA}${subjectA}${maybePub}`,
+        `The ${subjectA} & ${maybeThe}${maybeAdjectiveB}${subjectB}${maybePub}`,
+        `${name}'s${maybeSuperlative}${maybePub}`,
+    ]
+    if (rollDice(1,3)===3){
+        innNames.push(`${maybeAdjectiveA}${name}'s${maybeSuperlative} ${food} ${restaurant}`);
+    }
+    if (rollDice(1,6)===6){
+        `${cultures[0]} Food Restaurant`;
+    }
+    var innName = argObj.innName || toTitleCase(shuffle(innNames)[0]);
+    var gem = generateGood(generateGem(argObj.gem));
+    var alcohol = generateGood(generateAlcohol(argObj.alcohol));
+    var creature = argObj.creature || generateCreature();
+    var equipment = argObj.equipment || generateEquipment();
+    var game = argObj.game || generateGame();
+    var drug = argObj.drug || generateDrug();
+    var pet = argObj.pet || generatePet().animalClass;
+    var shapes = [
+        `${gem.cacheName} of ${pluralize(gem.goodsType)}`,
+        `${alcohol.cacheName} of ${pluralize(alcohol.goodsType)}`,
+        creature,
+        equipment,
+        `flagon`,
+    ];
+    var signDescriptions = [
+        ` above the door`,
+        ` in the shape of ${indefiniteArticle(shuffle(shapes)[0])}`,
+        ``
+    ];
+    var signAdjective = rollDice(1,2) === 2 ? '' : ` ${generateHutDesc()}`;
+    var sign = signAdjective === '' ? 'A sign' : `${capitalizeFirstLetter(indefiniteArticle(signAdjective))} sign`
+    var description = `${sign}${shuffle(signDescriptions)[0]} reads: "${innName}."`;
+    var jobOrAnimal = rollDice(1,2) === 2 ? job : creature;
+    var anotherCreature = jobOrAnimal === creature ? `another ${creature}` : `${indefiniteArticle(creature)}`;
+    var foodOrAlcohol = rollDice(1,2) === 2 ? food : alcohol.goodsType;
+    var note = shuffle([
+        `No ${toTitleCase(pluralize(generatePet().animalClass))} Allowed!`,
+        `Open At All Hours.`,
+        `We will be closed for ${generateReligion().holiday}.`,
+        `Free ${toTitleCase(alcohol.goodsType)} Tomorrow`,
+        `${toTitleCase(pluralize(job))} Welcome!`,
+        `Try Our ${toTitleCase(foodOrAlcohol)}!`,
+        `Home of the Original ${toTitleCase(food)}!`,
+        `Breakfast Served All Hours.`,
+        `Our ${pet} bites.`,
+        `Best ${foodOrAlcohol} in the Caverns!`
+    ])[0];
+    var advertisement = shuffle([
+        `a smiling ${jobOrAnimal} cooking and eating ${anotherCreature}`,
+        `a ${jobOrAnimal} playing ${game}`,
+        `a ${jobOrAnimal} drinking ${alcohol.goodsType}`,
+        `a ${jobOrAnimal} imbiding in ${drug}`,
+    ])[0];
+    var addendum = shuffle([
+        `A smaller sign below reads "${note}"`,
+        `A small note on the door reads "${note}"`,
+        `Letters painted on the door read "${note}"`,
+        `A statue outside depicts ${advertisement}.`,
+        `On the wall, there is ${indefiniteArticle(generatePaintingDesc())} ${rollDice() > 10 ? 'painting' : 'carving'} of ${advertisement}.`
+    ])[0];
+    description = rollDice() > 10 ? description : description + ' ' + addendum;
+    return description;
 }
 
 function generateAdjective(getMany){
@@ -5388,7 +5497,7 @@ function generateAdjective(getMany){
 
 function generateNonFictionTitle(argObj){
     argObj = argObj || {};
-    var subjectMatter = rollDice() >= 19 ? 'Ulm-Rosh' : toTitleCase(pluralize(generateSubjectMatter(false, argObj.culture)));
+    var subjectMatter = rollDice() >= 19 ? 'Ulm-Rosh' : toTitleCase(pluralize(generateSubjectMatter({culture: argObj.culture})));
     var titleOne = `${rollDice() > 5 ? "" : toTitleCase(generateHistoricDesc()) + " "}${toTitleCase(generateKnowledge())} of ${generateAncientCulture()}`;
     var titleTwo = `${toTitleCase(generateFieldOfStudy())} in ${generateAncientCulture()}${rollDice() > 2 ? "" : `, circa ${generateNumeral(2000,5000)}`}`;
     var titleThree = `${shuffle(['','Beginner ','Intermediate ','Advanced '])[0]}${shuffle(['','Exercizes in ','Case Studies in ','Explorations in '])[0]}${toTitleCase(generateFieldOfStudy())}`;
@@ -5505,7 +5614,7 @@ function generateGamebookTitle(){
 function generateSelfHelpTitle(argObj){
     argObj = argObj || {};
     var possibleSubjects = [];
-    generateSubjectMatter(true,argObj.culture).map(function(subject,index){
+    generateSubjectMatter({getMany: true, culture: argObj.culture}).map(function(subject,index){
         possibleSubjects.push( pluralize(subject) );
     });
     possibleSubjects.push(generateGod());
@@ -5548,7 +5657,7 @@ function generateSelfHelpTitle(argObj){
 
 function generateSeriousNovelTitle(argObj){
     argObj = argObj || {};
-    var manyThings = generateSubjectMatter(true,argObj.culture);
+    var manyThings = generateSubjectMatter({getMany: true, culture: argObj.culture});
     var objectOne = manyThings[0];
     var objectTwo = manyThings[1];
 
@@ -5609,7 +5718,7 @@ function generateRomanceTitle(argObj){
     var explicitPastTense = shuffle(['Pounded','Sexed','Seduced','Taken', 'Ravaged', 'Impregnated'])[0];
     var parent = shuffle(['Dads','Moms','Daddy','Mommy'])[0];
     var hot = shuffle(["I'm Gay",'Hot', 'Hungry','Thirsty'])[0];
-    var company = `${rollDice() < 15 ? '' : toTitleCase(generateAdjective()) + ' '}${toTitleCase(generateSubjectMatter())}`;
+    var company = `${rollDice() < 15 ? '' : toTitleCase(generateAdjective()) + ' '}${toTitleCase(generateSubjectMatter({includeSicknesses: false}))}`;
     var possibleTitles = [
         `${romance} ${place}`,
         `${toTitleCase(indefiniteArticle(job1))}'s ${job2}`,
@@ -5654,7 +5763,7 @@ function generateBiographyDesc(argObj){
 
 function generateTurtleBookDesc(argObj){
     argObj = argObj || {};
-    var adjectives = ['beautiful','crude','intricate','detailed','lush'];
+    var adjectives = generatePaintingDesc(true);
     var adjective = rollDice(1,2) === 2 ? '' : shuffle(adjectives)[0] + ' ';
     var drawings = shuffle(['sketches','drawings','paintings','illustrations','etchings'])[0];
     var allTurtles = [...trailGame.turtles];
@@ -5760,7 +5869,7 @@ function generatePuzzleBookDesc(argObj){
 
 function generateFungaloidTitle(){
     var prefix = rollDice() > 10 ? "" : generateHistoricDesc() + ' ';
-    var possibleSubjects = generateSubjectMatter(true);
+    var possibleSubjects = generateSubjectMatter({getMany: true});
     var subject = possibleSubjects[0] === 'Fungaloid' ? possibleSubjects[1] : possibleSubjects[0];
     var possibleSuffixes = ['meditations','histories','protocols','narratives','interactions','conflicts'];
     var suffix = shuffle(possibleSuffixes)[0];
@@ -6826,9 +6935,10 @@ function eventCave(argsObj){
             var roll = rollDice(1,chance);
             var isLastChance = (i <= 1 && thingsToFind.indexOf(thing) === thingsToFind.length -1 && Object.keys(thingsFound).length < 1);
             var isActivated = roll >= chance || isLastChance;
+            var discoveryArgs = {findType: shuffle(cave._lootTypes)[0], location: cave._lootLocation, verb: cave._findVerb, bookType: shuffle(cave._bookTypes)[0]};
             if (chance > 0 && isActivated){
                 if (thing === 'loot' && cave._lootTypes.length && thingsFound.loot !== true){
-                    subEventDiscovery({findType: shuffle(cave._lootTypes)[0], location: cave._lootLocation, verb: cave._findVerb, bookType: shuffle(cave._bookTypes)[0]},lines);
+                    subEventDiscovery(discoveryArgs,lines);
                     thingsFound[thing] = true;
                 } else if (thing === 'trap' && cave._trapTypes.length && thingsFound.trap !== true){
                     subEventSpringTrap({trapName: shuffle(cave._trapTypes)[0]},lines);
@@ -6855,7 +6965,7 @@ function eventCave(argsObj){
             }
             if (isLastChance && Object.keys(thingsFound).length < 1){
                 var lootType = shuffle(cave._lootTypes)[0] || 'goods';
-                subEventDiscovery({findType: lootType, location: cave._lootLocation},lines);
+                subEventDiscovery(discoveryArgs,lines);
             }
         });
     }
@@ -7047,8 +7157,8 @@ function addTextArrayToLog(textArray,className){
 
 function runAndLogEvent(funct,args,dayIsResolution){
     dayIsResolution = dayIsResolution === true ? true : false;
-    if ( Object.keys(trailGame.leaders).length <= 0 ){
-        trailGame.UI.log.append(textArrayToP(['NEW CARAVAN']));
+    if ( Object.keys(trailGame.leaders).length <= 0 && !trailGame.lostGame){
+        trailGame.UI.log.append(textArrayToP(['RANDOM NEW CARAVAN']));
         funct = loadPremadeParty;
     }
 
@@ -7056,7 +7166,8 @@ function runAndLogEvent(funct,args,dayIsResolution){
         trailGame.UI.log.append(document.createElement("hr"));
         var headline = document.createElement("h3");
         headline.className = 'day number';
-        headline.append(`Day ${trailGame.caravan.daysElapsed}`);
+        var headlineText = trailGame.lostGame ? 'Game Over' : `Day ${trailGame.caravan.daysElapsed}`;
+        headline.append(headlineText);
         trailGame.UI.log.append(headline);
     }
     if ( trailGame.caravan.daysElapsed === 0 ){
@@ -7147,7 +7258,7 @@ function createModal(argsObj){
     document.body.append(modal);
     if(argsObj.active){
         setTimeout(function(){
-            modal.classList.add('active');
+            activateModal(modal)
         },100);
     }
 
@@ -7160,9 +7271,23 @@ function createModalContentContainer(){
     return modalContent;
 }
 
-function dismissActiveModal(){
+function activateModal(modalElement){
+    dismissActiveModal();
+    disableMainControls();
+    modalElement.classList.add('active');
+}
+
+function dismissActiveModal(destroyModal){
+    enableMainControls();
     var modal = document.body.querySelector('.modal.active');
-    modal.classList.remove('active');
+    if (modal !== null){
+        modal.classList.remove('active');
+        if (destroyModal){
+            setTimeout(function(){
+                modal.parentNode.removeChild(modal);
+            },1000);
+        }
+    }
 }
 
 function createSimpleModal(argsObj){
@@ -7209,7 +7334,7 @@ function createPartyChoiceModal(){
             buttonText: `Play as ${partyObj.title}`,
             useLi: false,
             callback: function(){
-                dismissActiveModal();
+                dismissActiveModal(true);
                 setTimeout(function(){
                     createJourneyChoiceModal(partyKey);
                 },400);
@@ -7245,7 +7370,7 @@ function createJourneyChoiceModal(partyName){
             buttonText: `Set Out For ${levelObj.title}`,
             useLi: false,
             callback: function(){
-                dismissActiveModal();
+                dismissActiveModal(true);
                 newJourney(levelKey);
                 setTimeout(function(){
                     loadPremadeParty(partyName);
@@ -7273,13 +7398,14 @@ function createCrossroadsModal(lines){
         var buttonArgs = {
             buttonText: toTitleCase(exitObj.title),
             callback: function(){
+                dismissActiveModal();
                 runAndLogEvent(eventResolveCrossroads,exitObj,true);
             }
         };
         modalArgs.buttons.push(buttonArgs);
     });
     modalArgs.buttons.push({ buttonText: 'Let Fate Decide', callback: function(){
-        dismissActiveModal();
+        dismissActiveModal(true);
         console.log('modal dismissed???')
         runAndLogEvent(eventResolveCrossroads,undefined,true);
     }});
@@ -7287,9 +7413,34 @@ function createCrossroadsModal(lines){
     return createSimpleModal(modalArgs);
 }
 
+function runFuncIfControlsEnabled(functionName,args){
+    if (!trailGame.UI.isControlsDisabled){
+        functionName(args)
+    }
+}
+
 function hookUpMainControls(){
-    var continueButton = document.body.querySelector('button#continue');
-    continueButton.addEventListener("click",runNextCard);
+    trailGame.UI.isControlsDisabled = false;
+    trailGame.UI.continueButton = document.body.querySelector('button#continue');
+    trailGame.UI.continueButton.addEventListener("click",function(){
+        runFuncIfControlsEnabled(runNextCard);
+    });
+}
+
+function disableMainControls(){
+    trailGame.UI.isControlsDisabled = true;
+    var buttonArray = [...document.body.querySelectorAll('#main-controls button')];
+    buttonArray.map(function(buttonNode){
+        buttonNode.classList.add('disabled');
+    });
+}
+
+function enableMainControls(){
+    trailGame.UI.isControlsDisabled = false;
+    var buttonArray = [...document.body.querySelectorAll('#main-controls button')];
+    buttonArray.map(function(buttonNode){
+        buttonNode.classList.remove('disabled');
+    });
 }
 
 function testModal(){
@@ -7385,6 +7536,13 @@ function log100Books(argsObj){
         array.push('- ' + generateBookLine(argsObj));
     }
     addTextArrayToLog(array);
+}
+
+function log100Inns(argsObj){
+    var array = [];
+    for (var i = 100; i >= 0; i--) {
+        addTextArrayToLog([generateInnDesc(argsObj)]);
+    }
 }
 
 // bitsy I/O functions

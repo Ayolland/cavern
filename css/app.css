@@ -155,8 +155,9 @@ button {
   border-style: solid;
   box-sizing: border-box;
   border-color: #c0bac6 #716978 #4b4650 #b0a9b8; }
-  button:hover, button:focus, button:active {
+  button:hover:not(.disabled), button:focus:not(.disabled), button:active:not(.disabled) {
     background-color: #988ea2;
     filter: brightness(120%);
-    box-shadow: 0 0 5px #ad48d0;
-    top: 2px; }
+    box-shadow: 0 0 5px #ad48d0; }
+  button.disabled {
+    filter: contrast(0.75) brightness(0.75); }
