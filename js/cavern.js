@@ -64,6 +64,7 @@
 // - can currently trade things you don't have // fixed? maybe animals only
 // - spider event 'Papa Rye is undefined wounded'
 // - dropping food when overweight
+// - finding corpse in cave trigger wrong landmark
 
 // helpers
 
@@ -7028,6 +7029,7 @@ function eventGameOver(){
     }
     lines.push(`Our entire caravan has perished.`);
     lines.push(shuffle(addendums)[0]);
+    createGameOverModal(lines);
     return lines;
 }
 
@@ -7157,16 +7159,21 @@ function addTextArrayToLog(textArray,className){
 
 function runAndLogEvent(funct,args,dayIsResolution){
     dayIsResolution = dayIsResolution === true ? true : false;
+    disableMainControls();
     if ( Object.keys(trailGame.leaders).length <= 0 && !trailGame.lostGame){
         trailGame.UI.log.append(textArrayToP(['RANDOM NEW CARAVAN']));
         funct = loadPremadeParty;
     }
 
-    if (trailGame.caravan.daysElapsed && !dayIsResolution){
-        trailGame.UI.log.append(document.createElement("hr"));
+    if (!dayIsResolution){
+        if (trailGame.caravan.daysElapsed){
+            trailGame.UI.log.append(document.createElement("hr"));
+        }
         var headline = document.createElement("h3");
         headline.className = 'day number';
-        var headlineText = trailGame.lostGame ? 'Game Over' : `Day ${trailGame.caravan.daysElapsed}`;
+        var headlineText = `Day ${trailGame.caravan.daysElapsed}`;
+        headlineText = trailGame.caravan.daysElapsed === 0 ? 'Welcome to Cavern Caravan Trail!' : headlineText;
+        headlineText = trailGame.lostGame ? 'Game Over' : headlineText;
         headline.append(headlineText);
         trailGame.UI.log.append(headline);
     }
@@ -7179,7 +7186,7 @@ function runAndLogEvent(funct,args,dayIsResolution){
     addTextArrayToLog(dayLines.ledgerLines,'day updates');
     addTextArrayToLog(dayLines.ledgerStats,'day stats');
 
-    if (trailGame.caravan.daysSinceLastMeal > 0 || dayIsResolution){
+    if ((trailGame.caravan.daysSinceLastMeal > 0 || dayIsResolution) && !trailGame.lostGame){
         var nightLines = nightPhase();
         trailGame.caravan.dayIsResolution = false;
         trailGame.caravan.dayHasBeenPaused = false;
@@ -7189,6 +7196,13 @@ function runAndLogEvent(funct,args,dayIsResolution){
     }
     
     trailGame.UI.window.scrollTop = trailGame.UI.window.scrollHeight;
+    enableMainControls();
+}
+
+function clearLog(){
+    while (trailGame.UI.log.hasChildNodes()) {
+      trailGame.UI.log.removeChild(trailGame.UI.log.firstChild);
+   }
 }
 
 function toggleClass(selector,className){
@@ -7390,7 +7404,7 @@ function createJourneyChoiceModal(partyName){
 function createCrossroadsModal(lines){
     var modalArgs = {
         active: true,
-        modalId: 'test',
+        modalId: 'crossroads',
         textNode : textArrayToP(lines),
         buttons: [],
     };
@@ -7413,18 +7427,40 @@ function createCrossroadsModal(lines){
     return createSimpleModal(modalArgs);
 }
 
+function createGameOverModal(lines){
+    var modalArgs = {
+        active: true,
+        modalId: 'game-over',
+        textNode : textArrayToP(lines),
+        buttons: [{
+            buttonText: 'Alas!', callback: function(){
+                switchToResetButton();
+                dismissActiveModal(true);
+            }
+        }],
+    };
+    return createSimpleModal(modalArgs);
+}
+
 function runFuncIfControlsEnabled(functionName,args){
     if (!trailGame.UI.isControlsDisabled){
-        functionName(args)
+        functionName(args);
     }
 }
 
-function hookUpMainControls(){
+function continueButtonHandler(){
+    runFuncIfControlsEnabled(runNextCard);
+}
+
+function resetButtonHandler(){
+    runFuncIfControlsEnabled(setUpNewGame);
+}
+
+function setUpMainControls(){
     trailGame.UI.isControlsDisabled = false;
     trailGame.UI.continueButton = document.body.querySelector('button#continue');
-    trailGame.UI.continueButton.addEventListener("click",function(){
-        runFuncIfControlsEnabled(runNextCard);
-    });
+    trailGame.UI.continueButton.innerHTML = 'Continue';
+    trailGame.UI.continueButton.addEventListener("click",continueButtonHandler);
 }
 
 function disableMainControls(){
@@ -7443,6 +7479,21 @@ function enableMainControls(){
     });
 }
 
+function switchToResetButton(){
+    trailGame.UI.continueButton.innerHTML = 'Reset Game';
+    trailGame.UI.continueButton.removeEventListener("click",continueButtonHandler);
+    trailGame.UI.continueButton.addEventListener("click",resetButtonHandler);
+}
+
+function setUpNewGame(){
+    clearLog();
+    newCaravan();
+    setUpMainControls();
+    createPartyChoiceModal();
+}
+
+// debug functions
+
 function testModal(){
     createSimpleModal({
         active: true,
@@ -7454,8 +7505,6 @@ function testModal(){
         ],
     });
 }
-
-// debug functions
 
 // needs to be rebuilt!
 
@@ -7683,17 +7732,4 @@ function getCartList(){
     return `You decide to purchase ${receipt} for ${trailGame.temp.cart.actualValue} silver.`;
 }
 
-// function getStartMessage(){
-//     initialPurchase(trailGame.temp.cart);
-//     var moreThanOne = Object.keys(trailGame.leaders).length > 1;
-//     var party = moreThanOne ? 'and company ' : '';
-//     var verb = moreThanOne ? 'set' : 'sets';
-//     settleLedger();
-//     return `${trailGame.caravan.founder._name} ${party}${verb} off on their journey!`
-// }
-
-newCaravan();
-hookUpMainControls();
-createPartyChoiceModal();
-
-//loadUp();
+setUpNewGame()
