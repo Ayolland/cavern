@@ -39,23 +39,26 @@
 //      - holidays (track ones that have passed)
 // - jokes
 //      - more jokes
+// - caves
+//      - magma furnaces cause alchol to explode?
 
 // - books (done for now)
 // - goods (done for now)
 // - cultures (done for now)
 // - sicknesses (done for now)
-// - caves (done for now)
+
 
 // - non-bitsy UI
 //      - switch modals
-//      - destroy modals
 //      - splash modal
-//      - quick-start modal
 //      - status modal
 //      - glossary modal
 //      - settings modal
 //      - about modal
 //      - help modal
+//      - trade modal
+//      - win game modal
+//      - basic settings modal
 
 // BUGS
 // - banned jobs not working
@@ -64,7 +67,7 @@
 // - can currently trade things you don't have // fixed? maybe animals only
 // - spider event 'Papa Rye is undefined wounded'
 // - dropping food when overweight
-// - finding corpse in cave trigger wrong landmark
+// - finding corpse in cave triggers wrong landmark
 
 // helpers
 
@@ -1664,7 +1667,7 @@ function runNextCard(){
         loadLegOfJourney(legKey);
         runNextCard();
     } else {
-        testModal();
+        runAndLogEvent(eventGameWin);
     }
 }
 
@@ -7035,19 +7038,17 @@ function eventGameOver(){
 
 function eventGameWin(){
     var lines = [];
-    lines.push(`You made it to your destination!`);
+    lines.push(`We safely arrive at ${trailGame.journey.title}!`);
     var relativeName = trailGame.caravan.loan.giver;
     var finalSale = getFinalSale();
-    var cultureModifier = getCaravanCulture() / (trailGame.maxLeaderStat / 1.5);
-    var goodSpeech = cultureModifier > 1;
-    var finalSaleValue = goodSpeech ? finalSale.actualValue * cultureModifier : finalSale.actualValue;
+    var finalSaleValue = finalSale.actualValue * trailGame.journey.sellMultiplier;
     var founder = trailGame.caravan.founder;
     var founderAlive = Object.keys(trailGame.leaders).indexOf(founder._id.toString()) > -1;
     lines.push(`We sell ${sentenceForm(scrubTradeObj(finalSale))}...`);
     lines.push(`...earning us a total of ${finalSaleValue} silver.`);
-    if( cultureModifier > 1){
-        lines.push(`We would've gotten less, but we're smooth salespeople.`);
-    }
+    // if( cultureModifier > 1){
+    //     lines.push(`We would've gotten less, but we're smooth salespeople.`);
+    // }
     var founderMsg = "";
     if (founderAlive){
         founderMsg = `${founder._name} sends word to ${relativeName} that we have succesfully arrived`;
@@ -7072,7 +7073,10 @@ function eventGameWin(){
     outcome += (finalSaleValue - amountOwed) > (amountOwed / 2) ? 1:0;
     var adjectives = ['humiliating','disappointing','moderate','huge'];
     var descriptor = outcome > 1 ? 'success' : 'failure';
-    lines.push(`Overall, our journey was a ${adjectives[outcome]} ${descriptor}, but most importantly, we're glad (at least some of us) made it here safely.`);
+    lines.push(`Financially, our journey was a ${adjectives[outcome]} ${descriptor}.`);
+    lines.push(`Most importantly, we're glad some of us made it here safely.`);
+    var overallSuccess = outcome > 1;
+    createGameWinModal(lines,overallSuccess);
     return lines;
 }
 
@@ -7174,6 +7178,7 @@ function runAndLogEvent(funct,args,dayIsResolution){
         var headlineText = `Day ${trailGame.caravan.daysElapsed}`;
         headlineText = trailGame.caravan.daysElapsed === 0 ? 'Welcome to Cavern Caravan Trail!' : headlineText;
         headlineText = trailGame.lostGame ? 'Game Over' : headlineText;
+        headlineText += funct === eventGameWin ? ' - Our Journey Comes to an End!' : '';
         headline.append(headlineText);
         trailGame.UI.log.append(headline);
     }
@@ -7420,7 +7425,6 @@ function createCrossroadsModal(lines){
     });
     modalArgs.buttons.push({ buttonText: 'Let Fate Decide', callback: function(){
         dismissActiveModal(true);
-        console.log('modal dismissed???')
         runAndLogEvent(eventResolveCrossroads,undefined,true);
     }});
 
@@ -7434,6 +7438,22 @@ function createGameOverModal(lines){
         textNode : textArrayToP(lines),
         buttons: [{
             buttonText: 'Alas!', callback: function(){
+                switchToResetButton();
+                dismissActiveModal(true);
+            }
+        }],
+    };
+    return createSimpleModal(modalArgs);
+}
+
+function createGameWinModal(lines,success){
+    var buttonText = success ? generateExclamation() : shuffle(['Drat!','Curses!',`Sigh...`])[0];
+    var modalArgs = {
+        active: true,
+        modalId: 'game-win',
+        textNode : textArrayToP(lines),
+        buttons: [{
+            buttonText: buttonText, callback: function(){
                 switchToResetButton();
                 dismissActiveModal(true);
             }
@@ -7732,4 +7752,4 @@ function getCartList(){
     return `You decide to purchase ${receipt} for ${trailGame.temp.cart.actualValue} silver.`;
 }
 
-setUpNewGame()
+setUpNewGame();
