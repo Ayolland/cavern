@@ -47,6 +47,28 @@
 		"oT": 1,
 		"q": 100
 		},
+	"/assets/images/placeholder-person.png": {
+		"ft": 32768,
+		"iS": 193,
+		"oA": 0,
+		"oAP": "/assets/images/placeholder-person.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"/assets/images/placeholder.png": {
+		"ft": 32768,
+		"iS": 190,
+		"oA": 0,
+		"oAP": "/assets/images/placeholder.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"/css/app.css": {
 		"aP": 1,
 		"bl": 0,

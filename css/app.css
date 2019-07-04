@@ -18,8 +18,12 @@ div#log, .modal .modal_content {
     margin: 0.5em 0; }
   div#log h3, .modal .modal_content h3 {
     margin: 0.5em 0 0.25em 0; }
+  div#log h4, .modal .modal_content h4 {
+    margin: 0.25em 0 0.75em 0; }
   div#log h5, .modal .modal_content h5 {
     margin: 0 0 1em 0; }
+  div#log h6, .modal .modal_content h6 {
+    margin: 1em 0; }
   div#log p, .modal .modal_content p {
     margin: 0.25em 0 1em 0; }
 
@@ -31,6 +35,13 @@ body {
   body * {
     font-family: "Nightmare", Serif;
     font-weight: 400; }
+
+.controls, .roster-display, .leader-display_stats {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none; }
 
 .column {
   box-sizing: border-box;
@@ -79,12 +90,7 @@ div#log {
     image-rendering: pixelated; }
 
 .controls {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin: 0;
-  padding: 0;
-  list-style: none; }
+  justify-content: center; }
   .controls li {
     margin: 0 1% 0.5rem 1%;
     min-width: 10%; }
@@ -133,7 +139,7 @@ div#log {
     border-color: #1e2224 #6d7376 #8a8f91 #2d3336; }
   .modal .modal_content {
     padding: 0.5em; }
-    .modal .modal_content *:first-child {
+    .modal .modal_content > *:first-child {
       margin-top: 0; }
   .modal.active {
     background-color: rgba(0, 0, 0, 0.75);
@@ -151,7 +157,7 @@ button {
   background-size: 200px;
   text-shadow: 0 1px 0 white, 0 -1px 0 rgba(0, 0, 0, 0.5), 0 0 0.25em white;
   font-size: 0.75em;
-  border-width: 0.12em;
+  border-width: 0.12rem;
   border-style: solid;
   box-sizing: border-box;
   border-color: #c0bac6 #716978 #4b4650 #b0a9b8; }
@@ -160,4 +166,148 @@ button {
     filter: brightness(120%);
     box-shadow: 0 0 5px #ad48d0; }
   button.disabled {
-    filter: contrast(0.75) brightness(0.75); }
+    filter: contrast(0.75) brightness(0.75);
+    pointer-events: none; }
+
+.icon {
+  display: block;
+  height: 1em;
+  width: 1em;
+  overflow: hidden;
+  text-indent: 200vw;
+  background-image: url("../assets/images/placeholder-person.png");
+  background-size: 1em 1em;
+  image-rendering: pixelated; }
+
+.leader-display {
+  width: 100%;
+  margin: 0.12rem 0;
+  padding: 0.5rem;
+  background-color: #7b556c;
+  background-image: url("../assets/images/marble.png");
+  background-size: 600px;
+  font-size: 0.75em;
+  color: white;
+  border-width: 0.12rem;
+  border-style: solid;
+  box-sizing: border-box;
+  border-color: #b099a7 #5c4051 #3e2b36 #9c8091; }
+  .leader-display.button {
+    background-color: #556f7b;
+    border-width: 0.12rem;
+    border-style: solid;
+    box-sizing: border-box;
+    border-color: #99a9b0 #40535c #2b383e #80939c; }
+    .leader-display.button:hover:not(.disabled), .leader-display.button:focus:not(.disabled), .leader-display.button:active:not(.disabled) {
+      background-color: #57717d;
+      filter: brightness(120%);
+      box-shadow: 0 0 5px #ad48d0; }
+    .leader-display.button.disabled {
+      filter: contrast(0.75) brightness(0.75);
+      pointer-events: none; }
+    .leader-display.button .leader-display_stats_stat-display_container {
+      border-width: 0.12rem;
+      border-style: solid;
+      box-sizing: border-box;
+      border-color: #2b383e #80939c #99a9b0 #40535c; }
+  .leader-display_basics {
+    display: flex;
+    padding: 0.12rem; }
+    .leader-display_basics_icon {
+      font-size: 2.5rem; }
+    .leader-display_basics_lockup {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      margin-left: 0.5rem;
+      padding: 0; }
+      .leader-display_basics_lockup_name, .leader-display_basics_lockup_name-input, .leader-display_basics_lockup_title, .leader-display_basics_lockup_worships {
+        padding: 0.12rem 0.5rem;
+        line-height: 1; }
+      .leader-display_basics_lockup_name, .leader-display_basics_lockup_name-input {
+        font-size: 1.25em; }
+      .leader-display_basics_lockup_name-input {
+        background-color: rgba(0, 0, 0, 0.5);
+        border-width: 0.12rem;
+        border-style: solid;
+        box-sizing: border-box;
+        border-color: #3e2b36 #9c8091 #b099a7 #5c4051;
+        color: white; }
+  .leader-display_stats {
+    flex-direction: column; }
+    .leader-display_stats_stat-display {
+      display: flex;
+      margin: 0.12rem 0; }
+      .leader-display_stats_stat-display_label {
+        width: 4.25em; }
+      .leader-display_stats_stat-display_container {
+        flex: 1;
+        font-size: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        border-width: 0.12rem;
+        border-style: solid;
+        box-sizing: border-box;
+        border-color: #3e2b36 #9c8091 #b099a7 #5c4051; }
+        .leader-display_stats_stat-display_container_bar {
+          display: block;
+          height: 100%;
+          background-color: #ccc;
+          background-image: url("../assets/images/marble.png");
+          background-size: 300px;
+          border-width: 0.12rem;
+          border-style: solid;
+          box-sizing: border-box;
+          border-color: #e0e0e0 #999999 #666666 #d9d9d9; }
+          .leader-display_stats_stat-display_container_bar.health.zero {
+            width: 0%;
+            background-position: 0% 0%; }
+          .leader-display_stats_stat-display_container_bar.health.one {
+            width: 10%;
+            background-position: 10% 10%; }
+          .leader-display_stats_stat-display_container_bar.health.two {
+            width: 20%;
+            background-position: 20% 20%; }
+          .leader-display_stats_stat-display_container_bar.health.three {
+            width: 30%;
+            background-position: 30% 30%; }
+          .leader-display_stats_stat-display_container_bar.health.four {
+            width: 40%;
+            background-position: 40% 40%; }
+          .leader-display_stats_stat-display_container_bar.health.five {
+            width: 50%;
+            background-position: 50% 50%; }
+          .leader-display_stats_stat-display_container_bar.health.six {
+            width: 60%;
+            background-position: 60% 60%; }
+          .leader-display_stats_stat-display_container_bar.health.seven {
+            width: 70%;
+            background-position: 70% 70%; }
+          .leader-display_stats_stat-display_container_bar.health.eight {
+            width: 80%;
+            background-position: 80% 80%; }
+          .leader-display_stats_stat-display_container_bar.health.nine {
+            width: 90%;
+            background-position: 90% 90%; }
+          .leader-display_stats_stat-display_container_bar.health.ten {
+            width: 100%;
+            background-position: 100% 100%; }
+          .leader-display_stats_stat-display_container_bar.wits.zero, .leader-display_stats_stat-display_container_bar.culture.zero, .leader-display_stats_stat-display_container_bar.bravery.zero {
+            width: 0%;
+            background-position: 0% 0%; }
+          .leader-display_stats_stat-display_container_bar.wits.one, .leader-display_stats_stat-display_container_bar.culture.one, .leader-display_stats_stat-display_container_bar.bravery.one {
+            width: 20%;
+            background-position: 20% 20%; }
+          .leader-display_stats_stat-display_container_bar.wits.two, .leader-display_stats_stat-display_container_bar.culture.two, .leader-display_stats_stat-display_container_bar.bravery.two {
+            width: 40%;
+            background-position: 40% 40%; }
+          .leader-display_stats_stat-display_container_bar.wits.three, .leader-display_stats_stat-display_container_bar.culture.three, .leader-display_stats_stat-display_container_bar.bravery.three {
+            width: 60%;
+            background-position: 60% 60%; }
+          .leader-display_stats_stat-display_container_bar.wits.four, .leader-display_stats_stat-display_container_bar.culture.four, .leader-display_stats_stat-display_container_bar.bravery.four {
+            width: 80%;
+            background-position: 80% 80%; }
+          .leader-display_stats_stat-display_container_bar.wits.five, .leader-display_stats_stat-display_container_bar.culture.five, .leader-display_stats_stat-display_container_bar.bravery.five {
+            width: 100%;
+            background-position: 100% 100%; }
+  .leader-display_extra-info {
+    margin-top: 0.25rem; }

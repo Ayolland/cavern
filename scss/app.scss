@@ -9,9 +9,12 @@ $dove: #ccc;
 $eggshell: #eee;
 $slate: #3c4448;
 $dusty: #968ca0;
+$mauve: #7b556c;
+$granite: #556f7b;
 
 // sizes
 $column-padding-width: 0.5rem;
+$button-border-width: 0.12rem;
 
 // fonts
 
@@ -25,6 +28,8 @@ $Nightmare: 'Nightmare', Serif;
 // etc
 
 $marble-bg : url('../assets/images/marble.png');
+
+$zeroToTen: ['zero','one','two','three','four','five','six','seven','eight','nine','ten'];
 
 //mixins
 
@@ -40,6 +45,22 @@ $marble-bg : url('../assets/images/marble.png');
 		border-color: $shadow $highlight-mid $highlight $shadow-mid;
 	} @else {
 		border-color: $highlight $shadow-mid $shadow $highlight-mid;
+	}
+}
+
+@mixin button-behavior($bg-color){
+	&:hover, &:focus, &:active{
+
+		&:not(.disabled){
+			background-color: lighten($bg-color, 0.75);
+			filter: brightness(120%);
+    		box-shadow: 0 0 5px $magenta;
+		}
+	}
+
+	&.disabled{
+		filter: contrast(0.75) brightness(0.75);
+		pointer-events: none;
 	}
 }
 
@@ -72,11 +93,15 @@ $marble-bg : url('../assets/images/marble.png');
 	}
 
 	h4{
-
+		margin: 0.25em 0 0.75em 0;
 	}
 
 	h5{
 		margin: 0 0 1em 0;
+	}
+
+	h6{
+		margin: 1em 0;
 	}
 
 	p {
@@ -96,6 +121,16 @@ body{
 		font-family: $Nightmare;
 		font-weight: 400;
 	}
+}
+
+%no-bullet-list{
+	display: flex;
+	flex-wrap: wrap;
+
+	margin: 0;
+	padding: 0;
+
+	list-style: none;
 }
 
 .column{
@@ -172,14 +207,9 @@ div#log{
 
 .controls{
 
-	display: flex;
-	flex-wrap: wrap;
+	@extend %no-bullet-list;
+
 	justify-content: center;
-
-	margin: 0;
-	padding: 0;
-
-	list-style: none;
 
 	li{
 		margin: 0 1% 0.5rem 1%;
@@ -244,7 +274,7 @@ div#log{
     .modal_content{
     	padding: 0.5em;
 
-    	*:first-child{
+    	& > *:first-child{
     		margin-top: 0;
     	}
 
@@ -279,19 +309,142 @@ button{
 
 	font-size: 0.75em;
 
-	@include emboss($color: $dusty, $border-width: 0.12em, $inset: false);
+	@include emboss($color: $dusty, $border-width: $button-border-width, $inset: false);
 
-	&:hover, &:focus, &:active{
+	@include button-behavior($dusty)
+}
 
-		&:not(.disabled){
-			background-color: lighten($dusty, 0.75);
-			filter: brightness(120%);
-    		box-shadow: 0 0 5px $magenta;
-    		//top: 2px;
+.icon {
+    display: block;
+    height: 1em;
+    width: 1em;
+    overflow: hidden;
+    text-indent: 200vw;
+
+    background-image: url('../assets/images/placeholder-person.png');
+    background-size: 1em 1em;
+    image-rendering: pixelated;
+}
+
+.roster-display{
+	@extend %no-bullet-list;
+}
+
+.leader-display{
+	width: 100%;
+
+	margin: $button-border-width 0;
+	padding: $column-padding-width;
+
+	background-color: $mauve;
+	background-image: $marble-bg;
+	background-size: 600px;
+
+	font-size: 0.75em;
+	color: white;
+
+	@include emboss($color: $mauve, $border-width: $button-border-width, $inset: false);
+
+	&.button{
+
+		background-color: $granite;
+
+		@include emboss($color: $granite, $border-width: $button-border-width, $inset: false);
+		@include button-behavior($granite);
+
+		.leader-display_stats_stat-display_container{
+			@include emboss($color: $granite, $border-width: $button-border-width);
 		}
 	}
 
-	&.disabled{
-		filter: contrast(0.75) brightness(0.75);
+	&_basics{
+
+		display: flex;
+    	padding: $button-border-width;
+
+		&_icon{
+			font-size: 2.5rem;
+		}
+
+		&_lockup{
+			display: flex;
+    		flex-direction: column;
+    		flex: 1;
+
+    		margin-left: 0.5rem;
+    		padding: 0;
+
+    		&_name, &_name-input, &_title, &_worships{
+    			padding: $button-border-width $column-padding-width;
+    			line-height: 1;
+    		}
+    		
+    		&_name, &_name-input{
+    			font-size: 1.25em;
+    		}
+
+    		&_name-input{
+    			background-color: fade-out(black,0.5);
+    			@include emboss($color: $mauve, $border-width: $button-border-width);
+    			color: white;
+    		}
+		}
+	}
+
+	&_stats{
+
+		@extend %no-bullet-list;
+		flex-direction: column;
+
+		&_stat-display{
+			display: flex;
+			margin: 0.12rem 0;
+
+			&_label{
+				width: 4.25em;
+			}
+
+			&_container{
+				flex: 1;
+				font-size: 0;
+
+				background-color: fade-out(black,0.5);
+    			@include emboss($color: $mauve, $border-width: $button-border-width);
+
+    			&_bar{
+    				display: block;
+
+    				height: 100%;
+
+    				background-color: $dove;
+    				background-image: $marble-bg;
+					background-size: 300px;
+
+					@include emboss($color: $dove, $border-width: $button-border-width, $inset: false);
+
+					@for $i from 1 through 11{
+						&.health.#{unquote(nth($zeroToTen,$i))}{
+							width: ($i - 1) * 10%;
+
+							background-position: ($i - 1) * 10% ($i - 1) * 10%;
+						}
+					}
+
+					@for $i from 1 through 6{
+						&.wits, &.culture, &.bravery{
+							&.#{unquote(nth($zeroToTen,$i))}{
+								width: ($i - 1) * 20%;
+								background-position: ($i - 1) * 20% ($i - 1) * 20%;
+							}
+						}
+					}
+    			}
+			}
+			
+		}
+	}
+
+	&_extra-info{
+		margin-top: $column-padding-width / 2;
 	}
 }

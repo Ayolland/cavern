@@ -1,10 +1,5 @@
 // TO-DO
-// - preset parties
-//      - Cake the Black
-//      - Slime Squad
-//      - Reilleys
-// - create voyages
-//      - re-shoe should only happen so often
+
 // - chasms + bridges
 // - lanterns!
 // - corpses
@@ -26,7 +21,10 @@
 // - shrines
 //      - redo to take leader religion into account
 // - more curiosities
-// - attractive / memorable traits
+// - leaders
+//      - attractive / memorable traits
+//      - addictions
+//      - add immunites directly to leaders
 // - backstory details
 // - cites
 //      - schools
@@ -41,12 +39,23 @@
 //      - more jokes
 // - caves
 //      - magma furnaces cause alchol to explode?
+//      - add swamps
+//      - encounter leviathans in tunnels
+// - graveyard
+//      - keep track of leaders who have died this journey
+//      - leaders who have died in previous journeys in abandoned camps
+// - Journeys / Cards
+//      - more Cards
+//      - more Journeys
+// - cultures
+//      - add proverbs
+// - Win State
+//      - epilouges for all surving leaders
 
 // - books (done for now)
 // - goods (done for now)
-// - cultures (done for now)
 // - sicknesses (done for now)
-
+// - preset parties (done for now)
 
 // - non-bitsy UI
 //      - switch modals
@@ -58,7 +67,15 @@
 //      - help modal
 //      - trade modal
 //      - win game modal
-//      - basic settings modal
+//      - start settings (music/vegetarian/rations) modal
+//      - shop modal
+//      - custom party modal
+//      - save last party
+//      - overweight modal
+//      - ford river choices
+//      - trail display
+//      - print CSS
+//      - error catching
 
 // BUGS
 // - banned jobs not working
@@ -68,6 +85,7 @@
 // - spider event 'Papa Rye is undefined wounded'
 // - dropping food when overweight
 // - finding corpse in cave triggers wrong landmark
+// - leaders can have negative stats
 
 // helpers
 
@@ -96,6 +114,17 @@ function shuffle(array) {
     return array;
 }
 
+function arraysEqual(a, b) {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  if (a.length != b.length) return false;
+
+  for (var i = 0; i < a.length; ++i) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
 function listForm(arrOfStrings){
     if (arrOfStrings.length <= 0){
         return "";
@@ -108,6 +137,9 @@ function sentenceForm(input,plural){
         return;
     }
     if( Array.isArray(input)){
+        if( arraysEqual(input,Object.keys(trailGame.sicknesses)) ){
+            return 'all known ailments';
+        }
         if (plural){
             var newInput = [];
             input.map(function(string){
@@ -207,8 +239,17 @@ function romanNumeral (num) {
     return Array(+digits.join("") + 1).join("M") + roman;
 }
 
+function zeroToTenString (num) {
+    var words = ['zero','one','two','three','four','five','six','seven','eight','nine','ten'];
+    return words[num];
+}
+
 function spacesToDashes(string){
     return string.replace(/ /g, '-');
+}
+
+function toClassName(string){
+    return spacesToDashes(string).toLowerCase();
 }
 
 function clamp(value,min, max) {
@@ -1574,9 +1615,13 @@ trailGame.cards = {
         eventFunc: eventStartJourney,
         args: {}
     },
-    cavePyramid : {
+    caveHauntedPyramid : {
         eventFunc: eventCave,
         args: {caveType: 'haunted', hauntedType: 'ancient pyramid'}
+    },
+    caveStrangeCamp : {
+        eventFunc: eventCave,
+        args: {caveType: 'strange', strangeType: 'abandoned camp'}
     },
     caveTunnelRandom : {
         eventFunc: eventCave,
@@ -1584,6 +1629,10 @@ trailGame.cards = {
     },
     safe : {
         eventFunc : eventSafeFlavor,
+        args: {}
+    },
+    reshoe : {
+        eventFunc : eventReshoe,
         args: {}
     }
 }
@@ -1595,7 +1644,12 @@ trailGame.levels = {
         sellMultiplier: 1,
         legs : {
             start : {
-                cards : ['safe','safe','safe'],
+                cards : ['safe'],
+                min: 3,
+                max: 7,
+                intervalCards: ['reshoe'],
+                firstCard: 'caveHauntedPyramid',
+                lastCard: 'caveHauntedPyramid',
                 exits : [
                     {
                         key: 'legA',
@@ -1610,11 +1664,18 @@ trailGame.levels = {
                 ]
             },
             legA : {
-                cards : ['safe','safe','safe','safe','safe','caveTunnelRandom','caveTunnelRandom','caveTunnelRandom','caveTunnelRandom','caveTunnelRandom'],
+                cards : ['safe','safe','caveTunnelRandom'],
+                min: 7,
+                max: 14,
+                intervalCards: ['reshoe','reshoe'],
+                firstCard: 'caveStrangeCamp',
+                lastCard: 'caveStrangeCamp',
                 exits : []
             },
             legB : {
-                cards : ['caveTunnelRandom','caveTunnelRandom','caveTunnelRandom'],
+                cards : ['caveTunnelRandom'],
+                min: 3,
+                max: 5,
                 exits : [
                     {
                         key: 'legC',
@@ -1624,7 +1685,7 @@ trailGame.levels = {
                 ]
             },
             legC : {
-                cards : ['cavePyramid'],
+                cards : ['caveHauntedPyramid'],
                 exits : []
             }
         }
@@ -1641,9 +1702,29 @@ function newJourney(journeyName){
 function loadLegOfJourney(legName){
     legName = legName || 'start';
     var leg = trailGame.journey.legs[legName];
-    var cardsToRemove = getRandomInt(0,Math.round(leg.cards.length / 5));
-    leg.deck = shuffle(leg.cards);
-    leg.deck.splice(leg.deck.length - (1 + cardsToRemove),cardsToRemove);
+    leg.min = leg.min || leg.cards.length;
+    leg.max = leg.max || leg.cards.length;
+    leg.intervalCards = leg.intervalCards || [];
+    var numberOfCards = getRandomInt(leg.min,leg.max);
+    leg.deck = [];
+    var cardPool = shuffle([...leg.cards]);
+    var totalNumberOfIntervals = leg.intervalCards.length + 1;
+    var intervalCounter = 1;
+    for (var i = 1; i <= numberOfCards; i++) {
+        if (!cardPool.length){
+            cardPool = shuffle([...leg.cards]);
+        }
+        if (leg.firstCard !== undefined && i === 1){
+            leg.deck.push(leg.firstCard);
+        } else if (leg.lastCard !== undefined && i === numberOfCards){
+            leg.deck.push(leg.lastCard);
+        } else if (leg.intervalCards.length && i === Math.ceil(intervalCounter * numberOfCards / totalNumberOfIntervals)){
+            leg.deck.push(leg.intervalCards[intervalCounter - 1]);
+            intervalCounter++;
+        } else {
+            leg.deck.push(cardPool.shift());
+        }
+    }
     trailGame.journey.currentLeg = leg;
 }
 
@@ -1923,7 +2004,8 @@ function generateExtravagantLastName(){
 function addStatObjectToLeader(statObj,leaderObj){
     var statArr = Object.keys(statObj);
     statArr.map(function(statKey){
-        leaderObj['_'+statKey] += statObj[statKey];
+        var newVal = clamp(leaderObj['_'+statKey] + statObj[statKey], 0, trailGame.maxLeaderStat)
+        leaderObj['_'+statKey] = newVal;
     });
 }
 
@@ -1991,6 +2073,7 @@ function generateLeader(argObj){
         subclass = trailGame.characterClasses.subClasses[subClassName];
     }
     var mainClass = trailGame.characterClasses.mainClasses[subclass.mainClass];
+    leader._mainClass = subclass.mainClass;
     leader._race = culture;
     leader._raceName = culture.name
     leader._homeland = culture.capital;
@@ -2006,6 +2089,7 @@ function generateLeader(argObj){
     leader._immunities = {};
     leader._pastSicknesses = [];
     addStatObjectToLeader(leader._race.statBonuses,leader);
+    gainImmunities([[[leader._id],leader._race.immunities]],true,leader);
     var totalLeaders = Object.keys(trailGame.leaders).length;
     leader._id = Date.now() + totalLeaders;
     return leader;
@@ -2016,7 +2100,6 @@ function addLeader(argObj){
     var leader = argObj.leader || generateLeader(argObj);
     var isOriginal = Object.keys(trailGame.leaders).length === 0;
     trailGame.leaders[leader._id] = leader;
-    gainImmunities([[[leader._id],leader._race.immunities]],true);
     var action = isOriginal ? 'started a caravan!' : 'joined the caravan.';
     if ( isOriginal ){
         trailGame.caravan.founder = leader;
@@ -2030,7 +2113,7 @@ function addLeader(argObj){
 function removeLeader(id,reason){
     var leader = trailGame.leaders[id];
     reason = reason !== undefined ? reason : leader._malady !== undefined ? `dies of ${leader._malady}` : 'dies unexpectedly';
-    addToLedger( `${leader._name} the ${leader._title} ${reason}.`);
+    addToLedger( `${leader._name} the ${leader,_raceName} ${leader._title} ${reason}.`);
     delete trailGame.leaders[id];
     var moraleHit = Math.ceil(trailGame.caravan.morale / 3);
     removeMorale(moraleHit);
@@ -2307,7 +2390,7 @@ function boostLeaderImmunity(leaderObj,sicknessName){
     return hasGainedImmunity;
 }
 
-function gainImmunities(immunitiesArray,silent){
+function gainImmunities(immunitiesArray,silent,optionalLeaderObj){
     // immunitiesArray should be array of 2 length arrays, holding arrays or true in each
     // [0]: array of leaderIds, [1]: array of sickness names
     // if [0] === true : all leaders
@@ -2317,7 +2400,7 @@ function gainImmunities(immunitiesArray,silent){
         var leaderIdArr = immunityPair[0] === true ? Object.keys(trailGame.leaders) : immunityPair[0];
         var immunitiesArr = immunityPair[1] === true ? Object.keys(trailGame.sicknesses) : immunityPair[1];
         leaderIdArr.map(function(leaderId){
-            var leaderObj = trailGame.leaders[leaderId];
+            var leaderObj = optionalLeaderObj || trailGame.leaders[leaderId];
             if (leaderObj === undefined){
                 return;
             }
@@ -2363,7 +2446,7 @@ function announceImmunities(immunityLedger){
     Object.keys(immunityLedger).map(function(immunityPhrase,index){
         var leaderNames = immunityLedger[immunityPhrase];
         var allSicknesses = sentenceForm(Object.keys(trailGame.sicknesses));
-        immunityPhrase = immunityPhrase === allSicknesses ? 'all known ailments' : immunityPhrase;
+        //immunityPhrase = immunityPhrase === allSicknesses ? 'all known ailments' : immunityPhrase;
         var verb = leaderNames.length > 1 ? 'have' : 'has';
         var all = leaderNames.length > 2 ? ' all' : ' both';
         var exclamation = exclamations[(index + 1)%exclamations.length - 1];
@@ -5022,7 +5105,7 @@ function generateGame(getAll){
 }
 
 function generatePrey(getAll){
-    var prey = ["corpse-worm", "dusk moth", "eldritch larva", "rock mole", "fossil mite", "sweet grub", "singing trilobite", "snail","centipede larva"];
+    var prey = ["corpse-worm", "dusk moth", "eldritch larva", "rock mole", "fossil mite", "sweet grub", "singing trilobite", "snail","centipede larva","hallucinogenic beetle"];
     return getAll === true ? prey : shuffle(prey).shift();
 }
 
@@ -7335,8 +7418,29 @@ function createPartyChoiceModal(){
     var modalContent = createModalContentContainer();
 
     var headline = document.createElement("h2");
-    headline.append('Choose Your Party:');
+    headline.append('Choose Your Caravan:');
     modalContent.append(headline);
+
+    var instructionsA = document.createElement("h5");
+    instructionsA.append('Create a Caravan from Scratch:');
+    modalContent.append(instructionsA);
+
+    modalContent.append(createButton({
+        buttonText: `Create a New Caravan`,
+        useLi: false,
+        callback: function(){
+            dismissActiveModal(true);
+            setTimeout(function(){
+                createPartyCreationModal();
+            },400);
+        },
+    }));
+
+    modalContent.append(document.createElement("hr"));
+
+    var instructionsB = document.createElement("h5");
+    instructionsB.append('Or Choose a Pre-Loaded Caravan:');
+    modalContent.append(instructionsB);
 
     Object.keys(trailGame.parties).sort().map(function(partyKey){
         partyObj = trailGame.parties[partyKey];
@@ -7345,7 +7449,7 @@ function createPartyChoiceModal(){
         modalContent.append(title);
         title.append(partyObj.title);
 
-        var description = document.createElement("h5");
+        var description = document.createElement("h6");
         modalContent.append(description);
         description.innerHTML = `${partyObj.description}`;
 
@@ -7365,6 +7469,175 @@ function createPartyChoiceModal(){
         contentNode: modalContent,
         active: true,
     });
+}
+
+function createLeaderDisplay(argsObj){
+    argsObj = argsObj || {};
+    leader = argsObj.leader || generateLeader();
+    argsObj.editable = argsObj.editable === true ? true : false;
+    argsObj.showHealth = argsObj.showHealth === true ? true : false;
+    argsObj.className = argsObj.className || ``;
+    var leaderDisplay = document.createElement("li");
+    leaderDisplay.className = `leader-display ${argsObj.className}`;
+
+    var basics = document.createElement("div");
+    basics.className = "leader-display_basics";
+
+    var icon = document.createElement("span");
+    icon.className = `leader-display_basics_icon icon ${toClassName(leader._raceName)} ${leader._mainClass}`;
+    icon.append(`An icon of a ${leader._raceName} ${leader._mainClass}.`)
+    basics.append(icon);
+
+    var lockup = document.createElement("div");
+    lockup.className = `leader-display_basics_lockup`;
+    if(argsObj.editable){
+        var nameField = document.createElement("input");
+        nameField.className = `leader-display_basics_lockup_name-input`;
+        nameField.value = leader._name;
+        nameField.addEventListener('input', function(event){
+            leader._name = this.value;
+        });
+        lockup.append(nameField);
+    } else {
+        var nameSpan = document.createElement("span");
+        nameSpan.className = `leader-display_basics_lockup_name`;
+        nameSpan.append(leader._name);
+        lockup.append(nameSpan);
+    }
+    var nameSpan = document.createElement("span");
+    nameSpan.className = `leader-display_basics_lockup_title`;
+    nameSpan.append(`${leader._raceName} ${leader._title}`);
+    lockup.append(nameSpan);
+    var godSpan = document.createElement("span");
+    godSpan.className = `leader-display_basics_lockup_worships`;
+    godSpan.append(`Worships: ${leader._god}`);
+    lockup.append(godSpan);
+    basics.append(lockup);
+
+    leaderDisplay.append(basics);
+
+    var statDisplay = document.createElement("ul");
+    statDisplay.className = 'leader-display_stats';
+    var statsArray = argsObj.showHealth ? ['health'] : [];
+    statsArray = statsArray.concat(['culture','wits','bravery']);
+    for (var i = 0; i <= statsArray.length - 1; i++) {
+        var statName = statsArray[i];
+        var statValue = leader[`_${statName}`];
+        var statLi = document.createElement("li");
+        statLi.className = `leader-display_stats_stat-display ${statName}`;
+        var label = document.createElement("span");
+        label.className = `leader-display_stats_stat-display_label`;
+        label.append(capitalizeFirstLetter(statName) + ':');
+        statLi.append(label);
+        var container = document.createElement("span");
+        container.className = `leader-display_stats_stat-display_container`;
+        var bar = document.createElement("span");
+        bar.className = `leader-display_stats_stat-display_container_bar ${statName} ${zeroToTenString(statValue)}`;
+        bar.append(statValue);
+        container.append(bar);
+        statLi.append(container);
+        statDisplay.append(statLi);
+    }
+    leaderDisplay.append(statDisplay);
+
+    var extraSections = ['sicknesses','immunities'];
+    extraSections.map(function(objectName){
+        var statObj = leader['_'+objectName];
+        var keys = Object.keys(statObj);
+        if (keys.length){
+            var info = document.createElement("div");
+            info.className = `leader-display_extra-info ${objectName}`;
+            var label = document.createElement("span");
+            label.append(`${capitalizeFirstLetter(objectName)}: `);
+            info.append(label);
+            info.append(capitalizeFirstLetter(sentenceForm(keys))+'.');
+            leaderDisplay.append(info);
+        }
+    });
+
+    return leaderDisplay;
+}
+
+function createPartyCreationModal(){
+    var modalContent = createModalContentContainer();
+
+    var headline = document.createElement("h2");
+    headline.append('Create a New Caravan:');
+    modalContent.append(headline);
+
+    var instructionsA = document.createElement("h5");
+    instructionsA.innerHTML = 'Add to your caravan from the leaders below.<br>You may edit their names after adding.'
+    modalContent.append(instructionsA);
+
+    var instructionsC = document.createElement("h4");
+    instructionsC.innerHTML = 'Available Leaders:'
+    modalContent.append(instructionsC);
+    
+    var leaderPool = document.createElement("ul");
+    leaderPool.className = 'roster-display';
+    modalContent.append(leaderPool);
+
+    function addLeaderToPool(){
+        var leader = generateLeader();
+        var leaderButton = createLeaderDisplay({
+            leader: leader,
+            showHealth: false,
+            className: 'button',
+        });
+        leaderButton.addEventListener('click',function(){
+            leaderButton.parentNode.removeChild(leaderButton);
+            moveLeaderToParty(leader); 
+        })
+        leaderPool.append(leaderButton);
+    }
+
+    modalContent.append(document.createElement("hr"));
+
+    var instructionsD = document.createElement("h4");
+    instructionsD.innerHTML = 'Your Caravan:'
+    modalContent.append(instructionsD);
+
+    var leaderRoster = [];
+    trailGame.tempRoster = undefined;
+    debugRoster = leaderRoster;
+    var rosterDisplay = document.createElement("ul");
+    rosterDisplay.className = 'roster-display';
+    modalContent.append(rosterDisplay);
+
+    modalContent.append(document.createElement("hr"));
+    var finishControls = document.createElement("ul");
+    finishControls.className = 'controls';
+    var finishButton = createButton({
+        buttonText: "Let's Go!",
+        buttonClassName: 'disabled',
+        liClassName: 'full-width',
+        callback: function(){
+            trailGame.tempRoster = roster;
+            dismissActiveModal();
+        }
+    });
+    finishControls.append(finishButton);
+    modalContent.append(finishControls);
+
+    function moveLeaderToParty(leader){
+        leaderRoster.push(leader);
+        rosterDisplay.prepend(createLeaderDisplay({leader: leader, editable: true, showHealth: false}));
+        addLeaderToPool();
+        finishButton.querySelector('button').classList.remove('disabled');
+    }
+
+    for (var i = 2; i >= 0; i--) {
+        addLeaderToPool()
+    }
+
+    return createModal({
+        contentNode: modalContent,
+        active: true,
+    });
+}
+
+function createPartyConfirmModal(){
+    var modalContent = createModalContentContainer();
 }
 
 function createJourneyChoiceModal(partyName){
@@ -7403,7 +7676,6 @@ function createJourneyChoiceModal(partyName){
         contentNode: modalContent,
         active: true,
     });
-
 }
 
 function createCrossroadsModal(lines){
