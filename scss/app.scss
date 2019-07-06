@@ -6,11 +6,14 @@ html{
 $plum: #664870;
 $magenta: #ad48d0;
 $dove: #ccc;
+$dark-dove: #999;
 $eggshell: #eee;
 $slate: #3c4448;
 $dusty: #968ca0;
 $mauve: #7b556c;
 $granite: #556f7b;
+$dark-shadow: fade-out(black,0.75);
+$light-shadow: fade-out(#2e2e2e,0.75);
 
 // sizes
 $column-padding-width: 0.5rem;
@@ -274,7 +277,7 @@ div#log{
     .modal_content{
     	padding: 0.5em;
 
-    	& > *:first-child{
+    	>:first-child{
     		margin-top: 0;
     	}
 
@@ -311,7 +314,20 @@ button{
 
 	@include emboss($color: $dusty, $border-width: $button-border-width, $inset: false);
 
-	@include button-behavior($dusty)
+	@include button-behavior($dusty);
+
+	&.warning{
+
+		background-color: $mauve;
+		@include emboss($color: $mauve, $border-width: $button-border-width, $inset: false);
+
+		@include button-behavior($mauve);
+	}
+}
+
+input{
+	background-color: $dark-shadow;
+	color: white;
 }
 
 .icon {
@@ -384,9 +400,7 @@ button{
     		}
 
     		&_name-input{
-    			background-color: fade-out(black,0.5);
     			@include emboss($color: $mauve, $border-width: $button-border-width);
-    			color: white;
     		}
 		}
 	}
@@ -408,7 +422,7 @@ button{
 				flex: 1;
 				font-size: 0;
 
-				background-color: fade-out(black,0.5);
+				background-color: $dark-shadow;
     			@include emboss($color: $mauve, $border-width: $button-border-width);
 
     			&_bar{
@@ -448,3 +462,90 @@ button{
 		margin-top: $column-padding-width / 2;
 	}
 }
+
+.trade-display{
+
+	&_item-list{
+		@extend %no-bullet-list;
+
+		background-color: $granite;
+		background-image: $marble-bg;
+		background-size: 400px;
+		@include emboss($color: $slate, $border-width: $button-border-width);
+
+		&_item{
+			width: 100%;
+			padding: $button-border-width $column-padding-width;
+			background-color: $dark-shadow;
+
+			&:nth-child(odd){
+				background-color: $light-shadow;
+			}
+
+			&:first-of-type {
+			    padding-top: $button-border-width * 2;
+			}
+
+			&:last-of-type {
+			    padding-bottom: $button-border-width * 2;
+			}
+
+			&_basics{
+				display: flex;
+    			justify-content: space-between;
+
+    			margin: 2 * $button-border-width 0;
+
+    			color: white;
+
+    			&_name, &_input-amount, &_amount{
+    				font-size: 0.85em;
+    			}
+
+    			&_input-amount{
+    				width: 3.5em;
+    				text-align: right;
+
+    				@include emboss($color: $dark-shadow, $border-width: $button-border-width);
+    			}
+			}
+
+			&_extras{
+				@extend %no-bullet-list;
+
+				font-size: 0.5em;
+
+				&_item{
+
+					padding-right: $column-padding-width;
+					color: $dark-dove;
+
+					&.buy, &.sell{
+						width: 100%;
+						box-sizing: border-box;
+						color: $dove;
+
+						.complex & {
+							border-bottom: 1px solid $dark-dove;
+						}
+					}
+
+					.shop &{
+						&.buy, &.sell{
+							width: 50%;
+						}
+
+						&.buy{
+							text-align: right;
+							padding-right: 0;
+						}
+					}
+				
+				}
+			}
+		}
+	}
+}
+
+
+

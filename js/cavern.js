@@ -1436,6 +1436,7 @@ generateAlcohol(true).map(function(alcohol,index){
 trailGame.goodsBySellPrice = Object.keys(trailGame.goodsClasses).sort(function(goodsA,goodsB){
     return trailGame.goodsClasses[goodsA].sell -  trailGame.goodsClasses[goodsB].sell;
 });
+trailGame.goodsBySellPrice.splice(trailGame.goodsBySellPrice.indexOf('food'),1);
 
 trailGame.weekLength = 5;
 
@@ -3196,6 +3197,24 @@ function getGoodsBySell(){
 
 // trade functions
 
+function sortByTradeType(arrayOfNames){
+
+    function getSortValue(name){
+        var value = 0;
+        value = trailGame.pachyderms.indexOf(name) !== -1 ? 50000 : value;
+        value = trailGame.pets.indexOf(name) !== -1 ? 10000 : value;
+        value = trailGame.turtles.indexOf(name) !== -1 ? 5000 : value;
+        value = trailGame.goodsBySellPrice.indexOf(name) !== -1 ? 1000 : value;
+        var tradeClass = findItemFromKey(name);
+        value += tradeClass.sell || 0;
+        return value
+    }
+
+    return arrayOfNames.sort(function(nameA,nameB){
+        return getSortValue(nameB) - getSortValue(nameA);
+    })
+}
+
 function enactTradeObj(tradeObj,adding){
     var modifier = adding === true ? 1 : -1;
     var goodsClasses = Object.keys(trailGame.goodsClasses);
@@ -3221,22 +3240,40 @@ function removeTrade(tradeObj){
     enactTradeObj(tradeObj,false);
 }
 
-function addToTrade(tradeObj,number,key,keySellPrice){
+function addToTrade(tradeObj,number,key,price){
     tradeObj.actualValue = tradeObj.actualValue || 0;
+    var item = findItemFromKey(key);
+    price = price || item.sell;
     tradeObj[key] = tradeObj[key] === undefined ? number : tradeObj[key] + number;
-    tradeObj.actualValue += number * keySellPrice;
+    tradeObj.actualValue += number * price;
+    if (item.animalClass !== undefined){
+        tradeObj.capacity = tradeObj.capacity || 0;
+        tradeObj.capacity += item.capacity * number;
+    }
+    if (item.goodsType !== undefined){
+        tradeObj.weight = tradeObj.weight || 0;
+        tradeObj.weight += number;
+    }
     return tradeObj;
 }
 
-function removeFromTrade(tradeObj,number,key,keySellPrice){
+function removeFromTrade(tradeObj,number,key,price){
     var currentNum = tradeObj[key] || 0;
     var actualChange = clamp(number,0,currentNum);
+    var item = findItemFromKey(key);
+    price = price || item.sell;
     if( currentNum > number ){
         tradeObj[key] -= number;
     } else {
         delete tradeObj[key]
     }
-    tradeObj.actualValue -= Math.min(actualChange * keySellPrice,tradeObj.actualValue);
+    if (item.animalClass !== undefined){
+        tradeObj.capacity = Math.max(0,tradeObj.capacity - (item.capacity * number));
+    }
+    if (item.goodsType !== undefined){
+        tradeObj.weight = Math.max(0,tradeObj.weight - number);
+    }
+    tradeObj.actualValue -= Math.min(actualChange * price,tradeObj.actualValue);
     return tradeObj;
 }
 
@@ -3244,6 +3281,8 @@ function scrubTradeObj(trade){
     var clone = {...trade};
     delete clone.expectedValue;
     delete clone.actualValue;
+    delete clone.weight;
+    delete clone.capacity;
     return clone;
 }
 
@@ -3271,7 +3310,7 @@ function getTradeOffer(argsObj){
         var number = getRandomInt(1,Math.ceil( approxValue / animal.sell ));
         if (number > 0){
             var key = animal.animalClass;
-            addToTrade(offer,number,key,animal.sell);
+            addToTrade(offer,number,key);
             approxValue -= number * animal.sell;
         }
         numAnimalTypes--;
@@ -3282,7 +3321,7 @@ function getTradeOffer(argsObj){
         var number = getRandomInt(1,Math.ceil( approxValue / Math.max(good.sell,1) ));
         if (number > 0){
             var key = good.goodsType;
-            addToTrade(offer,number,key,good.sell);
+            addToTrade(offer,number,key);
             approxValue -= number * good.sell;
         }
         numGoodsTypes--;
@@ -3309,7 +3348,7 @@ function getTradeProposal(argsObj){
         var number = getRandomInt(Math.round(max/2),max);
         if (number > 0){
             var key = animal.animalClass;
-            addToTrade(offer,number,key,animal.sell);
+            addToTrade(offer,number,key);
             approxValue -= number * animal.sell;
             leftoverCapacity -= number * animal.capacity;
         }
@@ -3323,7 +3362,7 @@ function getTradeProposal(argsObj){
         var number = getRandomInt(1,max);
         if (number > 0){
             var key = good.goodsType;
-            addToTrade(offer,number,key,good.sell);
+            addToTrade(offer,number,key);
             approxValue -= number * good.sell;
         }
         numGoodsTypes--;
@@ -3334,7 +3373,7 @@ function getTradeProposal(argsObj){
 function findItemFromKey(key){
     var isGoods = Object.keys(trailGame.goodsClasses).indexOf(key) !== -1;
     var isAnimal = Object.keys(trailGame.animalClasses).indexOf(key) !== -1;
-    var item = false;
+    var item = {};
     item = isGoods ? generateGood(key) : item;
     item = isAnimal ? generateAnimal(key) : item;
     return item;
@@ -3345,12 +3384,12 @@ function getFinalSale(){
     Object.keys(trailGame.goods).map(function(key,index){
         var item = findItemFromKey(key);
         var amount = trailGame.goods[key];
-        addToTrade(tradeObj,amount,key,item.sell);
+        addToTrade(tradeObj,amount,key);
     });
     Object.keys(trailGame.animals).map(function(key,index){
         var item = findItemFromKey(key);
         var amount = trailGame.animals[key];
-        addToTrade(tradeObj,amount,key,item.sell);
+        addToTrade(tradeObj,amount,key);
     });
     tradeObj.actualValue = tradeObj.actualValue || 0;
     return tradeObj;
@@ -4106,7 +4145,7 @@ function generateStrangeCave(argObj){
                         // trade
                         //tradeObj,number,key,keySellPrice
                         var offer = {};
-                        addToTrade(offer,rollDice(),goods.goodsType,goods.sell);
+                        addToTrade(offer,rollDice(),goods.goodsType);
                         var proposal = getTradeProposal({approxValue: offer.actualValue});
                         var textOffer = sentenceForm(scrubTradeObj(offer));
                         var textProposal = sentenceForm(scrubTradeObj(proposal));
@@ -4153,7 +4192,7 @@ function generateStrangeCave(argObj){
                         lines.push(`One of the ${pluralize(pet.animalClass)} takes a shining to ${leader._name}.`);
                         //tradeObj,number,key,keySellPrice
                         var offer = {};
-                        addToTrade(offer,1,pet.animalClass,pet.sell);
+                        addToTrade(offer,1,pet.animalClass);
                         var proposal = getTradeProposal({approxValue: offer.actualValue});
                         var textProposal = sentenceForm(scrubTradeObj(proposal));
                         lines.push(`We offer to give the hermit ${textProposal} in exchange for the ${pet.animalClass}.`);
@@ -4192,7 +4231,7 @@ function generateStrangeCave(argObj){
                         lines.push(`This monastery is known for a particularly refined variety of ${craftPair[0]} they ${craftPair[1]} here.`);
                         var diceNum = clamp(Math.ceil(4 - (goodsObj.sell / 25)),1,4);
                         var offer = {};
-                        addToTrade(offer,rollDice(diceNum),goodsObj.goodsType,goodsObj.sell);
+                        addToTrade(offer,rollDice(diceNum),goodsObj.goodsType);
                         var proposal = getTradeProposal({approxValue: offer.actualValue});
                         var textOffer = sentenceForm(scrubTradeObj(offer));
                         var textProposal = sentenceForm(scrubTradeObj(proposal));
@@ -4297,7 +4336,7 @@ function generateStrangeCave(argObj){
                         for (var i = wants.length - 1; i >= 0; i--) {
                             var good = generateGood(wants[i]);
                             if (trailGame.goods[good.goodsType] !== undefined){
-                                addToTrade(proposal,clamp(rollDice(2),1,trailGame.goods[good.goodsType]),good.goodsType,good.sell);
+                                addToTrade(proposal,clamp(rollDice(2),1,trailGame.goods[good.goodsType]),good.goodsType);
                             }
                         }
                         var offer = getTradeOffer({approxValue: proposal.actualValue});
@@ -4870,9 +4909,9 @@ function generateTrap(trapName){
 
 function generateLoan(argsObj){
     argsObj = argsObj || {};
-    var level = argsObj.level || rollDice(1,10);
+    var level = argsObj.level || rollDice(1,15);
     var loan = {};
-    var relation = argsObj.relation || shuffle('Auntie','Uncle','Mama','Papa','Cousin')[0];
+    var relation = argsObj.relation || shuffle(['Auntie ','Uncle ','Mama ','Papa ','Cousin ','Grandpa ','Grandma '])[0];
     if (argsObj.max !== undefined){
         level = Math.round(argsObj.max / (1000));
     }
@@ -6356,7 +6395,7 @@ function subEventSweetenProposal(argsObj,lines){
         var max = Math.round(target / sellPrice);
         if (extra > 0 && max > 0){
             var amountAdded = getRandomInt(1,max);
-            addToTrade(proposal,amountAdded,keyName,sellPrice);
+            addToTrade(proposal,amountAdded,keyName);
             target -= (amountAdded * sellPrice);
             additionalProposal[keyName] = amountAdded;
             didAddValue = true;
@@ -7191,10 +7230,10 @@ function loadPremadeParty(partyName){
     });
     var shoppingList = {};
     Object.keys(partyObj.animals).map(function(animalClass){
-        addToTrade(shoppingList,partyObj.animals[animalClass],animalClass,trailGame.animalClasses[animalClass].sell);
+        addToTrade(shoppingList,partyObj.animals[animalClass],animalClass);
     });
     Object.keys(partyObj.goods).map(function(goodsClass){
-        addToTrade(shoppingList,partyObj.goods[goodsClass],goodsClass,trailGame.goodsClasses[goodsClass].sell);
+        addToTrade(shoppingList,partyObj.goods[goodsClass],goodsClass);
     });
     var loan = generateLoan({max: shoppingList.actualValue, name: partyObj.relative});
     signLoan(loan);
@@ -7334,7 +7373,7 @@ function createButton(argsObj){
 
 function createModal(argsObj){
     argsObj = argsObj || {};
-    argsObj.active = argsObj.active === true ? true : false;
+    argsObj.active = argsObj.active === false ? false : true;
 
     var modal = document.createElement("div");
     modal.className = 'modal';
@@ -7599,7 +7638,7 @@ function createPartyCreationModal(){
 
     var leaderRoster = [];
     trailGame.tempRoster = undefined;
-    debugRoster = leaderRoster;
+    //debugRoster = leaderRoster;
     var rosterDisplay = document.createElement("ul");
     rosterDisplay.className = 'roster-display';
     modalContent.append(rosterDisplay);
@@ -7612,8 +7651,11 @@ function createPartyCreationModal(){
         buttonClassName: 'disabled',
         liClassName: 'full-width',
         callback: function(){
-            trailGame.tempRoster = roster;
+            trailGame.temp.roster = leaderRoster;
             dismissActiveModal();
+            setTimeout(function(){
+                createPartyConfirmModal();
+            },400);
         }
     });
     finishControls.append(finishButton);
@@ -7636,8 +7678,239 @@ function createPartyCreationModal(){
     });
 }
 
+function setBuyingOptions(){
+    trailGame.temp.loanOptions = [
+        generateLoan({level: getRandomInt(1,5)}),
+        generateLoan({level: getRandomInt(6,10)}),
+        generateLoan({level: getRandomInt(11,15)})
+    ];
+
+    var pachyderms = shuffle([...trailGame.pachyderms]);
+    var pets = shuffle([...trailGame.pets]);
+    var turtles = shuffle([...trailGame.turtles]);
+    var goods = shuffle(Object.keys(trailGame.goodsClasses));
+    delete goods[goods.indexOf('food')];
+
+    trailGame.temp.shoppingCart = {};
+    var store = [
+        pachyderms[0],
+        pachyderms[1],
+        pachyderms[2],
+        pets[0],
+        pets[1],
+        pets[2],
+        turtles[0],
+        turtles[1],
+        turtles[2],
+        goods[0],
+        goods[1],
+        goods[2],
+        goods[3],
+        goods[4],
+        goods[5],
+        'food'
+    ];
+    for (var i = store.length - 1; i >= 0; i--) {
+        addToTrade(trailGame.temp.shoppingCart,0,store[i]);
+    }
+}
+
 function createPartyConfirmModal(){
+    var textNode = document.createElement("div");
+
+    var headline = document.createElement("h2");
+    headline.append('Your Caravan Leaders:');
+    textNode.append(headline);
+
+    var leaderList = [];
+    trailGame.temp.roster.map(function(leader){
+        leaderList.push(`- ${leader._name} the ${leader._raceName} ${leader._title}`);
+    });
+    textNode.append(textArrayToP(leaderList));
+
+    var headlineB = document.createElement("h5");
+    headlineB.append('Does this look correct?');
+    textNode.append(headlineB);
+
+    var buttons = [
+        {
+            buttonText: `Confirm`,
+            callback: function(){
+                dismissActiveModal(true);
+                setBuyingOptions();
+                setTimeout(function(){
+                    createLoanChoiceModal();
+                },400);
+            }
+        },{
+            buttonText: `Start Over`,
+            buttonClassName: 'warning',
+            callback: function(){
+                dismissActiveModal(true);
+                setTimeout(function(){
+                    createPartyCreationModal();
+                },400);
+            }
+        }
+    ];
+
+    return createSimpleModal({textNode: textNode, buttons: buttons});
+}
+
+function createLoanChoiceModal(){
     var modalContent = createModalContentContainer();
+
+    var headline = document.createElement("h2");
+    headline.append('Take Out A Loan:');
+    modalContent.append(headline);
+
+    var instructionsA = document.createElement("h5");
+    instructionsA.innerHTML = ('You need to get a loan from a relative to fund your expedition.<br>Loans accrue fixed interest that must be paid back upon arrival at your destination.');
+    modalContent.append(instructionsA);
+
+    trailGame.temp.loan = undefined;
+
+    trailGame.temp.loanOptions.map(function(loan){
+        var description = document.createElement("h6");
+        modalContent.append(description);
+        description.innerHTML = `${loan.giver} is willing to loan you up to ${loan.max} Silver at ${loan.interest}% interest.`;
+
+        modalContent.append(createButton({
+            buttonText: `${loan.max} at ${loan.interest}%`,
+            useLi: false,
+            callback: function(){
+                dismissActiveModal(true);
+                trailGame.temp.loan = loan;
+                setTimeout(function(){
+                    
+                },400);
+            },
+        }));
+    });
+
+    return createModal({
+        contentNode: modalContent
+    });
+}
+
+function createTradeDisplay(argsObj){
+    argsObj = argsObj || {};
+    trade = argsObj.trade || {};
+    argsObj.type = argsObj.type || 'shop';
+    trade = argsObj.type === 'shop' ? trailGame.temp.shoppingCart : trade;
+    var isEditable = (argsObj.type === 'shop' || false) // fill in more types later
+    var showCapacity = (argsObj.type === 'shop' || false) // fill in more types later
+
+    var tradeKeys = sortByTradeType(Object.keys(scrubTradeObj(trade)));
+
+    var tradeDisplay = document.createElement("div");
+    tradeDisplay.classList.add("trade-display");
+    tradeDisplay.classList.add(argsObj.type);
+
+    var itemList = document.createElement("ul");
+    itemList.classList.add("trade-display_item-list");
+    tradeDisplay.append(itemList);
+    for (var i = 0; i <= tradeKeys.length - 1; i++) {
+        var itemLi = document.createElement("li");
+        itemLi.className = "trade-display_item-list_item";
+        itemList.append(itemLi);
+
+        var itemName = tradeKeys[i];
+        var itemAmount = trade[itemName];
+        var itemObj = findItemFromKey(itemName);
+
+        var basics = document.createElement("div");
+        basics.className = "trade-display_item-list_item_basics";
+        itemLi.append(basics);
+        var basicsName = document.createElement("span");
+        basicsName.className = "trade-display_item-list_item_basics_name";
+        basicsName.append(toTitleCase(pluralize(itemName)) + ': ');
+        basics.append(basicsName);
+        if (isEditable){
+            var amountInput = document.createElement("input");
+            amountInput.className = "trade-display_item-list_item_basics_input-amount";
+            amountInput.setAttribute('type','number');
+            amountInput.setAttribute('min','0');
+            amountInput.setAttribute('step','1');
+            amountInput.value = itemAmount;
+            basics.append(amountInput);
+        } else {
+            var amountSpan = document.createElement("span");
+            amountSpan.className = "trade-display_item-list_item_basics_amount";
+            amountSpan.append(itemAmount);
+            basics.append(amountSpan);
+        }
+
+        var extras = document.createElement("ul");
+        extras.className = "trade-display_item-list_item_extras";
+        itemLi.append(extras);
+        var extrasLegend = [
+            ['sell','Value'],
+            ['edible','Edible'],
+            ['capacity','Carrying Capacity'],
+            ['speed','Speed'],
+            ['dexterity','Sure-Footedness'],
+            ['ferocity', 'Ferocity'],
+            ['hunger','Hunger'],
+            ['meat','Meat'],
+            ['shoes','Shoes Required'],
+            ['pet','Adorable']
+        ];
+        if (argsObj.type === 'shop'){
+            extrasLegend.unshift(['sell','Sell Value']);
+            extrasLegend[1] = ['buy','Cost'];
+        }
+        var complexInfo =  false;
+        for (var j = 0; j <= extrasLegend.length - 1; j++) {
+            var pair = extrasLegend[j];
+            var value = itemObj[pair[0]];
+            if (value !== undefined){
+                var extraItem = document.createElement("li");
+                extraItem.className = "trade-display_item-list_item_extras_item";
+                var outputString = '';
+                if (typeof(value) === 'number'){
+                    outputString = `${pair[1]}: ${value}`;
+                } else if (value === true){
+                   outputString = `${pair[1]}`;
+                    
+                }
+                if (outputString !== '' && (['buy','sell'].indexOf(pair[0]) === -1)){
+                    complexInfo = true;
+                }
+                if (outputString !== ''){
+                    extraItem.append(outputString);
+                    extraItem.classList.add(pair[0]);
+                    extras.append(extraItem);
+                }
+            }
+        }
+        if (complexInfo){
+            extras.classList.add('complex');
+        }
+    }
+    var totals = document.createElement("div");
+    totals.className = "trade-display_totals";
+
+    return tradeDisplay;
+}
+
+function createShopModal(){
+    var modalContent = createModalContentContainer();
+
+    var headline = document.createElement("h2");
+    headline.append('Purchase Supplies:');
+    modalContent.append(headline);
+
+    var instructionsA = document.createElement("h5");
+    instructionsA.innerHTML = (`You need to use your loan to purchase supplies.<br>You'll need pachyderms to carry goods, goods and/or other animals to bring to sell, and most importantly, you need food!`);
+    modalContent.append(instructionsA);
+
+    setBuyingOptions() //debug
+    modalContent.append(createTradeDisplay({type: 'shop'}));
+
+    return createModal({
+        contentNode: modalContent
+    });
 }
 
 function createJourneyChoiceModal(partyName){

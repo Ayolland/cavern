@@ -36,7 +36,7 @@ body {
     font-family: "Nightmare", Serif;
     font-weight: 400; }
 
-.controls, .roster-display, .leader-display_stats {
+.controls, .roster-display, .leader-display_stats, .trade-display_item-list, .trade-display_item-list_item_extras {
   display: flex;
   flex-wrap: wrap;
   margin: 0;
@@ -139,7 +139,7 @@ div#log {
     border-color: #1e2224 #6d7376 #8a8f91 #2d3336; }
   .modal .modal_content {
     padding: 0.5em; }
-    .modal .modal_content > *:first-child {
+    .modal .modal_content > :first-child {
       margin-top: 0; }
   .modal.active {
     background-color: rgba(0, 0, 0, 0.75);
@@ -168,6 +168,23 @@ button {
   button.disabled {
     filter: contrast(0.75) brightness(0.75);
     pointer-events: none; }
+  button.warning {
+    background-color: #7b556c;
+    border-width: 0.12rem;
+    border-style: solid;
+    box-sizing: border-box;
+    border-color: #b099a7 #5c4051 #3e2b36 #9c8091; }
+    button.warning:hover:not(.disabled), button.warning:focus:not(.disabled), button.warning:active:not(.disabled) {
+      background-color: #7d576e;
+      filter: brightness(120%);
+      box-shadow: 0 0 5px #ad48d0; }
+    button.warning.disabled {
+      filter: contrast(0.75) brightness(0.75);
+      pointer-events: none; }
+
+input {
+  background-color: rgba(0, 0, 0, 0.25);
+  color: white; }
 
 .icon {
   display: block;
@@ -227,12 +244,10 @@ button {
       .leader-display_basics_lockup_name, .leader-display_basics_lockup_name-input {
         font-size: 1.25em; }
       .leader-display_basics_lockup_name-input {
-        background-color: rgba(0, 0, 0, 0.5);
         border-width: 0.12rem;
         border-style: solid;
         box-sizing: border-box;
-        border-color: #3e2b36 #9c8091 #b099a7 #5c4051;
-        color: white; }
+        border-color: #3e2b36 #9c8091 #b099a7 #5c4051; }
   .leader-display_stats {
     flex-direction: column; }
     .leader-display_stats_stat-display {
@@ -243,7 +258,7 @@ button {
       .leader-display_stats_stat-display_container {
         flex: 1;
         font-size: 0;
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: rgba(0, 0, 0, 0.25);
         border-width: 0.12rem;
         border-style: solid;
         box-sizing: border-box;
@@ -311,3 +326,52 @@ button {
             background-position: 100% 100%; }
   .leader-display_extra-info {
     margin-top: 0.25rem; }
+
+.trade-display_item-list {
+  background-color: #556f7b;
+  background-image: url("../assets/images/marble.png");
+  background-size: 400px;
+  border-width: 0.12rem;
+  border-style: solid;
+  box-sizing: border-box;
+  border-color: #1e2224 #6d7376 #8a8f91 #2d3336; }
+  .trade-display_item-list_item {
+    width: 100%;
+    padding: 0.12rem 0.5rem;
+    background-color: rgba(0, 0, 0, 0.25); }
+    .trade-display_item-list_item:nth-child(odd) {
+      background-color: rgba(46, 46, 46, 0.25); }
+    .trade-display_item-list_item:first-of-type {
+      padding-top: 0.24rem; }
+    .trade-display_item-list_item:last-of-type {
+      padding-bottom: 0.24rem; }
+    .trade-display_item-list_item_basics {
+      display: flex;
+      justify-content: space-between;
+      margin: 0.24rem 0;
+      color: white; }
+      .trade-display_item-list_item_basics_name, .trade-display_item-list_item_basics_input-amount, .trade-display_item-list_item_basics_amount {
+        font-size: 0.85em; }
+      .trade-display_item-list_item_basics_input-amount {
+        width: 3.5em;
+        text-align: right;
+        border-width: 0.12rem;
+        border-style: solid;
+        box-sizing: border-box;
+        border-color: rgba(0, 0, 0, 0.625) rgba(179, 179, 179, 0.4375) rgba(210, 210, 210, 0.55) rgba(0, 0, 0, 0.4375); }
+    .trade-display_item-list_item_extras {
+      font-size: 0.5em; }
+      .trade-display_item-list_item_extras_item {
+        padding-right: 0.5rem;
+        color: #999; }
+        .trade-display_item-list_item_extras_item.buy, .trade-display_item-list_item_extras_item.sell {
+          width: 100%;
+          box-sizing: border-box;
+          color: #ccc; }
+          .complex .trade-display_item-list_item_extras_item.buy, .complex .trade-display_item-list_item_extras_item.sell {
+            border-bottom: 1px solid #999; }
+        .shop .trade-display_item-list_item_extras_item.buy, .shop .trade-display_item-list_item_extras_item.sell {
+          width: 50%; }
+        .shop .trade-display_item-list_item_extras_item.buy {
+          text-align: right;
+          padding-right: 0; }
