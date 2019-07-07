@@ -3277,6 +3277,13 @@ function removeFromTrade(tradeObj,number,key,price){
     return tradeObj;
 }
 
+function setTradeValue(tradeObj,number,key,price){
+    var currentNum = tradeObj[key];
+    removeFromTrade(tradeObj,currentNum,key,price);
+    addToTrade(tradeObj,number,key,price);
+    return tradeObj;
+}
+
 function scrubTradeObj(trade){
     var clone = {...trade};
     delete clone.expectedValue;
@@ -4923,8 +4930,9 @@ function generateLoan(argsObj){
 
 function signLoan(loan){
     loan = loan || generateLoan();
+    var founder = trailGame.caravan.founder || generateLeader();
     trailGame.caravan.loan = {...loan};
-    var message = `${trailGame.caravan.founder._name} takes out a loan of up to ${loan.max} silver at ${loan.interest}% interest from their ${loan.giver}.`
+    var message = `${founder._name} takes out a loan of up to ${loan.max} silver at ${loan.interest}% interest from their ${loan.giver}.`
     addToLedger(message);
     return message;
 }
@@ -7638,7 +7646,6 @@ function createPartyCreationModal(){
 
     var leaderRoster = [];
     trailGame.tempRoster = undefined;
-    //debugRoster = leaderRoster;
     var rosterDisplay = document.createElement("ul");
     rosterDisplay.className = 'roster-display';
     modalContent.append(rosterDisplay);
@@ -7798,8 +7805,7 @@ function createTradeDisplay(argsObj){
     trade = argsObj.trade || {};
     argsObj.type = argsObj.type || 'shop';
     trade = argsObj.type === 'shop' ? trailGame.temp.shoppingCart : trade;
-    var isEditable = (argsObj.type === 'shop' || false) // fill in more types later
-    var showCapacity = (argsObj.type === 'shop' || false) // fill in more types later
+    var isEditable = (argsObj.type === 'shop' || false) // TODO fill in more types later
 
     var tradeKeys = sortByTradeType(Object.keys(scrubTradeObj(trade)));
 
@@ -7860,7 +7866,7 @@ function createTradeDisplay(argsObj){
             extrasLegend.unshift(['sell','Sell Value']);
             extrasLegend[1] = ['buy','Cost'];
         }
-        var complexInfo =  false;
+        var hasComplexInfo =  false;
         for (var j = 0; j <= extrasLegend.length - 1; j++) {
             var pair = extrasLegend[j];
             var value = itemObj[pair[0]];
@@ -7884,12 +7890,55 @@ function createTradeDisplay(argsObj){
                 }
             }
         }
-        if (complexInfo){
+        if (hasComplexInfo){
             extras.classList.add('complex');
         }
     }
     var totals = document.createElement("div");
     totals.className = "trade-display_totals";
+    tradeDisplay.append(totals);
+
+    var showCapacity = (argsObj.type === 'shop' || false) // TODO fill in more types later
+    var valueDisplay = document.createElement("p");
+    valueDisplay.className = "trade-display_totals_value-display";
+    var valueLabelText = 'Total Cost';
+    valueDisplay.append(valueLabelText + ': ');
+    totals.append(valueDisplay);
+    var totalValue = document.createElement("span");
+    totalValue.className = "trade-display_totals_value-display_total-value";
+    var loanMax = document.createElement("span");
+    loanMax.className = "trade-display_totals_value-display_loan-max";
+    if (argsObj.type === 'shop' || false){
+        valueDisplay.append(totalValue);
+        totalValue.append(trade.actualValue);
+    } // TODO fill in more types later
+    if (argsObj.type === 'shop' || false){
+        valueDisplay.append('/');
+        valueDisplay.append(loanMax);
+        loanMax.append(trailGame.caravan.loan.max);
+    } // TODO fill in more types later
+    valueDisplay.append(' silver');
+    if (showCapacity){
+        var capacityDisplay = document.createElement("p");
+        capacityDisplay.className = "trade-display_totals_capacity-display";
+        var capacityLabelText = 'Caravan Capacity';
+        capacityDisplay.append(capacityLabelText + ': ');
+        totals.append(capacityDisplay);
+        var weight = document.createElement("span");
+        weight.className = "trade-display_totals_capacity-display_weight";
+        var capacityMax = document.createElement("span");
+        capacityMax.className = "trade-display_totals_capacity-display_max";
+        if (argsObj.type === 'shop' || false){
+            capacityDisplay.append(weight);
+            weight.append(trade.weight);
+        } // TODO fill in more types later
+        if (argsObj.type === 'shop' || false){
+            capacityDisplay.append('/');
+            capacityDisplay.append(capacityMax);
+            capacityMax.append(trade.capacity);
+        } // TODO fill in more types later
+
+    }
 
     return tradeDisplay;
 }
@@ -7905,7 +7954,8 @@ function createShopModal(){
     instructionsA.innerHTML = (`You need to use your loan to purchase supplies.<br>You'll need pachyderms to carry goods, goods and/or other animals to bring to sell, and most importantly, you need food!`);
     modalContent.append(instructionsA);
 
-    setBuyingOptions() //debug
+    setBuyingOptions(); //debug
+    signLoan(); // debug
     modalContent.append(createTradeDisplay({type: 'shop'}));
 
     return createModal({
