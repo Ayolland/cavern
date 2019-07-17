@@ -2621,8 +2621,12 @@ function newCaravan(){
     trailGame.animals = {};
     trailGame.goods = {};
     trailGame.ledger = {};
-    trailGame.temp = {};
     trailGame.lostGame = false;
+
+    //party setup
+    trailGame.temp = {};
+    trailGame.temp.roster = [];
+    trailGame.temp.shoppingCart = {};
     
     // start values
     trailGame.caravan.morale = 10;
@@ -3252,7 +3256,7 @@ function addToTrade(tradeObj,number,key,price){
     }
     if (item.goodsType !== undefined){
         tradeObj.weight = tradeObj.weight || 0;
-        tradeObj.weight += number;
+        tradeObj.weight += number * 1;
     }
     return tradeObj;
 }
@@ -3284,12 +3288,32 @@ function setTradeValue(tradeObj,number,key,price){
     return tradeObj;
 }
 
+function zeroOutTradeValues(tradeObj){
+    var goodsKeys = Object.keys(scrubTradeObj(tradeObj));
+    goodsKeys.map(function(key){
+        setTradeValue(tradeObj,0,key,0);
+    });
+    tradeObj.actualValue = 0;
+    return tradeObj;
+}
+
 function scrubTradeObj(trade){
     var clone = {...trade};
     delete clone.expectedValue;
     delete clone.actualValue;
     delete clone.weight;
     delete clone.capacity;
+    return clone;
+}
+
+function removeZerosFromTrade(trade){
+    var clone = {...trade};
+    var keys = Object.keys(clone);
+    keys.map(function(key){
+        if (clone[key] === 0){
+            delete clone[key];
+        }
+    });
     return clone;
 }
 
@@ -7229,23 +7253,33 @@ function getRandomEvent(){
     return shuffle(events).shift();
 }
 
+function registerParty(partyName){
+    if (partyName !== undefined || !trailGame.temp.roster.length){
+        loadPremadeParty(partyName);
+    }
+    trailGame.temp.roster.map(function(leaderObj){
+        addLeader({leader: leaderObj});
+    });
+    signLoan(trailGame.temp.loan);
+    initialPurchase(removeZerosFromTrade(trailGame.temp.shoppingCart));
+    trailGame.temp = {};
+}
+
 function loadPremadeParty(partyName){
     newCaravan();
     partyName = partyName || shuffle(Object.keys(trailGame.parties))[0];
     var partyObj = trailGame.parties[partyName];
     partyObj.leaders.map(function(leaderArgs){
-        addLeader(leaderArgs);
+        trailGame.temp.roster.push(generateLeader(leaderArgs));
     });
-    var shoppingList = {};
+    var shoppingCart = trailGame.temp.shoppingCart;
     Object.keys(partyObj.animals).map(function(animalClass){
-        addToTrade(shoppingList,partyObj.animals[animalClass],animalClass);
+        addToTrade(shoppingCart,partyObj.animals[animalClass],animalClass);
     });
     Object.keys(partyObj.goods).map(function(goodsClass){
-        addToTrade(shoppingList,partyObj.goods[goodsClass],goodsClass);
+        addToTrade(shoppingCart,partyObj.goods[goodsClass],goodsClass);
     });
-    var loan = generateLoan({max: shoppingList.actualValue, name: partyObj.relative});
-    signLoan(loan);
-    initialPurchase(shoppingList);
+    trailGame.temp.loan = generateLoan({max: shoppingCart.actualValue, name: partyObj.relative});
 }
 
 function loadUp(){
@@ -7439,6 +7473,15 @@ function dismissActiveModal(destroyModal){
     }
 }
 
+function createControlsUl(buttonArr){
+    var controls = document.createElement("ul");
+    controls.className = 'modal_controls controls';
+    buttonArr.map(function(buttonElement){
+        controls.append(buttonElement);
+    });
+    return controls;
+}
+
 function createSimpleModal(argsObj){
     argsObj.buttons = argsObj.buttons || [];
     var modalContent = createModalContentContainer();
@@ -7448,13 +7491,13 @@ function createSimpleModal(argsObj){
     }
 
     if (argsObj.buttons.length){
-        var modalControls = document.createElement("ul");
-        modalControls.className = 'modal_controls controls';
-        modalContent.append(modalControls);
+        var buttonArr = [];
         argsObj.buttons.map(function(buttonArgs){
             buttonArgs.liClassName = buttonArgs.liClassName || 'full-width';
-            modalControls.append(createButton(buttonArgs));
-        })
+            buttonArr.push(createButton(buttonArgs));
+        });
+        var modalControls = createControlsUl(buttonArr);
+        modalContent.append(modalControls);
     };
 
     argsObj.contentNode = modalContent;
@@ -7724,6 +7767,7 @@ function setBuyingOptions(){
 
 function createPartyConfirmModal(){
     var textNode = document.createElement("div");
+    textNode.className = 'text-container';
 
     var headline = document.createElement("h2");
     headline.append('Your Caravan Leaders:');
@@ -7789,7 +7833,7 @@ function createLoanChoiceModal(){
                 dismissActiveModal(true);
                 trailGame.temp.loan = loan;
                 setTimeout(function(){
-                    
+                    createShopModal();
                 },400);
             },
         }));
@@ -7802,16 +7846,84 @@ function createLoanChoiceModal(){
 
 function createTradeDisplay(argsObj){
     argsObj = argsObj || {};
-    trade = argsObj.trade || {};
+    var trade = argsObj.trade || {};
+    var loan = argsObj.loan || generateLoan(); // probably unecessary fail-safe
     argsObj.type = argsObj.type || 'shop';
     trade = argsObj.type === 'shop' ? trailGame.temp.shoppingCart : trade;
+    loan = argsObj.type === 'shop' ? trailGame.temp.loan : loan;
     var isEditable = (argsObj.type === 'shop' || false) // TODO fill in more types later
+    debugTrade = trade // debug
 
     var tradeKeys = sortByTradeType(Object.keys(scrubTradeObj(trade)));
 
     var tradeDisplay = document.createElement("div");
     tradeDisplay.classList.add("trade-display");
     tradeDisplay.classList.add(argsObj.type);
+
+    function updateTradeObject(event){
+        var tradeKey = event.target.getAttribute('name');
+        var newValue = event.target.value;
+        var itemObj = findItemFromKey(tradeKey)
+        setTradeValue(trade,newValue,tradeKey,itemObj.buy);
+        updateTradeDisplay();
+    }
+
+    function updateTradeDisplay(updateAll){
+        updateAll = updateAll === true ? true : false;
+        if (updateAll){
+           var inputs = tradeDisplay.querySelectorAll('input');
+            for (var i = inputs.length - 1; i >= 0; i--) {
+                var key = inputs[i].getAttribute('name');
+                inputs[i].value = trade[key];
+            } 
+        }
+        var overBudget = false;
+        var overWeight = false;
+        var errorMessage = ''
+        if (argsObj.type === 'shop'){
+            var actualCapacityTotal = trade.capacity + 10 * trailGame.temp.roster.length;
+            overBudget = trade.actualValue > loan.max;
+            overWeight = trade.weight > actualCapacityTotal;
+            totalValue.innerHTML = trade.actualValue;
+            tradeWeight.innerHTML = trade.weight;
+            capacityMax.innerHTML = actualCapacityTotal;
+        }// TODO fill in more types later
+
+        var hasAcceptButton = argsObj.acceptButton !== undefined;
+
+        if(overBudget){
+            valueDisplay.classList.add('over');
+            errorMessage += 'Caravan is over-budget.';
+        } else {
+            valueDisplay.classList.remove('over');
+        }
+
+        if(overWeight){
+            capacityDisplay.classList.add('over');
+            errorMessage += errorMessage === '' ? '' : ' ';
+            errorMessage += 'Caravan is over-weight.';
+        } else {
+            capacityDisplay.classList.remove('over');
+        }
+
+        errorDisplay.innerHTML = errorMessage;
+        if (errorMessage.length){
+            errorDisplay.classList.add('has-error');
+        } else {
+            errorDisplay.classList.remove('has-error');
+        }
+
+        if((overWeight || overBudget) && hasAcceptButton){
+            argsObj.acceptButton.classList.add('disabled');
+        } else if ( hasAcceptButton ){
+            argsObj.acceptButton.classList.remove('disabled');
+        }
+    }
+
+    function clearTrade(){
+        zeroOutTradeValues(trade);
+        updateTradeDisplay(true);
+    }
 
     var itemList = document.createElement("ul");
     itemList.classList.add("trade-display_item-list");
@@ -7826,6 +7938,9 @@ function createTradeDisplay(argsObj){
         var itemObj = findItemFromKey(itemName);
 
         var basics = document.createElement("div");
+        if (isEditable){
+            basics = document.createElement("label");
+        }
         basics.className = "trade-display_item-list_item_basics";
         itemLi.append(basics);
         var basicsName = document.createElement("span");
@@ -7838,8 +7953,11 @@ function createTradeDisplay(argsObj){
             amountInput.setAttribute('type','number');
             amountInput.setAttribute('min','0');
             amountInput.setAttribute('step','1');
+            amountInput.setAttribute('name',itemName);
             amountInput.value = itemAmount;
             basics.append(amountInput);
+
+            amountInput.addEventListener('input',updateTradeObject)
         } else {
             var amountSpan = document.createElement("span");
             amountSpan.className = "trade-display_item-list_item_basics_amount";
@@ -7881,7 +7999,7 @@ function createTradeDisplay(argsObj){
                     
                 }
                 if (outputString !== '' && (['buy','sell'].indexOf(pair[0]) === -1)){
-                    complexInfo = true;
+                    hasComplexInfo = true;
                 }
                 if (outputString !== ''){
                     extraItem.append(outputString);
@@ -7898,7 +8016,6 @@ function createTradeDisplay(argsObj){
     totals.className = "trade-display_totals";
     tradeDisplay.append(totals);
 
-    var showCapacity = (argsObj.type === 'shop' || false) // TODO fill in more types later
     var valueDisplay = document.createElement("p");
     valueDisplay.className = "trade-display_totals_value-display";
     var valueLabelText = 'Total Cost';
@@ -7915,29 +8032,36 @@ function createTradeDisplay(argsObj){
     if (argsObj.type === 'shop' || false){
         valueDisplay.append('/');
         valueDisplay.append(loanMax);
-        loanMax.append(trailGame.caravan.loan.max);
+        loanMax.append(loan.max);
     } // TODO fill in more types later
     valueDisplay.append(' silver');
+    var showCapacity = (argsObj.type === 'shop' || false) // TODO fill in more types later
     if (showCapacity){
         var capacityDisplay = document.createElement("p");
         capacityDisplay.className = "trade-display_totals_capacity-display";
         var capacityLabelText = 'Caravan Capacity';
         capacityDisplay.append(capacityLabelText + ': ');
         totals.append(capacityDisplay);
-        var weight = document.createElement("span");
-        weight.className = "trade-display_totals_capacity-display_weight";
+        var tradeWeight = document.createElement("span");
+        tradeWeight.className = "trade-display_totals_capacity-display_weight";
         var capacityMax = document.createElement("span");
         capacityMax.className = "trade-display_totals_capacity-display_max";
         if (argsObj.type === 'shop' || false){
-            capacityDisplay.append(weight);
-            weight.append(trade.weight);
+            capacityDisplay.append(tradeWeight);
+            tradeWeight.append(trade.weight);
         } // TODO fill in more types later
         if (argsObj.type === 'shop' || false){
             capacityDisplay.append('/');
             capacityDisplay.append(capacityMax);
-            capacityMax.append(trade.capacity);
+            capacityMax.append(trade.capacity + 10 * trailGame.temp.roster.length);
         } // TODO fill in more types later
+    }
+    var errorDisplay = document.createElement("p");
+    errorDisplay.className = "trade-display_totals_error-display";
+    totals.append(errorDisplay);
 
+    if (argsObj.clearButton !== undefined){
+        argsObj.clearButton.addEventListener('click',clearTrade);
     }
 
     return tradeDisplay;
@@ -7954,13 +8078,106 @@ function createShopModal(){
     instructionsA.innerHTML = (`You need to use your loan to purchase supplies.<br>You'll need pachyderms to carry goods, goods and/or other animals to bring to sell, and most importantly, you need food!`);
     modalContent.append(instructionsA);
 
-    setBuyingOptions(); //debug
-    signLoan(); // debug
-    modalContent.append(createTradeDisplay({type: 'shop'}));
+    var confirmButton = createButton({
+        useLi: true,
+        liClassName: 'full-width',
+        buttonText: `Confirm Purchase`,
+        callback: function(event){
+            if (!event.target.classList.contains('disabled')){
+                dismissActiveModal(true);
+                setTimeout(function(){
+                    createShopConfirmModal();
+                },400);
+            }
+        },
+    });
+
+    var clearButton = createButton({
+        useLi: true,
+        liClassName: 'full-width',
+        buttonText: `Clear Cart`,
+        buttonClassName: 'warning',
+        callback: function(event){
+            //zeroOutTradeValues(trailGame.temp.shoppingCart);
+        },
+    });
+
+    var tradeDisplay = createTradeDisplay({
+        trade: zeroOutTradeValues(trailGame.temp.shoppingCart), 
+        type: 'shop', 
+        acceptButton: confirmButton,
+        clearButton: clearButton
+    });
+    modalContent.append(tradeDisplay);
+
+    modalContent.append(createControlsUl([confirmButton,clearButton]));
 
     return createModal({
         contentNode: modalContent
     });
+}
+
+function createShopConfirmModal(){
+    var textNode = document.createElement("div");
+    textNode.className = 'text-container';
+
+    var headlineA = document.createElement("h2");
+    headlineA.append('You Spent:');
+    textNode.append(headlineA);
+
+    textNode.append(textArrayToP([`${trailGame.temp.shoppingCart.actualValue} Silver at ${trailGame.temp.loan.interest}% interest`]));
+
+    var headlineB = document.createElement("h2");
+    headlineB.append('To Buy:');
+    textNode.append(headlineB);
+    var shoppingList = [];
+    Object.keys(scrubTradeObj(trailGame.temp.shoppingCart)).map(function(key){
+        var value = trailGame.temp.shoppingCart[key];
+        if (value > 0){
+            shoppingList.push(`- ${value} ${toTitleCase(pluralize(key))}`);
+        }
+    });
+    if (!shoppingList.length){
+        shoppingList.push(`- Nothing (It's your funeral, pal.)`);
+    }
+    textNode.append(textArrayToP(shoppingList));
+
+    var headlineC = document.createElement("h5");
+    headlineC.append('Does this look correct?');
+    textNode.append(headlineC);
+
+    var buttons = [
+        {
+            buttonText: `Confirm`,
+            callback: function(){
+                dismissActiveModal(true);
+                setTimeout(function(){
+                    createJourneyChoiceModal();
+                },400);
+            }
+        },
+        {
+            buttonText: `Go Back to Loans`,
+            buttonClassName: 'warning',
+            callback: function(){
+                dismissActiveModal(true);
+                setTimeout(function(){
+                    createLoanChoiceModal();
+                },400);
+            }
+        },{
+            buttonText: `Start Over`,
+            buttonClassName: 'warning',
+            callback: function(){
+                dismissActiveModal(true);
+                setTimeout(function(){
+                    createPartyCreationModal();
+                },400);
+            }
+        }
+    ];
+
+    return createSimpleModal({textNode: textNode, buttons: buttons});
 }
 
 function createJourneyChoiceModal(partyName){
@@ -7988,7 +8205,7 @@ function createJourneyChoiceModal(partyName){
                 dismissActiveModal(true);
                 newJourney(levelKey);
                 setTimeout(function(){
-                    loadPremadeParty(partyName);
+                    registerParty(partyName);
                     runNextCard();
                 },400);
             },

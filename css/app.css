@@ -5,26 +5,28 @@ html {
   font-family: Nightmare;
   src: url("../assets/fonts/NightmareExtended.ttf"); }
 
-div#log, .modal .modal_content {
+div#log, .modal .modal_content, .text-container {
   color: #ccc;
   letter-spacing: 1px;
   line-height: 1.25; }
-  div#log hr, .modal .modal_content hr {
+  div#log > :first-child, .modal .modal_content > :first-child, .text-container > :first-child {
+    margin-top: 0 !important; }
+  div#log hr, .modal .modal_content hr, .text-container hr {
     margin: 0.5em auto;
     border: 0;
     height: 1px;
     background: #ad48d0; }
-  div#log h2, .modal .modal_content h2 {
+  div#log h2, .modal .modal_content h2, .text-container h2 {
     margin: 0.5em 0; }
-  div#log h3, .modal .modal_content h3 {
+  div#log h3, .modal .modal_content h3, .text-container h3 {
     margin: 0.5em 0 0.25em 0; }
-  div#log h4, .modal .modal_content h4 {
+  div#log h4, .modal .modal_content h4, .text-container h4 {
     margin: 0.25em 0 0.75em 0; }
-  div#log h5, .modal .modal_content h5 {
+  div#log h5, .modal .modal_content h5, .text-container h5 {
     margin: 0 0 1em 0; }
-  div#log h6, .modal .modal_content h6 {
+  div#log h6, .modal .modal_content h6, .text-container h6 {
     margin: 1em 0; }
-  div#log p, .modal .modal_content p {
+  div#log p, .modal .modal_content p, .text-container p {
     margin: 0.25em 0 1em 0; }
 
 body {
@@ -139,8 +141,6 @@ div#log {
     border-color: #1e2224 #6d7376 #8a8f91 #2d3336; }
   .modal .modal_content {
     padding: 0.5em; }
-    .modal .modal_content > :first-child {
-      margin-top: 0; }
   .modal.active {
     background-color: rgba(0, 0, 0, 0.75);
     pointer-events: auto; }
@@ -348,6 +348,7 @@ input {
     .trade-display_item-list_item_basics {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       margin: 0.24rem 0;
       color: white; }
       .trade-display_item-list_item_basics_name, .trade-display_item-list_item_basics_input-amount, .trade-display_item-list_item_basics_amount {
@@ -375,3 +376,14 @@ input {
         .shop .trade-display_item-list_item_extras_item.buy {
           text-align: right;
           padding-right: 0; }
+
+.trade-display_totals {
+  padding: 0.12rem; }
+  .trade-display_totals_value-display, .trade-display_totals_capacity-display, .trade-display_totals_error-display {
+    margin: 0 0.5rem 0 0 !important;
+    text-align: right; }
+    .trade-display_totals_value-display.over, .trade-display_totals_value-display.has-error, .trade-display_totals_capacity-display.over, .trade-display_totals_capacity-display.has-error, .trade-display_totals_error-display.over, .trade-display_totals_error-display.has-error {
+      color: #ea5672; }
+  .trade-display_totals_error-display {
+    font-size: 0.75em;
+    height: 1.25em; }

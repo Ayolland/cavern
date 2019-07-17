@@ -11,6 +11,7 @@ $eggshell: #eee;
 $slate: #3c4448;
 $dusty: #968ca0;
 $mauve: #7b556c;
+$salmon: #ea5672;
 $granite: #556f7b;
 $dark-shadow: fade-out(black,0.75);
 $light-shadow: fade-out(#2e2e2e,0.75);
@@ -70,6 +71,11 @@ $zeroToTen: ['zero','one','two','three','four','five','six','seven','eight','nin
 // typography
 
 %typography-styles{
+
+	// all top elements in containers with this placeholder are flush with top.
+	>:first-child{
+    	margin-top: 0 !important;
+    }
 
 	color: $dove;
 
@@ -277,10 +283,6 @@ div#log{
     .modal_content{
     	padding: 0.5em;
 
-    	>:first-child{
-    		margin-top: 0;
-    	}
-
     	@extend %typography-styles;
     }
 
@@ -296,6 +298,12 @@ div#log{
     		margin-top: 0;
     	}
     }
+}
+
+.text-container{
+
+	@extend %typography-styles;
+
 }
 
 button{
@@ -493,6 +501,7 @@ input{
 			&_basics{
 				display: flex;
     			justify-content: space-between;
+    			align-items: center;
 
     			margin: 2 * $button-border-width 0;
 
@@ -543,6 +552,23 @@ input{
 				
 				}
 			}
+		}
+	}
+
+	&_totals{
+		padding: 0.12rem;
+
+		&_value-display, &_capacity-display, &_error-display{
+			margin: 0 $column-padding-width 0 0 !important;
+			text-align: right;
+
+			&.over, &.has-error{
+				color: $salmon;
+			}
+		}
+		&_error-display{
+			font-size: 0.75em;
+			height: 1.25em;
 		}
 	}
 }
