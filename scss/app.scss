@@ -532,6 +532,8 @@ input{
 					&.buy, &.sell{
 						width: 100%;
 						box-sizing: border-box;
+						text-align: right;
+						padding-right: 0;
 						color: $dove;
 
 						.complex & {
@@ -544,9 +546,8 @@ input{
 							width: 50%;
 						}
 
-						&.buy{
-							text-align: right;
-							padding-right: 0;
+						&.sell{
+							text-align: left;
 						}
 					}
 				

@@ -368,14 +368,15 @@ input {
         .trade-display_item-list_item_extras_item.buy, .trade-display_item-list_item_extras_item.sell {
           width: 100%;
           box-sizing: border-box;
+          text-align: right;
+          padding-right: 0;
           color: #ccc; }
           .complex .trade-display_item-list_item_extras_item.buy, .complex .trade-display_item-list_item_extras_item.sell {
             border-bottom: 1px solid #999; }
         .shop .trade-display_item-list_item_extras_item.buy, .shop .trade-display_item-list_item_extras_item.sell {
           width: 50%; }
-        .shop .trade-display_item-list_item_extras_item.buy {
-          text-align: right;
-          padding-right: 0; }
+        .shop .trade-display_item-list_item_extras_item.sell {
+          text-align: left; }
 
 .trade-display_totals {
   padding: 0.12rem; }
