@@ -65,6 +65,7 @@
 //      - about modal
 //      - help modal
 //      - trade modal
+//      - slaughter animals modal
 //      - win game modal (done for now)
 //      - start settings (music/vegetarian/rations) modal
 //      - custom party modal (done for now)
@@ -78,11 +79,10 @@
 // - banned jobs not working
 // - despair starvation immunity too easy
 // - eating way too much food?
-// - can currently trade things you don't have // fixed? maybe animals only
+// - can currently trade things you don't have - fixed? maybe animals only
 // - spider event 'Papa Rye is undefined wounded'
-// - dropping food when overweight
 // - finding corpse in cave triggers wrong landmark
-// - leaders can have negative stats
+// - leaders can have negative stats - fixed?
 
 // helpers
 
@@ -1632,7 +1632,11 @@ trailGame.cards = {
     reshoe : {
         eventFunc : eventReshoe,
         args: {}
-    }
+    },
+    simpleTrade : {
+        eventFunc : eventMakeTrade,
+        args: {}
+    },
 }
 
 trailGame.levels = {
@@ -1646,7 +1650,7 @@ trailGame.levels = {
                 min: 3,
                 max: 7,
                 intervalCards: ['reshoe'],
-                firstCard: 'caveHauntedPyramid',
+                firstCard: 'simpleTrade',
                 lastCard: 'caveHauntedPyramid',
                 exits : [
                     {
@@ -2343,7 +2347,7 @@ function announceSicknesses(sicknessesLedger){
                 `It a matter of life and death.`
             ],
             [
-                `This is the last thing ${leaderName} need.`,
+                `This is the last thing ${sentenceForm(leaderNames)} need${ess}.`,
                 `We are all worried about ${sentenceForm(leaderNames)}.`,
             ],
             [
@@ -3176,6 +3180,12 @@ function getRandomGood(){
     return shuffle(goods)[0];
 }
 
+function getRandomGoodOrAnimal(){
+    var items = Object.keys(trailGame.goods);
+    items = items.concat(Object.keys(trailGame.animals))
+    return shuffle(items)[0];
+}
+
 function getGoodsBySell(){
     var goods = Object.keys(trailGame.goods);
     goods.sort(function(goodsA,goodsB){
@@ -3235,12 +3245,10 @@ function addToTrade(tradeObj,number,key,price){
     price = price || item.sell;
     tradeObj[key] = tradeObj[key] === undefined ? number : tradeObj[key] + number;
     tradeObj.actualValue += number * price;
-    if (item.animalClass !== undefined){
-        tradeObj.capacity = tradeObj.capacity || 0;
-        tradeObj.capacity += item.capacity * number;
-    }
+    tradeObj.capacity = tradeObj.capacity || 0;
+    tradeObj.capacity += (item.capacity || 0) * number;
+    tradeObj.weight = tradeObj.weight || 0;
     if (item.goodsType !== undefined){
-        tradeObj.weight = tradeObj.weight || 0;
         tradeObj.weight += number * 1;
     }
     return tradeObj;
@@ -3347,43 +3355,44 @@ function getTradeOffer(argsObj){
 
 function getTradeProposal(argsObj){
     argsObj = argsObj || {};
-    argsObj.level = clamp(argsObj.level,1,10) || rollDice(1,10);
+    argsObj.level = clamp(argsObj.level,1,20) || rollDice(1,20);
     argsObj.approxValue = argsObj.approxValue || rollDice(argsObj.level,50);
     var approxValue = Math.round(argsObj.approxValue);
-    var offer = { actualValue: 0, expectedValue: approxValue };
-    var numAnimalTypes = getRandomInt(0,3);
-    var leftoverCapacity = getCaravanCapacity() - getCaravanCarrying();
-    while ( approxValue > 0 && numAnimalTypes > 0){
-        var animalName = getRandomAnimal();
-        var animal = generateAnimal(animalName);
-        var amountWeHave = trailGame.animals[animalName] || 0;
-        // don't sell animals that are carrying all your stuff!
-        var amountWeCanLose = Math.max(Math.floor(leftoverCapacity / animal.capacity),0);
-        var mostWeNeedToSell = Math.ceil( approxValue / animal.sell );
-        var max = Math.min(amountWeHave,amountWeCanLose,mostWeNeedToSell);
-        var number = getRandomInt(Math.round(max/2),max);
-        if (number > 0){
-            var key = animal.animalClass;
-            addToTrade(offer,number,key);
-            approxValue -= number * animal.sell;
-            leftoverCapacity -= number * animal.capacity;
-        }
-        numAnimalTypes--;
+
+    var leader = argsObj.leader || getRandomLeader();
+    var smarterThanAverage = leader._wits > (trailGame.maxLeaderStat / 2);
+    var stupidity = trailGame.maxLeaderStat - leader._wits;
+    var cultureShift = smarterThanAverage ? Math.ceil(getCaravanCulture() / 2) : 0;
+    var modifierMin = -1 * stupidity - cultureShift;
+    var modifierMax = stupidity - cultureShift;
+    var witsModifier = 1 + 0.1 * getRandomInt(modifierMin, modifierMax);
+    approxValue = Math.round(approxValue * witsModifier);
+
+    var proposal = { actualValue: 0, expectedValue: approxValue };
+
+    var allItems = Object.keys(trailGame.goods).concat(Object.keys(trailGame.animals));
+    allItems.map(function(itemKey){
+        addToTrade(proposal,0,itemKey);
+    })
+
+    var timesTried = 0;
+    var remainingValue = approxValue
+    while(remainingValue > 0 && timesTried < 10){
+        var itemKey = shuffle(allItems)[0];
+        var itemObj = findItemFromKey(itemKey);
+        var isGood = itemObj.goodsType !== undefined;
+        var amountOwned = isGood ? trailGame.goods[itemKey] : trailGame.animals[itemKey];
+        var amountWeightCanGain = Math.min(0,(getCaravanCapacity() - proposal.capacity) - (getCaravanCarrying() - proposal.weight));
+        var amountWeightAllows = isGood ? amountWeightCanGain : Math.floor(amountWeightCanGain / itemObj.capacity);
+        amountWeightAllows = smarterThanAverage ? amountWeightAllows : 99999;
+        var maxToAdd = Math.min(amountWeightAllows,amountOwned,Math.round(remainingValue / itemObj.sell));
+        var amountToAdd = getRandomInt(0,maxToAdd);
+        addToTrade(proposal,amountToAdd,itemKey);
+        remainingValue -= itemObj.sell * amountToAdd;
+        timesTried++;
     }
-    var numGoodsTypes = getRandomInt(1,3);
-    while ( approxValue > 0 && numGoodsTypes > 0){
-        var goodName = getRandomGood();
-        var good = generateGood(goodName);
-        var max = Math.min(Math.ceil( approxValue / good.sell ),trailGame.goods[goodName]);
-        var number = getRandomInt(1,max);
-        if (number > 0){
-            var key = good.goodsType;
-            addToTrade(offer,number,key);
-            approxValue -= number * good.sell;
-        }
-        numGoodsTypes--;
-    }
-    return offer;
+
+    return proposal;
 }
 
 function findItemFromKey(key){
@@ -7309,7 +7318,7 @@ function addTextArrayToLog(textArray,className){
 
 function dropItemsAndLog(dropTrade){
     var intro = `Our caravan is overweight!`
-    var dropLine = `We are forced to drop ${sentenceForm(scrubTradeObj(dropTrade))} in order to continue...`;
+    var dropLine = `We are forced to drop ${sentenceForm(scrubTradeObj(removeZerosFromTrade(dropTrade)))} in order to continue...`;
     addTextArrayToLog([intro,dropLine],'day updates');
     removeTrade(dropTrade);
 }
@@ -7912,6 +7921,11 @@ function createTradeDisplay(argsObj){
                 tradeWeight.innerHTML = (getCaravanCarrying() - trade.weight);
                 capacityMax.innerHTML = actualCapacityTotal;
             break;
+            case 'offer':
+                totalValue.innerHTML = trade.actualValue;
+                var netCapacity = (trade.capacity - trade.weight);
+                tradeWeight.innerHTML = `${netCapacity > 0 ? '+':''}${netCapacity}`;
+            break;
         }
 
         var hasAcceptButton = argsObj.acceptButton !== undefined;
@@ -7926,11 +7940,11 @@ function createTradeDisplay(argsObj){
             valueDisplay.classList.remove('over');
         }
 
-        if(overWeight){
+        if(overWeight && capacityDisplay !== undefined){
             capacityDisplay.classList.add('over');
             errorMessage += errorMessage === '' ? '' : ' ';
             errorMessage += 'Caravan is over-weight.';
-        } else {
+        } else if (capacityDisplay !== undefined) {
             capacityDisplay.classList.remove('over');
         }
 
@@ -8065,7 +8079,7 @@ function createTradeDisplay(argsObj){
     totalValue.className = "trade-display_totals_value-display_total-value";
     var loanMax = document.createElement("span");
     loanMax.className = "trade-display_totals_value-display_loan-max";
-    if (['shop','overweight'].indexOf(argsObj.type) !== -1){
+    if (['shop','overweight','offer'].indexOf(argsObj.type) !== -1){
         valueDisplay.append(totalValue);
         totalValue.append(trade.actualValue);
     } // TODO fill in more types later
@@ -8075,26 +8089,34 @@ function createTradeDisplay(argsObj){
         loanMax.append(loan.max);
     } // TODO fill in more types later
     valueDisplay.append(' silver');
-    var showCapacity = (['shop','overweight'].indexOf(argsObj.type) !== -1) // TODO fill in more types later
+    var showCapacity = (['shop','overweight','offer'].indexOf(argsObj.type) !== -1) // TODO fill in more types later
     if (showCapacity){
         var capacityDisplay = document.createElement("p");
         capacityDisplay.className = "trade-display_totals_capacity-display";
         var capacityLabelText = 'Caravan Capacity';
+        var capacityLabelText = '';
+        switch (argsObj.type){
+            case 'shop':
+            case 'overweight':
+                capacityLabelText = 'Caravan Capacity';
+                break;
+            case 'offer':
+                capacityLabelText = 'Net Capacity Change';
+                break;
+            default:
+                capacityLabelText = 'Capacity'; 
+        }
         capacityDisplay.append(capacityLabelText + ': ');
         totals.append(capacityDisplay);
         var tradeWeight = document.createElement("span");
         tradeWeight.className = "trade-display_totals_capacity-display_weight";
         var capacityMax = document.createElement("span");
         capacityMax.className = "trade-display_totals_capacity-display_max";
-        if (argsObj.type === 'shop' || true){
-            capacityDisplay.append(tradeWeight);
-            //tradeWeight.append(trade.weight);
-        } // TODO remove conditional?
-        if (argsObj.type === 'shop' || true){
+        capacityDisplay.append(tradeWeight);
+        if (['shop'].indexOf(argsObj.type) !== -1){
             capacityDisplay.append('/');
             capacityDisplay.append(capacityMax);
-            //capacityMax.append(trade.capacity + 10 * totalLeaders);
-        } // TODO remove conditional?
+        } 
     }
     var errorDisplay = document.createElement("p");
     errorDisplay.className = "trade-display_totals_error-display";
@@ -8347,6 +8369,28 @@ function createOverweightModal(funct,args,dayIsResolution){
     });
     modalContent.append(tradeDisplay);
     modalContent.append(createControlsUl([confirmButton,clearButton]));
+
+    return createModal({
+        contentNode: modalContent
+    });
+}
+
+function createTradeModal(argsObj,lines){
+    argsObj = argsObj || {};
+    lines = lines || ['Debug line 1...','Debug line 2...','Debug line 3...'];
+    var modalContent = createModalContentContainer();
+
+    modalContent.append(textArrayToP(lines));
+    var instructionsA = document.createElement("h5");
+    instructionsA.innerHTML = (`The following is being offered to us as a trade:`);
+    modalContent.append(instructionsA);
+
+    var offer = argsObj.offer || getTradeOffer();
+    var offerDisplay = createTradeDisplay({
+        trade: offer, 
+        type: 'offer'
+    });
+    modalContent.append(offerDisplay);
 
     return createModal({
         contentNode: modalContent
