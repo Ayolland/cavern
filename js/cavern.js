@@ -58,7 +58,6 @@
 // - preset parties (done for now)
 
 // - non-bitsy UI
-//      - switch modals
 //      - splash modal
 //      - status modal
 //      - glossary modal
@@ -66,12 +65,10 @@
 //      - about modal
 //      - help modal
 //      - trade modal
-//      - win game modal
+//      - win game modal (done for now)
 //      - start settings (music/vegetarian/rations) modal
-//      - shop modal
-//      - custom party modal
+//      - custom party modal (done for now)
 //      - save last party
-//      - overweight modal
 //      - ford river choices
 //      - trail display
 //      - print CSS
@@ -2754,46 +2751,6 @@ function getDropGoodsTrade(){
         addToTrade(trade,Math.min(trailGame.caravan.food,amountToDrop),'food');
     }
     return trade;
-}
-
-function dropExcessGoods(){
-    var totalToDrop = getCaravanCarrying() - getCaravanCapacity();
-    var lines = [];
-    if ( totalToDrop <= 0){
-        return {lines: [], stats: []};
-    }
-    lines.push('OVERWEIGHT: Carrying ' + getCaravanCarrying() + '/' + getCaravanCapacity());
-    var dropObj = {}
-    var goodsList = trailGame.goodsBySellPrice.slice();
-    while ( totalToDrop > 0 && goodsList.length > 0){
-        var goodToCheck = goodsList.shift();
-        var amountCarrying = trailGame.goods[goodToCheck];
-        if( typeof(amountCarrying) !== "undefined" ){
-            var goodsToDrop = clamp(totalToDrop,0,amountCarrying);
-            removeGoods(goodToCheck,goodsToDrop);
-            dropObj[goodToCheck] = goodsToDrop;
-            totalToDrop -= goodsToDrop;
-        }
-    }
-    if ( totalToDrop > 0 ){
-        var lampsToDrop = clamp(totalToDrop,0,trailGame.caravan.lamps);
-        removeLamps(lampsToDrop);
-        dropObj['lamp'] = lampsToDrop;
-        totalToDrop -= lampsToDrop;
-    }
-    if ( totalToDrop > 0 ){
-        var foodToDrop = clamp(totalToDrop,0,trailGame.caravan.food);
-        removeFood(foodToDrop);
-        dropObj['food'] = foodToDrop;
-        totalToDrop -= foodToDrop;
-    }
-    if ( totalToDrop > 0 ){
-        console.log("dropped everything and it wasn't enough!");
-    }
-    lines.push(`We are forced to reduce the weight we are carrying...`);
-    var ledgerObj = settleLedger();
-    ledgerObj.lines = lines.concat(ledgerObj.lines);
-    return ledgerObj;
 }
 
 function dinnerFlavorText(hadDinner){
@@ -6158,9 +6115,6 @@ function nightPhase(){
     linesObj.ledgerLines = linesObj.ledgerLines.concat(dinnerObj.ledgerLines);
     linesObj.ledgerStats = linesObj.ledgerStats.concat(dinnerObj.ledgerStats);
 
-    var droppedLedger = dropExcessGoods();
-    linesObj.ledgerLines = linesObj.ledgerLines.concat(droppedLedger.lines);
-    linesObj.ledgerStats = linesObj.ledgerStats.concat(droppedLedger.stats);
     return linesObj;
 }
 
@@ -7353,16 +7307,19 @@ function addTextArrayToLog(textArray,className){
     } 
 }
 
+function dropItemsAndLog(dropTrade){
+    var intro = `Our caravan is overweight!`
+    var dropLine = `We are forced to drop ${sentenceForm(scrubTradeObj(dropTrade))} in order to continue...`;
+    addTextArrayToLog([intro,dropLine],'day updates');
+    removeTrade(dropTrade);
+}
+
 function runAndLogEvent(funct,args,dayIsResolution){
     dayIsResolution = dayIsResolution === true ? true : false;
     disableMainControls();
     if ( Object.keys(trailGame.leaders).length <= 0 && !trailGame.lostGame){
         trailGame.UI.log.append(textArrayToP(['RANDOM NEW CARAVAN']));
         funct = loadPremadeParty;
-    }
-    if (getCaravanCarrying() - getCaravanCapacity() > 0 && trailGame.daysElapsed > 0){
-        createOverweightModal(funct,args,dayIsResolution);
-        return undefined;
     }
 
     if (!dayIsResolution){
@@ -7378,6 +7335,12 @@ function runAndLogEvent(funct,args,dayIsResolution){
         headline.append(headlineText);
         trailGame.UI.log.append(headline);
     }
+
+    if (getCaravanCarrying() - getCaravanCapacity() > 0 && trailGame.caravan.daysElapsed > 0){
+        createOverweightModal(funct,args,true);
+        return undefined;
+    }
+
     if ( trailGame.caravan.daysElapsed === 0 ){
         trailGame.caravan.daysElapsed = 1;
     }
@@ -8350,6 +8313,8 @@ function createOverweightModal(funct,args,dayIsResolution){
     instructionsA.innerHTML = (`We are ${amountOverweight} ${amountOverweight > 1 ? pluralize(unit) : unit} overweight.<br>We need to drop some items before we can continue.`);
     modalContent.append(instructionsA);
 
+    var dropTrade = getDropGoodsTrade();
+
     var confirmButton = createButton({
         useLi: true,
         liClassName: 'full-width',
@@ -8358,6 +8323,7 @@ function createOverweightModal(funct,args,dayIsResolution){
             if (!event.target.classList.contains('disabled')){
                 dismissActiveModal(true);
                 setTimeout(function(){
+                    dropItemsAndLog(dropTrade);
                     runAndLogEvent(funct,args,dayIsResolution);
                 },400);
             }
@@ -8374,7 +8340,7 @@ function createOverweightModal(funct,args,dayIsResolution){
     });
 
     var tradeDisplay = createTradeDisplay({
-        trade: getDropGoodsTrade(), 
+        trade: dropTrade, 
         type: 'overweight', 
         acceptButton: confirmButton,
         clearButton: clearButton
