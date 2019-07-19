@@ -2116,7 +2116,7 @@ function addLeader(argObj){
 function removeLeader(id,reason){
     var leader = trailGame.leaders[id];
     reason = reason !== undefined ? reason : leader._malady !== undefined ? `dies of ${leader._malady}` : 'dies unexpectedly';
-    addToLedger( `${leader._name} the ${leader,_raceName} ${leader._title} ${reason}.`);
+    addToLedger( `${leader._name} the ${leader._raceName} ${leader._title} ${reason}.`);
     delete trailGame.leaders[id];
     var moraleHit = Math.ceil(trailGame.caravan.morale / 3);
     removeMorale(moraleHit);
@@ -3242,26 +3242,27 @@ function removeTrade(tradeObj){
 
 function addToTrade(tradeObj,number,key,price){
     tradeObj.actualValue = tradeObj.actualValue || 0;
+    number = parseInt(number);
     var item = findItemFromKey(key);
     price = price || item.sell;
-    tradeObj[key] = tradeObj[key] === undefined ? number : tradeObj[key] + number;
+    tradeObj[key] = tradeObj[key] === undefined ? parseInt(number) : parseInt(tradeObj[key]) + number;
     tradeObj.actualValue += number * price;
     tradeObj.capacity = tradeObj.capacity || 0;
-    tradeObj.capacity += (item.capacity || 0) * number;
+    tradeObj.capacity = parseInt(tradeObj.capacity) + (item.capacity || 0) * number;
     tradeObj.weight = tradeObj.weight || 0;
     if (item.goodsType !== undefined){
-        tradeObj.weight += number * 1;
+        tradeObj.weight = parseInt(tradeObj.weight) + number;
     }
     return tradeObj;
 }
 
 function removeFromTrade(tradeObj,number,key,price){
-    var currentNum = tradeObj[key] || 0;
+    var currentNum = parseInt(tradeObj[key]) || 0;
     var actualChange = clamp(number,0,currentNum);
     var item = findItemFromKey(key);
     price = price || item.sell;
     if( currentNum > number ){
-        tradeObj[key] -= number;
+        tradeObj[key] = currentNum - number;
     } else {
         delete tradeObj[key]
     }
@@ -8567,7 +8568,7 @@ function enableMainControls(){
 }
 
 function switchToResetButton(){
-    trailGame.UI.continueButton.innerHTML = 'Reset Game';
+    trailGame.UI.continueButton.innerHTML = '<span>Reset Game</span>';
     trailGame.UI.continueButton.removeEventListener("click",continueButtonHandler);
     trailGame.UI.continueButton.addEventListener("click",resetButtonHandler);
 }

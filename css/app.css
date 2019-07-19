@@ -64,7 +64,8 @@ body {
 div#window {
   flex: 2;
   margin-bottom: 0.5rem;
-  overflow: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
   background-color: black;
   background-image: url("../assets/images/marble.png");
   background-attachment: local;
@@ -404,3 +405,26 @@ input {
   .trade-display_totals_error-display {
     font-size: 0.75em;
     height: 1.25em; }
+
+@media print {
+  body {
+    background: white; }
+  .column {
+    padding: 0;
+    height: auto; }
+  ul#main-controls {
+    display: none; }
+  div#window {
+    border: none;
+    margin: 0;
+    background: white; }
+    div#window * {
+      color: black !important; }
+  hr {
+    background: black !important; }
+  div#log .night.events::before {
+    background: #ccc;
+    height: 1px;
+    width: 100%; }
+  .modal:not(.active) {
+    display: none; } }

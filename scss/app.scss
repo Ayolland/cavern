@@ -171,7 +171,8 @@ div#window{
 	flex: 2;
 	margin-bottom: $column-padding-width;
 
-	overflow: scroll;
+	overflow-y: scroll;
+	overflow-x: hidden;
 
 	background-color: black;
 	background-image: $marble-bg;
@@ -602,5 +603,43 @@ input{
 	}
 }
 
+@media print {
 
+	body{
+		background: white;
+	}
+
+	.column {
+	    padding: 0;
+	    height: auto;
+	}
+	
+	ul#main-controls {
+	    display: none;
+	}
+	
+	div#window {
+	    border: none;
+	    margin: 0;
+	    background: white;
+
+	    * {
+			color: black !important;
+		}
+	}
+
+	hr {
+    	background: black !important;
+	}
+
+	div#log .night.events::before {
+	    background: $dove;
+    	height: 1px;
+    	width: 100%;
+	}
+
+	.modal:not(.active) {
+    	display: none;
+	}
+}
 
