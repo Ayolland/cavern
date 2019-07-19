@@ -2093,7 +2093,8 @@ function generateLeader(argObj){
     addStatObjectToLeader(leader._race.statBonuses,leader);
     gainImmunities([[[leader._id],leader._race.immunities]],true,leader);
     var totalLeaders = Object.keys(trailGame.leaders).length;
-    leader._id = Date.now() + totalLeaders;
+    var idOffset = argObj.idOffset || getRandomInt(1,500)
+    leader._id = Date.now() + totalLeaders + idOffset;
     return leader;
 }
 
@@ -3377,18 +3378,20 @@ function getTradeProposal(argsObj){
 
     var timesTried = 0;
     var remainingValue = approxValue
-    while(remainingValue > 0 && timesTried < 10){
+    while(remainingValue > 0 && timesTried < 20){
         var itemKey = shuffle(allItems)[0];
         var itemObj = findItemFromKey(itemKey);
         var isGood = itemObj.goodsType !== undefined;
         var amountOwned = isGood ? trailGame.goods[itemKey] : trailGame.animals[itemKey];
         var amountAlreadyProposed = proposal[itemKey] || 0;
-        var amountWeightCanGain = Math.min(0,(getCaravanCapacity() - proposal.capacity) - (getCaravanCarrying() - proposal.weight));
+        var amountWeightCanGain = Math.max(0,(getCaravanCapacity() - proposal.capacity) - (getCaravanCarrying() - proposal.weight));
         var amountWeightAllows = isGood ? amountWeightCanGain : Math.floor(amountWeightCanGain / itemObj.capacity);
         amountWeightAllows = smarterThanAverage ? amountWeightAllows : 99999;
-        var maxToAdd = clamp(Math.round(remainingValue / itemObj.sell),0,amountWeightAllows);
-        maxToAdd = clamp(maxToAdd,0,amountOwned - amountAlreadyProposed);
-        var amountToAdd = getRandomInt(0,maxToAdd);
+        var maxToAdd = clamp(Math.ceil(remainingValue / itemObj.sell),0,amountWeightAllows);
+        maxToAdd = clamp(maxToAdd,0,amountOwned - amountAlreadyProposed); // don't propose more than you have
+        maxToAdd = isNaN(maxToAdd) || typeof(maxToAdd) !== 'number' ? 0 : maxToAdd; // always be a number
+        maxToAdd = smarterThanAverage && itemObj.sell > proposal.expectedValue ? 0 : maxToAdd; // don't propose things worth more than the projected value
+        var amountToAdd = maxToAdd > 0 ? getRandomInt(1,maxToAdd) : 0;
         addToTrade(proposal,amountToAdd,itemKey);
         remainingValue -= itemObj.sell * amountToAdd;
         timesTried++;
@@ -6460,6 +6463,8 @@ function subEventTradeAttempt(argsObj,lines){
         god: argsObj.merchantGod,
         cultureName: argsObj.merchantRace || argsObj.merchantCultureName
     });
+    lines.push(`${merchant._name} is interested in trading ${sentenceForm(scrubTradeObj(removeZerosFromTrade(offer)))}.`);
+    lines.push(`We propose to give ${sentenceForm(scrubTradeObj(removeZerosFromTrade(proposal)))} in return.`);
     var capitalMerchant = capitalizeFirstLetter(merchant._name);
     var lowerMerchant = argsObj.properName === true ? merchant._name : merchant._name.toLowerCase();
     var leader = argsObj.leader || getRandomLeader();
@@ -7052,12 +7057,32 @@ function eventMakeTrade(argsObj){
     var offer = argsObj.offer || getTradeOffer({level: argsObj.tradeLevel});
     lines.push(`We meet a merchant with wares for sale ${generateLandmark()}.`);
     trailGame.caravan.dayHasBeenPaused = true;
+
+    function eventRefuseTrade(argsObj){
+        lines = [];
+        lines.push(`We opt to not make a trade.`);
+        addDays(1);
+        return lines;
+    }
+
+    function eventAttemptTrade(argsObj){
+        lines = [];
+        isAccepted = subEventTradeAttempt(argsObj,lines);
+        if (isAccepted){
+            removeTrade(argsObj.proposal);
+            addTrade(argsObj.offer);
+        }
+        addDays(1);
+        return lines;
+    }
     createTradeModal({
         offer: offer,
         merchantName: `The merchant`,
         merchantJob: 'trader',
-        giveExtra: true
+        refuseCallback: eventRefuseTrade,
+        attemptCallback: eventAttemptTrade,
     },lines);
+
     // lines.push(`We propose to give ${textProposal} in return.`);
     // isAccepted = subEventTradeAttempt({offer: offer, proposal: proposal, merchantName: `The merchant`, merchantJob: 'trader', giveExtra: true},lines);
     // if (isAccepted){
@@ -7065,6 +7090,7 @@ function eventMakeTrade(argsObj){
     //     addTrade(offer);
     // }
     // addDays(1);
+
     return lines;
 }
 
@@ -7265,7 +7291,8 @@ function loadPremadeParty(partyName){
     newCaravan();
     partyName = partyName || shuffle(Object.keys(trailGame.parties))[0];
     var partyObj = trailGame.parties[partyName];
-    partyObj.leaders.map(function(leaderArgs){
+    partyObj.leaders.map(function(leaderArgs,index){
+        leaderArgs.idOffset = index * 5;
         trailGame.temp.roster.push(generateLeader(leaderArgs));
     });
     var shoppingCart = trailGame.temp.shoppingCart;
@@ -8408,6 +8435,7 @@ function createTradeModal(argsObj,lines){
     var modalContent = createModalContentContainer();
 
     var merchantName = argsObj.merchantName || 'The merchant';
+    var merchantJob = argsObj.merchantJob || 'trader';
     var offer = argsObj.offer || getTradeOffer();
 
     modalContent.append(textArrayToP(lines));
@@ -8429,6 +8457,13 @@ function createTradeModal(argsObj,lines){
     instructionsB.innerHTML = (`Select what to add or remove to this proposal, or refuse this trade entirely.`);
     modalContent.append(instructionsB);
 
+    var confirmArgs = {
+        offer: offer, 
+        proposal: proposal, 
+        merchantName: merchantName, 
+        merchantJob: merchantJob,
+    };
+
     var confirmButton = createButton({
         useLi: true,
         liClassName: 'full-width',
@@ -8436,7 +8471,7 @@ function createTradeModal(argsObj,lines){
         callback: function(event){
             dismissActiveModal(true);
             setTimeout(function(){
-                
+                runAndLogEvent(argsObj.attemptCallback,confirmArgs,true);
             },400);
         },
     });
@@ -8458,7 +8493,7 @@ function createTradeModal(argsObj,lines){
         callback: function(event){
             dismissActiveModal(true);
             setTimeout(function(){
-                
+                runAndLogEvent(argsObj.refuseCallback,{},true);
             },400);
         },
     });

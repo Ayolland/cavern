@@ -183,13 +183,13 @@ button {
     background: radial-gradient(circle, rgba(232, 212, 232, 0.58) 25%, rgba(143, 99, 141, 0.3) 100%);
     background: radial-gradient(circle, rgba(204, 204, 204, 0.35), rgba(102, 72, 112, 0.5) 100%); }
   button.warning {
-    background-color: #7b556c;
+    background-color: #833966;
     border-width: 0.12rem;
     border-style: solid;
     box-sizing: border-box;
-    border-color: #b099a7 #5c4051 #3e2b36 #9c8091; }
+    border-color: #b588a3 #622b4d #421d33 #a26b8c; }
     button.warning:hover:not(.disabled), button.warning:focus:not(.disabled), button.warning:active:not(.disabled) {
-      background-color: #7d576e;
+      background-color: #863a68;
       filter: brightness(120%);
       box-shadow: 0 0 5px #ad48d0; }
     button.warning.disabled {
@@ -214,7 +214,7 @@ input {
   width: 100%;
   margin: 0.12rem 0;
   padding: 0.5rem;
-  background-color: #7b556c;
+  background-color: #833966;
   background-image: url("../assets/images/marble.png");
   background-size: 600px;
   font-size: 0.75em;
@@ -222,7 +222,7 @@ input {
   border-width: 0.12rem;
   border-style: solid;
   box-sizing: border-box;
-  border-color: #b099a7 #5c4051 #3e2b36 #9c8091; }
+  border-color: #b588a3 #622b4d #421d33 #a26b8c; }
   .leader-display.button {
     background-color: #556f7b;
     border-width: 0.12rem;
@@ -261,7 +261,7 @@ input {
         border-width: 0.12rem;
         border-style: solid;
         box-sizing: border-box;
-        border-color: #3e2b36 #9c8091 #b099a7 #5c4051; }
+        border-color: #421d33 #a26b8c #b588a3 #622b4d; }
   .leader-display_stats {
     flex-direction: column; }
     .leader-display_stats_stat-display {
@@ -276,7 +276,7 @@ input {
         border-width: 0.12rem;
         border-style: solid;
         box-sizing: border-box;
-        border-color: #3e2b36 #9c8091 #b099a7 #5c4051; }
+        border-color: #421d33 #a26b8c #b588a3 #622b4d; }
         .leader-display_stats_stat-display_container_bar {
           display: block;
           height: 100%;
