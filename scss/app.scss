@@ -605,6 +605,10 @@ input{
 
 @media print {
 
+	html{
+		font-size: 15px;
+	}
+
 	body{
 		background: white;
 	}
@@ -612,6 +616,7 @@ input{
 	.column {
 	    padding: 0;
 	    height: auto;
+	    max-width: 100%;
 	}
 	
 	ul#main-controls {
