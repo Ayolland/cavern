@@ -5,6 +5,10 @@ html {
   font-family: Nightmare;
   src: url("../assets/fonts/NightmareExtended.ttf"); }
 
+@font-face {
+  font-family: BenchNine;
+  src: url("../assets/fonts/BenchNine-Light.ttf"); }
+
 div#log, .modal .modal_content, .text-container {
   color: #ccc;
   letter-spacing: 1px;
@@ -34,9 +38,12 @@ body {
   background-image: url("../assets/images/marble.png");
   background-position: 50vw 0;
   margin: 0; }
-  body * {
+  body.thematic * {
     font-family: "Nightmare", Serif;
     font-weight: 400; }
+  body.sans-serif * {
+    font-family: "BenchNine", Sans-Serif;
+    font-weight: 300; }
 
 .controls, .roster-display, .leader-display_stats, .trade-display_item-list, .trade-display_item-list_item_extras {
   display: flex;
@@ -150,6 +157,7 @@ div#log {
 button {
   border-radius: 0;
   padding: 0.25rem 0.75rem;
+  padding: 0;
   position: relative;
   width: 100%;
   background-color: #968ca0;
@@ -168,6 +176,12 @@ button {
   button.disabled {
     filter: contrast(0.75) brightness(0.75);
     pointer-events: none; }
+  button span {
+    display: block;
+    width: calc(100% - 1.5rem);
+    padding: 0.25rem 0.75rem;
+    background: radial-gradient(circle, rgba(232, 212, 232, 0.58) 25%, rgba(143, 99, 141, 0.3) 100%);
+    background: radial-gradient(circle, rgba(204, 204, 204, 0.35), rgba(102, 72, 112, 0.5) 100%); }
   button.warning {
     background-color: #7b556c;
     border-width: 0.12rem;
@@ -365,21 +379,23 @@ input {
       .trade-display_item-list_item_extras_item {
         padding-right: 0.5rem;
         color: #999; }
-        .trade-display_item-list_item_extras_item.buy, .trade-display_item-list_item_extras_item.sell {
-          width: 100%;
+        .trade-display_item-list_item_extras_item.buy, .trade-display_item-list_item_extras_item.sell, .trade-display_item-list_item_extras_item.have {
+          width: 50%;
           box-sizing: border-box;
-          text-align: right;
           padding-right: 0;
           color: #ccc; }
-          .complex .trade-display_item-list_item_extras_item.buy, .complex .trade-display_item-list_item_extras_item.sell {
+          .complex .trade-display_item-list_item_extras_item.buy, .complex .trade-display_item-list_item_extras_item.sell, .complex .trade-display_item-list_item_extras_item.have {
             border-bottom: 1px solid #999; }
+        .trade-display_item-list_item_extras_item.have {
+          text-align: right; }
         .shop .trade-display_item-list_item_extras_item.buy, .shop .trade-display_item-list_item_extras_item.sell {
           width: 50%; }
-        .shop .trade-display_item-list_item_extras_item.sell {
-          text-align: left; }
+        .shop .trade-display_item-list_item_extras_item.buy {
+          text-align: right; }
 
 .trade-display_totals {
-  padding: 0.12rem; }
+  padding: 0.12rem;
+  margin: 0.5rem 0 1rem 0; }
   .trade-display_totals_value-display, .trade-display_totals_capacity-display, .trade-display_totals_error-display {
     margin: 0 0.5rem 0 0 !important;
     text-align: right; }

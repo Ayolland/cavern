@@ -3303,7 +3303,7 @@ function removeZerosFromTrade(trade){
     var clone = {...trade};
     var keys = Object.keys(clone);
     keys.map(function(key){
-        if (clone[key] === 0){
+        if (parseInt(clone[key]) === 0){
             delete clone[key];
         }
     });
@@ -3323,7 +3323,7 @@ function mergeTradeObjs(tradeA,tradeB){
 
 function getTradeOffer(argsObj){
     argsObj = argsObj || {};
-    argsObj.level = clamp(argsObj.level,1,10) || rollDice(1,10);
+    argsObj.level = clamp(argsObj.level,1,20) || rollDice(1,20);
     argsObj.approxValue = argsObj.approxValue || rollDice(argsObj.level,50);
     var cultureModifier = 1;
     var approxValue = Math.round(argsObj.approxValue * cultureModifier);
@@ -3365,7 +3365,7 @@ function getTradeProposal(argsObj){
     var cultureShift = smarterThanAverage ? Math.ceil(getCaravanCulture() / 2) : 0;
     var modifierMin = -1 * stupidity - cultureShift;
     var modifierMax = stupidity - cultureShift;
-    var witsModifier = 1 + 0.1 * getRandomInt(modifierMin, modifierMax);
+    var witsModifier = 1 + 0.05 * getRandomInt(modifierMin, modifierMax);
     approxValue = Math.round(approxValue * witsModifier);
 
     var proposal = { actualValue: 0, expectedValue: approxValue };
@@ -3382,10 +3382,12 @@ function getTradeProposal(argsObj){
         var itemObj = findItemFromKey(itemKey);
         var isGood = itemObj.goodsType !== undefined;
         var amountOwned = isGood ? trailGame.goods[itemKey] : trailGame.animals[itemKey];
+        var amountAlreadyProposed = proposal[itemKey] || 0;
         var amountWeightCanGain = Math.min(0,(getCaravanCapacity() - proposal.capacity) - (getCaravanCarrying() - proposal.weight));
         var amountWeightAllows = isGood ? amountWeightCanGain : Math.floor(amountWeightCanGain / itemObj.capacity);
         amountWeightAllows = smarterThanAverage ? amountWeightAllows : 99999;
-        var maxToAdd = Math.min(amountWeightAllows,amountOwned,Math.round(remainingValue / itemObj.sell));
+        var maxToAdd = clamp(Math.round(remainingValue / itemObj.sell),0,amountWeightAllows);
+        maxToAdd = clamp(maxToAdd,0,amountOwned - amountAlreadyProposed);
         var amountToAdd = getRandomInt(0,maxToAdd);
         addToTrade(proposal,amountToAdd,itemKey);
         remainingValue -= itemObj.sell * amountToAdd;
@@ -7047,19 +7049,22 @@ function eventAnnounceFerryFord(argsObj){
 function eventMakeTrade(argsObj){
     argsObj = argsObj || {};
     var lines = [];
-    var tradeLevel = argsObj.tradeLevel || rollDice(1,10);
-    var offer = argsObj.offer || getTradeOffer({level: tradeLevel});
-    var proposal = argsObj.proposal || getTradeProposal({level: tradeLevel});
-    var textOffer = sentenceForm(scrubTradeObj(offer));
-    var textProposal = sentenceForm(scrubTradeObj(proposal));
-    lines.push(`A merchant is offering ${textOffer} for trade.`);
-    lines.push(`We propose to give ${textProposal} in return.`);
-    isAccepted = subEventTradeAttempt({offer: offer, proposal: proposal, merchantName: `The merchant`, merchantJob: 'trader', giveExtra: true},lines);
-    if (isAccepted){
-        removeTrade(proposal);
-        addTrade(offer);
-    }
-    addDays(1);
+    var offer = argsObj.offer || getTradeOffer({level: argsObj.tradeLevel});
+    lines.push(`We meet a merchant with wares for sale ${generateLandmark()}.`);
+    trailGame.caravan.dayHasBeenPaused = true;
+    createTradeModal({
+        offer: offer,
+        merchantName: `The merchant`,
+        merchantJob: 'trader',
+        giveExtra: true
+    },lines);
+    // lines.push(`We propose to give ${textProposal} in return.`);
+    // isAccepted = subEventTradeAttempt({offer: offer, proposal: proposal, merchantName: `The merchant`, merchantJob: 'trader', giveExtra: true},lines);
+    // if (isAccepted){
+    //     removeTrade(proposal);
+    //     addTrade(offer);
+    // }
+    // addDays(1);
     return lines;
 }
 
@@ -7398,7 +7403,9 @@ function createButton(argsObj){
     argsObj.buttonText = argsObj.buttonText || 'button';
     argsObj.callback = argsObj.callback || function(){alert(`missing callback!`)};
     var button = document.createElement("button");
-    button.append(argsObj.buttonText);
+    var span = document.createElement("span");
+    button.append(span);
+    span.append(argsObj.buttonText);
     button.addEventListener("click",argsObj.callback);
     if (argsObj.buttonClassName !== undefined){
         button.className = argsObj.buttonClassName;
@@ -7856,7 +7863,7 @@ function createTradeDisplay(argsObj){
     argsObj.type = argsObj.type || 'shop';
     trade = argsObj.type === 'shop' ? trailGame.temp.shoppingCart : trade;
     loan = argsObj.type === 'shop' ? trailGame.temp.loan : loan;
-    var isEditable = (['shop','overweight'].indexOf(argsObj.type) !== -1) // TODO fill in more types later
+    var isEditable = (['shop','overweight','proposal'].indexOf(argsObj.type) !== -1) // TODO fill in more types later
     debugTrade = trade // debug
 
     var tradeKeys = sortByTradeType(Object.keys(scrubTradeObj(trade)));
@@ -7869,11 +7876,11 @@ function createTradeDisplay(argsObj){
     function updateTradeObject(event){
         var tradeKey = event.target.getAttribute('name');
         var max = 9999;
-        if((['overweight'].indexOf(argsObj.type) !== -1)){
+        if((['overweight','proposal'].indexOf(argsObj.type) !== -1)){
             if (tradeKey === 'food'){
                 max = trailGame.caravan.food;
             } else {
-                max = trailGame.goods[tradeKey];
+                max = trailGame.goods[tradeKey] || trailGame.animals[tradeKey];
             }
         }
         if(event.target.value > max){
@@ -7898,13 +7905,6 @@ function createTradeDisplay(argsObj){
         var overWeight = false;
         var errorMessage = ''
         var actualCapacityTotal = 0;
-        if (argsObj.type === 'shop'){
-            overBudget = trade.actualValue > loan.max;
-            overWeight = trade.weight > actualCapacityTotal;
-            totalValue.innerHTML = trade.actualValue;
-            tradeWeight.innerHTML = trade.weight;
-            capacityMax.innerHTML = actualCapacityTotal;
-        }// TODO fill in more types later
         switch (argsObj.type){
             case 'shop':
                 actualCapacityTotal = trade.capacity + 10 * totalLeaders;
@@ -7925,6 +7925,14 @@ function createTradeDisplay(argsObj){
                 totalValue.innerHTML = trade.actualValue;
                 var netCapacity = (trade.capacity - trade.weight);
                 tradeWeight.innerHTML = `${netCapacity > 0 ? '+':''}${netCapacity}`;
+            break;
+            case 'proposal':
+                totalValue.innerHTML = trade.actualValue;
+                var postWeight = (getCaravanCarrying() - trade.weight);
+                var postCapacity = (getCaravanCapacity() - trade.capacity);
+                overWeight = postWeight > postCapacity;
+                tradeWeight.innerHTML = postWeight;
+                capacityMax.innerHTML = postCapacity;
             break;
         }
 
@@ -7955,7 +7963,9 @@ function createTradeDisplay(argsObj){
             errorDisplay.classList.remove('has-error');
         }
 
-        if((overWeight || overBudget) && hasAcceptButton){
+        var allowOverweight = (['proposal'].indexOf(argsObj.type) !== -1)
+
+        if(( (overWeight && !allowOverweight) || overBudget) && hasAcceptButton){
             argsObj.acceptButton.classList.add('disabled');
             childButton.classList.add('disabled');
         } else if ( hasAcceptButton ){
@@ -8014,6 +8024,7 @@ function createTradeDisplay(argsObj){
         itemLi.append(extras);
         var extrasLegend = [
             ['sell','Value'],
+            ['have','Have'],
             ['edible','Edible'],
             ['capacity','Carrying Capacity'],
             ['speed','Speed'],
@@ -8025,13 +8036,20 @@ function createTradeDisplay(argsObj){
             ['pet','Adorable']
         ];
         if (argsObj.type === 'shop'){
-            extrasLegend.unshift(['sell','Sell Value']);
+            extrasLegend[1] = ['sell','Sell Value'];
             extrasLegend[1] = ['buy','Cost'];
         }
         var hasComplexInfo =  false;
         for (var j = 0; j <= extrasLegend.length - 1; j++) {
             var pair = extrasLegend[j];
-            var value = itemObj[pair[0]];
+            var value = null;
+            if (pair[0] === 'have'){
+                var isGood = findItemFromKey(itemName).goodsType !== undefined;
+                value = isGood ? trailGame.goods[itemName] : trailGame.animals[itemName];
+                value = value || 0;
+            } else {
+                value = itemObj[pair[0]];
+            }
             if (value !== undefined){
                 var extraItem = document.createElement("li");
                 extraItem.className = "trade-display_item-list_item_extras_item";
@@ -8042,7 +8060,7 @@ function createTradeDisplay(argsObj){
                    outputString = `${pair[1]}`;
                     
                 }
-                if (outputString !== '' && (['buy','sell'].indexOf(pair[0]) === -1)){
+                if (outputString !== '' && (['buy','sell','have'].indexOf(pair[0]) === -1)){
                     hasComplexInfo = true;
                 }
                 if (outputString !== ''){
@@ -8067,6 +8085,12 @@ function createTradeDisplay(argsObj){
         case 'shop':
             valueLabelText = 'Total Cost';
             break;
+        case 'offer':
+            valueLabelText = 'Offer Value';
+            break;
+        case 'proposal':
+            valueLabelText = 'Proposal Value';
+            break;
         case 'overweight':
             valueLabelText = 'Value of Dropped Goods';
             break;
@@ -8079,17 +8103,17 @@ function createTradeDisplay(argsObj){
     totalValue.className = "trade-display_totals_value-display_total-value";
     var loanMax = document.createElement("span");
     loanMax.className = "trade-display_totals_value-display_loan-max";
-    if (['shop','overweight','offer'].indexOf(argsObj.type) !== -1){
+    if (['shop','overweight','offer','proposal'].indexOf(argsObj.type) !== -1){
         valueDisplay.append(totalValue);
         totalValue.append(trade.actualValue);
-    } // TODO fill in more types later
+    }
     if (['shop'].indexOf(argsObj.type) !== -1){
         valueDisplay.append('/');
         valueDisplay.append(loanMax);
         loanMax.append(loan.max);
-    } // TODO fill in more types later
+    }
     valueDisplay.append(' silver');
-    var showCapacity = (['shop','overweight','offer'].indexOf(argsObj.type) !== -1) // TODO fill in more types later
+    var showCapacity = (['shop','overweight','offer','proposal'].indexOf(argsObj.type) !== -1)
     if (showCapacity){
         var capacityDisplay = document.createElement("p");
         capacityDisplay.className = "trade-display_totals_capacity-display";
@@ -8098,6 +8122,7 @@ function createTradeDisplay(argsObj){
         switch (argsObj.type){
             case 'shop':
             case 'overweight':
+            case 'proposal':
                 capacityLabelText = 'Caravan Capacity';
                 break;
             case 'offer':
@@ -8113,15 +8138,17 @@ function createTradeDisplay(argsObj){
         var capacityMax = document.createElement("span");
         capacityMax.className = "trade-display_totals_capacity-display_max";
         capacityDisplay.append(tradeWeight);
-        if (['shop'].indexOf(argsObj.type) !== -1){
+        if (['shop','proposal'].indexOf(argsObj.type) !== -1){
             capacityDisplay.append('/');
             capacityDisplay.append(capacityMax);
         } 
     }
     var errorDisplay = document.createElement("p");
     errorDisplay.className = "trade-display_totals_error-display";
-    totals.append(errorDisplay);
-    updateTradeDisplay();
+    if(['shop','overweight','proposal'].indexOf(argsObj.type) !== -1){
+        totals.append(errorDisplay);
+    }
+    updateTradeDisplay(true);
 
     if (argsObj.clearButton !== undefined){
         argsObj.clearButton.addEventListener('click',clearTrade);
@@ -8380,17 +8407,70 @@ function createTradeModal(argsObj,lines){
     lines = lines || ['Debug line 1...','Debug line 2...','Debug line 3...'];
     var modalContent = createModalContentContainer();
 
+    var merchantName = argsObj.merchantName || 'The merchant';
+    var offer = argsObj.offer || getTradeOffer();
+
     modalContent.append(textArrayToP(lines));
     var instructionsA = document.createElement("h5");
-    instructionsA.innerHTML = (`The following is being offered to us as a trade:`);
+    instructionsA.innerHTML = (`${merchantName} is interested in trading us ${sentenceForm(scrubTradeObj(offer))}.`);
     modalContent.append(instructionsA);
 
-    var offer = argsObj.offer || getTradeOffer();
     var offerDisplay = createTradeDisplay({
         trade: offer, 
         type: 'offer'
     });
     modalContent.append(offerDisplay);
+
+    var leader = argsObj.leader || getRandomLeader()
+    var proposal = argsObj.proposal || getTradeProposal({leader: leader});
+    var proposalText = `${leader._name} proposes we give ${sentenceForm(scrubTradeObj(removeZerosFromTrade(proposal)))} in exchange.`;
+    modalContent.append(textArrayToP([proposalText]));
+    var instructionsB = document.createElement("h5");
+    instructionsB.innerHTML = (`Select what to add or remove to this proposal, or refuse this trade entirely.`);
+    modalContent.append(instructionsB);
+
+    var confirmButton = createButton({
+        useLi: true,
+        liClassName: 'full-width',
+        buttonText: `Attempt This Trade`,
+        callback: function(event){
+            dismissActiveModal(true);
+            setTimeout(function(){
+                
+            },400);
+        },
+    });
+
+    var clearButton = createButton({
+        useLi: true,
+        liClassName: 'full-width',
+        buttonText: `Clear Selection`,
+        buttonClassName: 'warning',
+        callback: function(event){
+        },
+    });
+
+    var refuseButton = createButton({
+        useLi: true,
+        liClassName: 'full-width',
+        buttonText: `Politely Refuse This Trade`,
+        buttonClassName: 'warning',
+        callback: function(event){
+            dismissActiveModal(true);
+            setTimeout(function(){
+                
+            },400);
+        },
+    });
+
+    var proposalDisplay = createTradeDisplay({
+        trade: proposal, 
+        type: 'proposal', 
+        acceptButton: confirmButton,
+        clearButton: clearButton,
+    });
+    modalContent.append(proposalDisplay);
+    modalContent.append(createControlsUl([confirmButton,clearButton,refuseButton]));
 
     return createModal({
         contentNode: modalContent
@@ -8430,8 +8510,9 @@ function resetButtonHandler(){
 function setUpMainControls(){
     trailGame.UI.isControlsDisabled = false;
     trailGame.UI.continueButton = document.body.querySelector('button#continue');
-    trailGame.UI.continueButton.innerHTML = 'Continue';
+    trailGame.UI.continueButton.innerHTML = '<span>Continue</span>';
     trailGame.UI.continueButton.addEventListener("click",continueButtonHandler);
+    enableMainControls();
 }
 
 function disableMainControls(){
@@ -8461,6 +8542,17 @@ function setUpNewGame(){
     newCaravan();
     setUpMainControls();
     createPartyChoiceModal();
+}
+
+function toggleFont(){
+    var body = document.querySelector('body');
+    if (body.classList.contains('thematic')){
+        body.classList.remove('thematic');
+        body.classList.add('sans-serif');
+    } else {
+        body.classList.add('thematic');
+        body.classList.remove('sans-serif');
+    }
 }
 
 // debug functions

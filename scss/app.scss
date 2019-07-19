@@ -13,8 +13,10 @@ $dusty: #968ca0;
 $mauve: #7b556c;
 $salmon: #ea5672;
 $granite: #556f7b;
+$ghost: fade-out($dove,0.65);
 $dark-shadow: fade-out(black,0.75);
 $light-shadow: fade-out(#2e2e2e,0.75);
+$purple-shadow: fade-out($plum,0.5);
 
 // sizes
 $column-padding-width: 0.5rem;
@@ -23,10 +25,16 @@ $button-border-width: 0.12rem;
 // fonts
 
 $Nightmare: 'Nightmare', Serif;
+$BenchNine: 'BenchNine', Sans-Serif;
 
 @font-face {
   font-family: Nightmare;
   src: url('../assets/fonts/NightmareExtended.ttf');
+}
+
+@font-face {
+  font-family: BenchNine;
+  src: url('../assets/fonts/BenchNine-Light.ttf');
 }
 
 // etc
@@ -126,9 +134,14 @@ body{
 	margin: 0;
 
 
-	* {
+	&.thematic * {
 		font-family: $Nightmare;
 		font-weight: 400;
+	}
+
+	&.sans-serif * {
+		font-family: $BenchNine;
+		font-weight: 300;
 	}
 }
 
@@ -309,6 +322,7 @@ div#log{
 button{
 	border-radius: 0;
 	padding: 0.25rem 0.75rem;
+	padding: 0;
 
 	position: relative;
 	width: 100%;
@@ -324,6 +338,15 @@ button{
 
 	@include button-behavior($dusty);
 
+	span {
+	    display: block;
+	    width: calc(100% - 1.5rem);
+	    padding: 0.25rem 0.75rem;
+
+	   	background: radial-gradient(circle, rgba(232, 212, 232, 0.58) 25%, rgba(143, 99, 141, 0.3) 100%);
+	    background: radial-gradient(circle, $ghost, $purple-shadow 100%);
+	}
+
 	&.warning{
 
 		background-color: $mauve;
@@ -331,6 +354,7 @@ button{
 
 		@include button-behavior($mauve);
 	}
+
 }
 
 input{
@@ -529,10 +553,9 @@ input{
 					padding-right: $column-padding-width;
 					color: $dark-dove;
 
-					&.buy, &.sell{
-						width: 100%;
+					&.buy, &.sell, &.have{
+						width: 50%;
 						box-sizing: border-box;
-						text-align: right;
 						padding-right: 0;
 						color: $dove;
 
@@ -541,13 +564,17 @@ input{
 						}
 					}
 
+					&.have{
+						text-align: right;
+					}
+
 					.shop &{
 						&.buy, &.sell{
 							width: 50%;
 						}
 
-						&.sell{
-							text-align: left;
+						&.buy{
+							text-align: right;
 						}
 					}
 				
@@ -558,6 +585,7 @@ input{
 
 	&_totals{
 		padding: 0.12rem;
+		margin: $column-padding-width 0 (2 * $column-padding-width) 0;
 
 		&_value-display, &_capacity-display, &_error-display{
 			margin: 0 $column-padding-width 0 0 !important;
