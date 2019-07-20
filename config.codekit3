@@ -55,6 +55,17 @@
 		"oT": 1,
 		"q": 100
 		},
+	"/assets/images/morale.png": {
+		"ft": 32768,
+		"iS": 338,
+		"oA": 0,
+		"oAP": "/assets/images/morale.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"/assets/images/placeholder-person.png": {
 		"ft": 32768,
 		"iS": 193,

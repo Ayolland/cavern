@@ -64,15 +64,13 @@
 //      - settings modal
 //      - about modal
 //      - help modal
-//      - trade modal
+//      - river/gate modal
 //      - slaughter animals modal
 //      - win game modal (done for now)
-//      - start settings (music/vegetarian/rations) modal
+//      - start settings (music/font) modal
 //      - custom party modal (done for now)
 //      - save last party
-//      - ford river choices
 //      - trail display
-//      - print CSS
 //      - error catching
 
 // BUGS
@@ -3331,27 +3329,27 @@ function getTradeOffer(argsObj){
     var approxValue = Math.round(argsObj.approxValue * cultureModifier);
     var offer = { actualValue: 0, expectedValue: argsObj.approxValue };
     var numAnimalTypes = getRandomInt(0,3);
-    while ( approxValue > 0 && numAnimalTypes > 0){
-        var animal = generateAnimal();
-        var number = getRandomInt(1,Math.ceil( approxValue / animal.sell ));
-        if (number > 0){
-            var key = animal.animalClass;
-            addToTrade(offer,number,key);
-            approxValue -= number * animal.sell;
+
+    var allItems = Object.keys(trailGame.goodsClasses).concat(Object.keys(trailGame.animalClasses));
+    allItems = (argsObj.wants !== undefined) ? argsObj.wants : allItems;
+    allItems = shuffle(allItems);
+    var itemIndex = 0;
+    var timesTried = 0;
+
+    while ( approxValue > 0 && timesTried < 10){
+        var itemKey = allItems[itemIndex];
+        var itemObj = findItemFromKey(itemKey);
+        var isAnimal = itemObj.animalClass !== undefined;
+        var number = getRandomInt(1,Math.ceil( approxValue / itemObj.sell ));
+        if (!isAnimal || numAnimalTypes > 0){
+            addToTrade(offer,number,itemKey);
+            numAnimalTypes -= isAnimal ? 1 : 0;
         }
-        numAnimalTypes--;
+        approxValue -= number * itemObj.sell;
+        itemIndex = itemIndex === allItems.length - 1 ? 0 : itemIndex + 1;
+        timesTried++;
     }
-    var numGoodsTypes = getRandomInt(1,3);
-    while ( approxValue > 0 && numGoodsTypes > 0){
-        var good = generateGood();
-        var number = getRandomInt(1,Math.ceil( approxValue / Math.max(good.sell,1) ));
-        if (number > 0){
-            var key = good.goodsType;
-            addToTrade(offer,number,key);
-            approxValue -= number * good.sell;
-        }
-        numGoodsTypes--;
-    }
+
     return offer;
 }
 
@@ -3385,7 +3383,7 @@ function getTradeProposal(argsObj){
     }
 
     var timesTried = 0;
-    var remainingValue = approxValue
+    var remainingValue = approxValue;
     while(remainingValue > 0 && timesTried < 20){
         var itemKey = shuffle(allItems)[0];
         var itemObj = findItemFromKey(itemKey);
@@ -4267,20 +4265,41 @@ function generateStrangeCave(argObj){
                         var craftPair = shuffle(cave._religion.craftPairs)[0];
                         var goodsObj = generateGood(craftPair[0]);
                         lines.push(`This monastery is known for a particularly refined variety of ${craftPair[0]} they ${craftPair[1]} here.`);
-                        var diceNum = clamp(Math.ceil(4 - (goodsObj.sell / 25)),1,4);
-                        var offer = {};
-                        addToTrade(offer,rollDice(diceNum),goodsObj.goodsType);
-                        var proposal = getTradeProposal({approxValue: offer.actualValue});
-                        var textOffer = sentenceForm(scrubTradeObj(offer));
-                        var textProposal = sentenceForm(scrubTradeObj(proposal));
+                        var offer = getTradeOffer({wants:[goodsObj.goodsType]});
                         var abbxJob = cave._religion.god === 'Sister Serpent-Eyes' ? 'high gorgon' : 'priest';
                         var merchant = generateLeader({name: `The ${abbx}`, job: abbxJob, religion: cave._religion});
-                        lines.push(`${neutralLeaders[0]._name} speaks to the ${abbx} and proposes we trade ${textProposal} for ${textOffer}.`);
-                        isAccepted = subEventTradeAttempt({offer: offer, proposal: proposal, merchant: merchant, giveExtra: true},lines);
-                        if (isAccepted){
-                            removeTrade(proposal);
-                            addTrade(offer);
+                        lines.push(`${neutralLeaders[0]._name} speaks to the ${abbx} and proposes we make a trade.`);
+                        trailGame.caravan.dayHasBeenPaused = true;
+
+                        function eventRefuseTrade(argsObj){
+                            lines = [];
+                            lines.push(`We tell ${merchant._name} that we unfortunately cannot make a trade.`);
+                            lines.push(`${merchant._name} is baffled. They tell us we won't find finer ${pluralize(craftPair[0])} elsewhere.`);
+                            addDays(1);
+                            return lines;
                         }
+
+                        function eventAttemptTrade(argsObj){
+                            lines = [];
+                            isAccepted = subEventTradeAttempt(argsObj,lines);
+                            if (isAccepted){
+                                removeTrade(argsObj.proposal);
+                                addTrade(argsObj.offer);
+                            }
+                            addDays(1);
+                            return lines;
+                        }
+
+                        createTradeModal({
+                            offer: offer,
+                            merchant: merchant,
+                            leader: neutralLeaders[0],
+                            refuseCallback: eventRefuseTrade,
+                            attemptCallback: eventAttemptTrade,
+                        },lines);
+                        
+                        return lines;
+
                     } else if (roll < 12) {
                         var we = neutralLeaders.length > 1 ? 'We' : neutralLeaders[0]._name;
                         var ess = neutralLeaders.length > 1 ? '' : 's';
@@ -6495,7 +6514,7 @@ function subEventTradeAttempt(argsObj,lines){
     var leader = argsObj.leader || getRandomLeader();
     var giveExtra = argsObj.giveExtra === true ? true : false;
     var offerValue = offer.actualValue;
-    var modifier = (getCaravanCulture() + merchant._wits) / trailGame.maxLeaderStat;
+    var modifier = clamp((leader._culture - merchant._wits) / trailGame.maxLeaderStat,0.1,1);
     var insultingThreshold = Math.round(offerValue - (modifier * offerValue));
     var generousThreshold = Math.round(offerValue + ((1 - modifier) * offerValue));
     var unit = Math.round(clamp((generousThreshold - insultingThreshold) / 3),1,trailGame.maxLeaderStat);
@@ -6503,6 +6522,19 @@ function subEventTradeAttempt(argsObj,lines){
     if (trailGame.caravan.morale < merchant._culture && rollDice(1,2) === 2 && proposal.actualValue < generousThreshold){
         // pity
         lines.push(`${capitalMerchant} looks at the state of our company, and takes pity on us, agreeing to the deal.`);
+        return true;
+    } else if ( proposal.actualValue < insultingThreshold && proposal.actualValue > 0 && leader._culture > merchant._wits ) {
+        //bamboozled
+        lines.push(`${capitalMerchant} is confused by how scant our proposal is.`);
+        var convinceLine = shuffle([
+            `${leader._name} compliments them on their ${generateAttractiveTrait()}. ${merchant._name} blushes.`,
+            `${leader._name} smoothly assures that these goods are all the rage in ${merchant._homeland}.`,
+            `${leader._name} indignantly demands how dare they doubt the quality of our wares!`,
+            `${leader._name} claps them on the shoulder, looks deep into their eyes, and smiles.`
+        ])[0];
+        var shrugs = shuffle(['shugs','scratches their head','nervously chuckles','looks uneasy'])[0];
+        lines.push(convinceLine);
+        lines.push(`${capitalMerchant} ${shrugs}, but agrees to the trade.`);
         return true;
     } else if ( proposal.actualValue < insultingThreshold ){
         //insulted
@@ -7920,8 +7952,7 @@ function createTradeDisplay(argsObj){
     argsObj.type = argsObj.type || 'shop';
     trade = argsObj.type === 'shop' ? trailGame.temp.shoppingCart : trade;
     loan = argsObj.type === 'shop' ? trailGame.temp.loan : loan;
-    var isEditable = (['shop','overweight','proposal'].indexOf(argsObj.type) !== -1) // TODO fill in more types later
-    debugTrade = trade // debug
+    var isEditable = (['shop','overweight','proposal'].indexOf(argsObj.type) !== -1)
 
     var tradeKeys = sortByTradeType(Object.keys(scrubTradeObj(trade)));
     var totalLeaders = argsObj.type === 'shop' ? trailGame.temp.roster.length : trailGame.leaders.length;
@@ -8195,7 +8226,7 @@ function createTradeDisplay(argsObj){
         var capacityMax = document.createElement("span");
         capacityMax.className = "trade-display_totals_capacity-display_max";
         capacityDisplay.append(tradeWeight);
-        if (['shop','proposal'].indexOf(argsObj.type) !== -1){
+        if (['shop','proposal','overweight'].indexOf(argsObj.type) !== -1){
             capacityDisplay.append('/');
             capacityDisplay.append(capacityMax);
         } 
@@ -8461,7 +8492,7 @@ function createOverweightModal(funct,args,dayIsResolution){
 
 function createTradeModal(argsObj,lines){
     argsObj = argsObj || {};
-    lines = lines || ['Debug line 1...','Debug line 2...','Debug line 3...'];
+    lines = lines || [];
     var modalContent = createModalContentContainer();
 
     var merchant = argsObj.merchant || generateLeader({
