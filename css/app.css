@@ -33,6 +33,9 @@ div#log, .modal .modal_content, .text-container {
   div#log p, .modal .modal_content p, .text-container p {
     margin: 0.25em 0 1em 0; }
 
+button {
+  text-shadow: 0 1px 0 white, 0 -1px 0 rgba(0, 0, 0, 0.5), 0 0 0.25em white; }
+
 body {
   background-color: #664870;
   background-image: url("../assets/images/marble.png");
@@ -137,6 +140,22 @@ div#log {
     border-style: solid;
     box-sizing: border-box;
     border-color: #8a8f91 #2d3336 #1e2224 #6d7376; }
+  .modal .modal_title-bar {
+    position: relative;
+    width: 100%;
+    color: #ccc;
+    font-size: 1.5em;
+    text-align: center; }
+    .modal .modal_title-bar_text {
+      display: block;
+      line-height: 1;
+      padding-top: 0.5rem; }
+    .modal .modal_title-bar_close-button {
+      position: absolute;
+      right: 0;
+      top: 0;
+      padding: 0.5rem;
+      cursor: pointer; }
   .modal .modal_scroll-container {
     max-width: 20em;
     width: calc(100% - 1em);
@@ -164,7 +183,6 @@ button {
   background-color: #968ca0;
   background-image: url("../assets/images/marble.png");
   background-size: 200px;
-  text-shadow: 0 1px 0 white, 0 -1px 0 rgba(0, 0, 0, 0.5), 0 0 0.25em white;
   font-size: 0.75em;
   border-width: 0.12rem;
   border-style: solid;

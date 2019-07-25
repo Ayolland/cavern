@@ -127,6 +127,10 @@ $zeroToTen: ['zero','one','two','three','four','five','six','seven','eight','nin
 
 }
 
+%emboss-text{
+	text-shadow: 0 1px 0 white, 0 -1px 0 rgba(0, 0, 0, 0.5), 0 0 0.25em white;
+}
+
 body{
 	background-color: $plum;
 	background-image: $marble-bg;
@@ -284,6 +288,28 @@ div#log{
     	@include emboss($color: $slate, $inset: false);
     }
 
+    .modal_title-bar {
+    	position: relative;
+    	width: 100%;
+    	color: $dove;
+    	font-size: 1.5em;
+    	text-align: center;
+
+    	&_text {
+		    display: block;
+		    line-height: 1;
+		    padding-top: $column-padding-width;
+		}
+
+    	&_close-button{
+    		position: absolute;
+    		right: 0;
+    		top: 0;
+    		padding: $column-padding-width;
+    		cursor: pointer;
+    	}
+    }
+
     .modal_scroll-container {
     	max-width: 20em;
 	    width: calc(100% - 1em);
@@ -331,9 +357,10 @@ button{
 	background-color: $dusty;
 	background-image: $marble-bg;
 	background-size: 200px;
-	text-shadow: 0 1px 0 white, 0 -1px 0 rgba(0, 0, 0, 0.5), 0 0 0.25em white;
 
 	font-size: 0.75em;
+
+	@extend %emboss-text;
 
 	@include emboss($color: $dusty, $border-width: $button-border-width, $inset: false);
 

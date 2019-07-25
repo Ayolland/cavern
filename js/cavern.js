@@ -7528,6 +7528,9 @@ function createButton(argsObj){
 function createModal(argsObj){
     argsObj = argsObj || {};
     argsObj.active = argsObj.active === false ? false : true;
+    argsObj.hasTitleBar = argsObj.hasTitleBar === true ? true : false;
+    argsObj.title = argsObj.title || '';
+    argsObj.closeFunc = argsObj.closeFunc || dismissActiveModal;
 
     var modal = document.createElement("div");
     modal.className = 'modal';
@@ -7542,6 +7545,25 @@ function createModal(argsObj){
     var modalBg = document.createElement("div");
     modalBg.className = 'modal_background';
     modalWrapper.append(modalBg);
+
+    if(argsObj.hasTitleBar){
+        var titleBar = document.createElement("div");
+        titleBar.className = 'modal_title-bar';
+        modalBg.append(titleBar);
+
+        if (argsObj.title !== ''){
+            var titleBarText = document.createElement("span");
+            titleBarText.className = 'modal_title-bar_text';
+            titleBarText.innerHTML = argsObj.title;
+            titleBar.append(titleBarText);
+        }
+
+        var titleBarClose = document.createElement("a");
+        titleBarClose.className = 'modal_title-bar_close-button';
+        titleBarClose.innerHTML = '✕';
+        titleBarClose.addEventListener('click',argsObj.closeFunc);
+        titleBar.append(titleBarClose);
+    }
 
     var modalScroll = document.createElement("div");
     modalScroll.className = 'modal_scroll-container';
@@ -8669,7 +8691,9 @@ function createStatusModal(){
     }));
 
     return createModal({
-        contentNode: modalContent
+        contentNode: modalContent,
+        hasTitleBar: true,
+        title: 'Caravan Status'
     });
 }
 
@@ -8689,9 +8713,13 @@ function resetButtonHandler(){
 
 function setUpMainControls(){
     trailGame.UI.isControlsDisabled = false;
+
     trailGame.UI.continueButton = document.body.querySelector('button#continue');
     trailGame.UI.continueButton.innerHTML = '<span>Continue</span>';
     trailGame.UI.continueButton.addEventListener("click",continueButtonHandler);
+
+    trailGame.UI.statusButton = document.body.querySelector('button#status');
+    trailGame.UI.statusButton.addEventListener("click",createStatusModal);
     enableMainControls();
 }
 
