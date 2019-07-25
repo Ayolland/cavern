@@ -370,9 +370,41 @@ input{
     overflow: hidden;
     text-indent: 200vw;
 
-    background-image: url('../assets/images/placeholder-person.png');
     background-size: 1em 1em;
     image-rendering: pixelated;
+}
+
+.morale-display{
+	width: 100%;
+	display: flex;
+	align-items: center;
+
+	margin: $button-border-width 0;
+	padding: $column-padding-width;
+
+	background-color: $granite;
+	background-image: $marble-bg;
+	background-size: 600px;
+
+	font-size: 1.5em;
+	color: white;
+
+	@include emboss($color: $granite, $border-width: $button-border-width, $inset: false);
+
+	&_face{
+		font-size: 2rem;
+		background-size: 5em 1em;
+		background-image: url('../assets/images/morale.png');
+		margin-right: $column-padding-width;
+
+		$emotions: 'laughing' 'smiling' 'concerned' 'frowning' 'weeping';
+
+		@for $i from 1 through length($emotions){
+			&.#{nth($emotions, $i)}{
+				background-position: (1em * $i) 0;
+			}
+		}
+	}
 }
 
 .roster-display{
@@ -394,16 +426,19 @@ input{
 
 	@include emboss($color: $mauve, $border-width: $button-border-width, $inset: false);
 
-	&.button{
+	&.button, &.status{
 
 		background-color: $granite;
 
 		@include emboss($color: $granite, $border-width: $button-border-width, $inset: false);
-		@include button-behavior($granite);
 
 		.leader-display_stats_stat-display_container{
 			@include emboss($color: $granite, $border-width: $button-border-width);
 		}
+	}
+
+	&.button{
+		@include button-behavior($granite);
 	}
 
 	&_basics{
@@ -413,6 +448,7 @@ input{
 
 		&_icon{
 			font-size: 2.5rem;
+			background-image: url('../assets/images/placeholder-person.png');
 		}
 
 		&_lockup{

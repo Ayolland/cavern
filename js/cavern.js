@@ -3370,7 +3370,7 @@ function getTradeProposal(argsObj){
 
     var proposal = { actualValue: 0, expectedValue: approxValue };
 
-    var allItems = Object.keys(trailGame.goods).concat(Object.keys(trailGame.animals));
+    var allItems = Object.keys(trailGame.goodsClasses).concat(Object.keys(trailGame.animalClasses));
 
     if (argsObj.wants !== undefined){
         // if wants are provided, only create proposals including those;
@@ -3403,7 +3403,18 @@ function getTradeProposal(argsObj){
         timesTried++;
     }
 
-    return proposal;
+    return removeZerosFromTrade(proposal);
+}
+
+function getAllCaravanItems(){
+    var trade = {};
+    Object.keys(trailGame.goods).map(function(goodsKey){
+        addToTrade(trade,trailGame.goods[goodsKey],goodsKey);
+    });
+    Object.keys(trailGame.animals).map(function(animalKey){
+        addToTrade(trade,trailGame.animals[animalKey],animalKey);
+    });
+    return trade;
 }
 
 function findItemFromKey(key){
@@ -7964,7 +7975,7 @@ function createTradeDisplay(argsObj){
     function updateTradeObject(event){
         var tradeKey = event.target.getAttribute('name');
         var max = 9999;
-        if((['overweight','proposal'].indexOf(argsObj.type) !== -1)){
+        if((['overweight','proposal','status'].indexOf(argsObj.type) !== -1)){
             if (tradeKey === 'food'){
                 max = trailGame.caravan.food;
             } else {
@@ -7991,7 +8002,7 @@ function createTradeDisplay(argsObj){
         }
         var overBudget = false;
         var overWeight = false;
-        var errorMessage = ''
+        var errorMessage = '';
         var actualCapacityTotal = 0;
         switch (argsObj.type){
             case 'shop':
@@ -8003,11 +8014,10 @@ function createTradeDisplay(argsObj){
                 capacityMax.innerHTML = actualCapacityTotal;
             break;
             case 'overweight':
-                actualCapacityTotal = getCaravanCapacity();
                 overWeight = (getCaravanCarrying() - trade.weight) > actualCapacityTotal;
                 totalValue.innerHTML = trade.actualValue;
                 tradeWeight.innerHTML = (getCaravanCarrying() - trade.weight);
-                capacityMax.innerHTML = actualCapacityTotal;
+                capacityMax.innerHTML = getCaravanCapacity();
             break;
             case 'offer':
                 totalValue.innerHTML = trade.actualValue;
@@ -8021,6 +8031,12 @@ function createTradeDisplay(argsObj){
                 overWeight = postWeight > postCapacity;
                 tradeWeight.innerHTML = postWeight;
                 capacityMax.innerHTML = postCapacity;
+            break;
+            case 'status':
+                overWeight = getCaravanCarrying() > getCaravanCapacity();
+                totalValue.innerHTML = trade.actualValue;
+                tradeWeight.innerHTML = getCaravanCarrying();
+                capacityMax.innerHTML = getCaravanCapacity();
             break;
         }
 
@@ -8182,6 +8198,9 @@ function createTradeDisplay(argsObj){
         case 'overweight':
             valueLabelText = 'Value of Dropped Goods';
             break;
+        case 'status':
+            valueLabelText = 'Caravan Value';
+            break;
         default:
             valueLabelText = 'Total Value'; 
     }
@@ -8201,7 +8220,7 @@ function createTradeDisplay(argsObj){
         loanMax.append(loan.max);
     }
     valueDisplay.append(' silver');
-    var showCapacity = (['shop','overweight','offer','proposal'].indexOf(argsObj.type) !== -1)
+    var showCapacity = (['shop','overweight','offer','proposal','status'].indexOf(argsObj.type) !== -1)
     if (showCapacity){
         var capacityDisplay = document.createElement("p");
         capacityDisplay.className = "trade-display_totals_capacity-display";
@@ -8210,6 +8229,7 @@ function createTradeDisplay(argsObj){
         switch (argsObj.type){
             case 'shop':
             case 'overweight':
+            case 'status':
             case 'proposal':
                 capacityLabelText = 'Caravan Capacity';
                 break;
@@ -8226,14 +8246,14 @@ function createTradeDisplay(argsObj){
         var capacityMax = document.createElement("span");
         capacityMax.className = "trade-display_totals_capacity-display_max";
         capacityDisplay.append(tradeWeight);
-        if (['shop','proposal','overweight'].indexOf(argsObj.type) !== -1){
+        if (['shop','proposal','overweight','status'].indexOf(argsObj.type) !== -1){
             capacityDisplay.append('/');
             capacityDisplay.append(capacityMax);
         } 
     }
     var errorDisplay = document.createElement("p");
     errorDisplay.className = "trade-display_totals_error-display";
-    if(['shop','overweight','proposal'].indexOf(argsObj.type) !== -1){
+    if(['shop','overweight','proposal','status'].indexOf(argsObj.type) !== -1){
         totals.append(errorDisplay);
     }
     updateTradeDisplay(true);
@@ -8589,6 +8609,68 @@ function createGameWinModal(lines,success){
         }],
     };
     return createSimpleModal(modalArgs);
+}
+
+function createMoraleDisplay(){
+    var moraleWords = ['desperate','poor','fair','good','excellent'];
+    var faceWords = ['anguished','frowning','concerned','smiling','laughing'];
+    var morale = clamp(Math.floor(trailGame.caravan.morale / 2),0,4);
+
+    var moraleDisplay = document.createElement("div");
+    moraleDisplay.className = "morale-display";
+
+    var faceDisplay = document.createElement("div");
+    faceDisplay.className = `morale-display_face icon ${faceWords[morale]}`;
+    faceDisplay.innerHTML = `${indefiniteArticle(faceWords[morale])} face`;
+    moraleDisplay.append(faceDisplay);
+
+    var textDisplay = document.createElement("span");
+    textDisplay.className = `morale-display_text`;
+    textDisplay.innerHTML = `${capitalizeFirstLetter(moraleWords[morale])}`;
+    moraleDisplay.append(textDisplay);
+
+    return moraleDisplay;
+}
+
+function createStatusModal(){
+    var modalContent = createModalContentContainer();
+
+    var headlineA = document.createElement("h3");
+    headlineA.innerHTML = 'Caravan Morale:'
+    modalContent.append(headlineA);
+
+    modalContent.append(createMoraleDisplay());
+
+    var headlineB = document.createElement("h3");
+    headlineB.innerHTML = 'Caravan Leaders:'
+    modalContent.append(headlineB);
+
+    var leaderList = document.createElement("ul");
+    leaderList.className = 'roster-display';
+    modalContent.append(leaderList);
+
+    var leaderIds = Object.keys(trailGame.leaders);
+    leaderIds.map(function(leaderId){
+        leaderList.append(createLeaderDisplay({
+            leader: trailGame.leaders[leaderId],
+            showHealth: true,
+            className: 'status'
+        }));
+    });
+
+    var headlineC = document.createElement("h3");
+    headlineC.innerHTML = 'Caravan Goods & Animals:'
+    modalContent.append(headlineC);
+
+    modalContent.append(createTradeDisplay({
+        trade: getAllCaravanItems(), 
+        type: 'status',
+
+    }));
+
+    return createModal({
+        contentNode: modalContent
+    });
 }
 
 function runFuncIfControlsEnabled(functionName,args){

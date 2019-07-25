@@ -207,9 +207,39 @@ input {
   width: 1em;
   overflow: hidden;
   text-indent: 200vw;
-  background-image: url("../assets/images/placeholder-person.png");
   background-size: 1em 1em;
   image-rendering: pixelated; }
+
+.morale-display {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin: 0.12rem 0;
+  padding: 0.5rem;
+  background-color: #556f7b;
+  background-image: url("../assets/images/marble.png");
+  background-size: 600px;
+  font-size: 1.5em;
+  color: white;
+  border-width: 0.12rem;
+  border-style: solid;
+  box-sizing: border-box;
+  border-color: #99a9b0 #40535c #2b383e #80939c; }
+  .morale-display_face {
+    font-size: 2rem;
+    background-size: 5em 1em;
+    background-image: url("../assets/images/morale.png");
+    margin-right: 0.5rem; }
+    .morale-display_face.laughing {
+      background-position: 1em 0; }
+    .morale-display_face.smiling {
+      background-position: 2em 0; }
+    .morale-display_face.concerned {
+      background-position: 3em 0; }
+    .morale-display_face.frowning {
+      background-position: 4em 0; }
+    .morale-display_face.weeping {
+      background-position: 5em 0; }
 
 .leader-display {
   width: 100%;
@@ -224,29 +254,30 @@ input {
   border-style: solid;
   box-sizing: border-box;
   border-color: #b588a3 #622b4d #421d33 #a26b8c; }
-  .leader-display.button {
+  .leader-display.button, .leader-display.status {
     background-color: #556f7b;
     border-width: 0.12rem;
     border-style: solid;
     box-sizing: border-box;
     border-color: #99a9b0 #40535c #2b383e #80939c; }
-    .leader-display.button:hover:not(.disabled), .leader-display.button:focus:not(.disabled), .leader-display.button:active:not(.disabled) {
-      background-color: #57717d;
-      filter: brightness(120%);
-      box-shadow: 0 0 5px #ad48d0; }
-    .leader-display.button.disabled {
-      filter: contrast(0.75) brightness(0.75);
-      pointer-events: none; }
-    .leader-display.button .leader-display_stats_stat-display_container {
+    .leader-display.button .leader-display_stats_stat-display_container, .leader-display.status .leader-display_stats_stat-display_container {
       border-width: 0.12rem;
       border-style: solid;
       box-sizing: border-box;
       border-color: #2b383e #80939c #99a9b0 #40535c; }
+  .leader-display.button:hover:not(.disabled), .leader-display.button:focus:not(.disabled), .leader-display.button:active:not(.disabled) {
+    background-color: #57717d;
+    filter: brightness(120%);
+    box-shadow: 0 0 5px #ad48d0; }
+  .leader-display.button.disabled {
+    filter: contrast(0.75) brightness(0.75);
+    pointer-events: none; }
   .leader-display_basics {
     display: flex;
     padding: 0.12rem; }
     .leader-display_basics_icon {
-      font-size: 2.5rem; }
+      font-size: 2.5rem;
+      background-image: url("../assets/images/placeholder-person.png"); }
     .leader-display_basics_lockup {
       display: flex;
       flex-direction: column;
