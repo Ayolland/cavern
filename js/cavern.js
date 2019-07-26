@@ -74,6 +74,7 @@
 //      - error catching
 
 // BUGS
+// - what if nothing is in a trade?
 // - banned jobs not working
 // - despair starvation immunity too easy
 // - eating way too much food?
@@ -3414,6 +3415,7 @@ function getAllCaravanItems(){
     Object.keys(trailGame.animals).map(function(animalKey){
         addToTrade(trade,trailGame.animals[animalKey],animalKey);
     });
+    addToTrade(trade,trailGame.caravan.food,'food');
     return trade;
 }
 
@@ -8036,7 +8038,7 @@ function createTradeDisplay(argsObj){
                 capacityMax.innerHTML = actualCapacityTotal;
             break;
             case 'overweight':
-                overWeight = (getCaravanCarrying() - trade.weight) > actualCapacityTotal;
+                overWeight = (getCaravanCarrying() - trade.weight) > getCaravanCapacity();
                 totalValue.innerHTML = trade.actualValue;
                 tradeWeight.innerHTML = (getCaravanCarrying() - trade.weight);
                 capacityMax.innerHTML = getCaravanCapacity();
@@ -8654,17 +8656,57 @@ function createMoraleDisplay(){
     return moraleDisplay;
 }
 
+function createToggleMenu(argsObj){
+    argsObj = argsObj || {};
+    argsObj.buttons = argsObj.buttons || []; // array of options objects
+    argsObj.currentVal = argsObj.currentVal || 0;
+    argsObj.callback = argsObj.callback || function(event){};
+    argsObj.menuTitle = argsObj.menuTitle || '';
+    argsObj.inputName = argsObj.inputName || 'inputName';
+
+    var toggleMenu = document.createElement("form");
+    toggleMenu.className = "toggle-menu";
+
+    if (argsObj.menuTitle !== ''){
+        var menuTitle = document.createElement("span");
+        menuTitle.className = 'toggle-menu_title';
+        menuTitle.innerHTML = argsObj.menuTitle;
+        toggleMenu.append(menuTitle);
+    }
+
+    argsObj.buttons.map(function(radioOptions){
+        var radioContainer = document.createElement("div");
+        radioContainer.className = "toggle-menu_radio-container";
+        toggleMenu.append(radioContainer);
+        var radioButton = document.createElement("input");
+        radioButton.setAttribute('type','radio');
+        radioButton.setAttribute('name',argsObj.inputName);
+        radioButton.value = radioOptions.value;
+        if (radioOptions.value === argsObj.currentVal){
+            radioButton.checked = true;
+        }
+        radioButton.addEventListener('change',argsObj.callback);
+        radioContainer.append(radioButton);
+        var label = document.createElement("label");
+        label.setAttribute('for',argsObj.inputName);
+        label.append(radioOptions.label);
+        radioContainer.append(label);
+    });
+
+    return toggleMenu;
+}
+
 function createStatusModal(){
     var modalContent = createModalContentContainer();
 
     var headlineA = document.createElement("h3");
-    headlineA.innerHTML = 'Caravan Morale:'
+    headlineA.innerHTML = 'Caravan Morale:';
     modalContent.append(headlineA);
 
     modalContent.append(createMoraleDisplay());
 
     var headlineB = document.createElement("h3");
-    headlineB.innerHTML = 'Caravan Leaders:'
+    headlineB.innerHTML = 'Caravan Leaders:';
     modalContent.append(headlineB);
 
     var leaderList = document.createElement("ul");
@@ -8681,7 +8723,7 @@ function createStatusModal(){
     });
 
     var headlineC = document.createElement("h3");
-    headlineC.innerHTML = 'Caravan Goods & Animals:'
+    headlineC.innerHTML = 'Caravan Goods & Animals:';
     modalContent.append(headlineC);
 
     modalContent.append(createTradeDisplay({
@@ -8690,10 +8732,34 @@ function createStatusModal(){
 
     }));
 
+    var headlineD = document.createElement("h3");
+    headlineD.innerHTML = 'Food & Ration Settings:'
+    modalContent.append(headlineD);
+
+    var rationsMenu = createToggleMenu({
+        menuTitle : 'Ration Size:',
+        currentVal : trailGame.caravan.rations,
+        inputName : 'rationSize',
+        buttons: [{
+            label: 'Meager',
+            value: 1
+        },{
+            label: 'Acceptable',
+            value: 2
+        },{
+            label: 'Filling',
+            value: 3
+        }],
+        callback: function(event){
+            trailGame.caravan.rations = event.target.value;
+        }
+    });
+    modalContent.append(rationsMenu);
+
     return createModal({
         contentNode: modalContent,
         hasTitleBar: true,
-        title: 'Caravan Status'
+        title: 'Caravan Status',
     });
 }
 

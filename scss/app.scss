@@ -6,7 +6,7 @@ html{
 $plum: #664870;
 $magenta: #ad48d0;
 $dove: #ccc;
-$dark-dove: #999;
+$dark-dove: #888;
 $eggshell: #eee;
 $slate: #3c4448;
 $dusty: #968ca0;
@@ -663,6 +663,62 @@ input{
 			font-size: 0.75em;
 			height: 1.25em;
 		}
+	}
+}
+
+.toggle-menu {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+
+    &_title {
+    	width: 100%;
+    	margin: 0 ($column-padding-width / 2);
+	}
+
+	&_radio-container {
+    	flex: 1;
+    	position: relative;
+
+    	margin: $button-border-width;
+
+    	label {
+    		display: block;
+    		width: 100%;
+
+    		padding: ($button-border-width / 2) $button-border-width;
+
+    		text-align: center;
+
+			background-image: $marble-bg;
+			background-size: 400px;
+			
+		}
+
+    	input[type="radio"] {
+    		position: absolute;
+    		top: 0;
+    		left: 0;
+    		width: 100%;
+    		height: 100%;
+    		padding: 0;
+    		margin: 0;
+    		opacity: 0;
+
+    		&:not(:checked) + label {
+    			background-color: $granite;
+    			@include emboss($color: $slate, $border-width: $button-border-width);
+    		}
+
+    		&:not(:checked):hover + label{
+    			background-color: lighten($granite, 5%);
+    		}
+
+    		&:checked + label {
+    			background-color: $dark-dove;
+    			@include emboss($color: $dark-dove, $border-width: $button-border-width, $inset: false);
+    		}
+    	}
 	}
 }
 
