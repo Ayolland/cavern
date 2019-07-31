@@ -8682,7 +8682,7 @@ function createToggleMenu(argsObj){
         radioButton.setAttribute('type','radio');
         radioButton.setAttribute('name',argsObj.inputName);
         radioButton.value = radioOptions.value;
-        if (radioOptions.value === argsObj.currentVal){
+        if (radioOptions.value == argsObj.currentVal){
             radioButton.checked = true;
         }
         radioButton.addEventListener('change',argsObj.callback);
@@ -8744,7 +8744,7 @@ function createStatusModal(){
             label: 'Meager',
             value: 1
         },{
-            label: 'Acceptable',
+            label: 'Adequate',
             value: 2
         },{
             label: 'Filling',
@@ -8755,6 +8755,24 @@ function createStatusModal(){
         }
     });
     modalContent.append(rationsMenu);
+
+    var vegetarianMenu = createToggleMenu({
+        menuTitle : 'Caravan Meat Consumption:',
+        currentVal : trailGame.caravan.isVegetarian,
+        inputName : 'isVegetarian',
+        buttons: [{
+            label: 'Meat-Eating',
+            value: false
+        },{
+            label: 'Vegetarian',
+            value: true
+        }],
+        callback: function(event){
+            var boolVal = event.target.value === "true";
+            trailGame.caravan.isVegetarian = boolVal;
+        }
+    });
+    modalContent.append(vegetarianMenu);
 
     return createModal({
         contentNode: modalContent,

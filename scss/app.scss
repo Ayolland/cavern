@@ -70,7 +70,7 @@ $zeroToTen: ['zero','one','two','three','four','five','six','seven','eight','nin
 		}
 	}
 
-	&.disabled{
+	&.disabled, &.unimplemented{
 		filter: contrast(0.75) brightness(0.75);
 		pointer-events: none;
 	}
@@ -664,12 +664,18 @@ input{
 			height: 1.25em;
 		}
 	}
+
+	&.status {
+	    margin-bottom: -1em;
+	}
 }
 
 .toggle-menu {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
+
+    margin: 0 0 1em 0;
 
     &_title {
     	width: 100%;

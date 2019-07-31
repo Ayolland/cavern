@@ -192,7 +192,7 @@ button {
     background-color: #988ea2;
     filter: brightness(120%);
     box-shadow: 0 0 5px #ad48d0; }
-  button.disabled {
+  button.disabled, button.unimplemented {
     filter: contrast(0.75) brightness(0.75);
     pointer-events: none; }
   button span {
@@ -211,7 +211,7 @@ button {
       background-color: #863a68;
       filter: brightness(120%);
       box-shadow: 0 0 5px #ad48d0; }
-    button.warning.disabled {
+    button.warning.disabled, button.warning.unimplemented {
       filter: contrast(0.75) brightness(0.75);
       pointer-events: none; }
 
@@ -287,7 +287,7 @@ input {
     background-color: #57717d;
     filter: brightness(120%);
     box-shadow: 0 0 5px #ad48d0; }
-  .leader-display.button.disabled {
+  .leader-display.button.disabled, .leader-display.button.unimplemented {
     filter: contrast(0.75) brightness(0.75);
     pointer-events: none; }
   .leader-display_basics {
@@ -455,10 +455,14 @@ input {
     font-size: 0.75em;
     height: 1.25em; }
 
+.trade-display.status {
+  margin-bottom: -1em; }
+
 .toggle-menu {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between; }
+  justify-content: space-between;
+  margin: 0 0 1em 0; }
   .toggle-menu_title {
     width: 100%;
     margin: 0 0.25rem; }
