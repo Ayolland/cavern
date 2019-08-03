@@ -797,7 +797,7 @@ trailGame.turtleClasses.map(function(turtleClass,index){
         shoes: 0,
         capacity: turtleClass === 'ghost' ? 0 : Math.round(index * .25),
         hunger: turtleClass === 'ghost' ? 0 : 1,
-        dexterity: 0,
+        dexterity: turtleClass === 'ghost' ? 10 : 0,
         ferocity: 0,
         meat: turtleClass === 'ghost' ? 0 : clamp(1 + Math.round(index),1,35),
         buy: 10 + Math.round(index * index * .1),
@@ -3428,6 +3428,32 @@ function findItemFromKey(key){
     return item;
 }
 
+function damageGoods(damage){
+    var goodsLost = {};
+    var allGoods = Object.keys(trailGame.goods);
+    allGoods.push('food');
+    allGoods =  shuffle(allGoods);
+    for (var i = allGoods.length - 1; i >= 0; i--) {
+        var goodsName = allGoods[i];
+        var totalOfThis = goodsName === 'food' ? trailGame.caravan.food : trailGame.goods[goodsName];
+        if (damage > 0){
+            var numberToLose = getRandomInt(0,Math.min(damage,totalOfThis));
+            if (numberToLose > 0){
+                if (goodsName === 'food'){
+                    removeFood(numberToLose);
+                } else {
+                    removeGoods(goodsName,numberToLose);
+                }
+                damage -= numberToLose;
+                addToTrade(goodsLost,numberToLose,goodsName);
+            }
+        } else {
+            break;
+        }
+    }
+    return goodsLost;
+}
+
 function getFinalSale(){
     var tradeObj = {};
     Object.keys(trailGame.goods).map(function(key,index){
@@ -3526,10 +3552,10 @@ function getRandomPachyderm(){
 
 function damageAnimals(damage){
     var animalsLost = {};
-    var totalAnimals = shuffle(Object.keys(trailGame.animals));
+    var allAnimals = shuffle(Object.keys(trailGame.animals));
     var index = 0;
-    for (var i = totalAnimals.length - 1; i >= 0; i--) {
-        var animalName = totalAnimals[i];
+    for (var i = allAnimals.length - 1; i >= 0; i--) {
+        var animalName = allAnimals[i];
         var totalOfThis = trailGame.animals[animalName];
         var hp = trailGame.animalClasses[animalName].capacity + trailGame.animalClasses[animalName].meat / 3;
         if (damage > 0){
@@ -3537,7 +3563,7 @@ function damageAnimals(damage){
             if (numberToKill > 0){
                 removeAnimals(animalName,numberToKill);
                 damage -= (numberToKill * hp);
-                animalsLost[animalName] =  numberToKill;
+                addToTrade(animalsLost,numberToKill,animalName);
             }
         }
     }
@@ -3681,7 +3707,9 @@ function subEventAnimalStumbles(argObj,lines){
         lines.push(`${animalPhrase} stumbles near the edge...`);
         var animalObj = trailGame.animalClasses[animalName];
         if (animalObj.dexterity < danger ){
-            lines.push(`...It ${death}.`);
+            var goodsSentence = sentenceForm( scrubTradeObj( damageGoods(trailGame.animalClasses[animalName].capacity) ), true );
+            goodsSentence = goodsSentence === 'nothing' ? '' : `, taking ${goodsSentence} with them`
+            lines.push(`...It ${death}${goodsSentence}.`);
             removeAnimals(animalName,1);
         } else {
             lines.push(`...It steadies itself and continues on.`)
@@ -6381,11 +6409,12 @@ function subEventFordRiver(argsObj,lines){
     }
     addSicknesses([[sickLeaderIds,[river._sickness]]]);
     var animalsDrowned = damageAnimals(animalDamage);
+    var animalsSentence = capitalizeFirstLetter(sentenceForm(scrubTradeObj(animalsDrowned)));
     if( Object.keys(animalsDrowned).length ){
         var keys = Object.keys(animalsDrowned);
         var lastKeyVal = animalsDrowned[keys[keys.length - 1]]
         var conjugator = lastKeyVal === 1 && keys.length === 1 ? "s" : "";
-        lines.push(`${capitalizeFirstLetter(sentenceForm(animalsDrowned))} drown${conjugator} in ${river._liquid}.`);
+        lines.push(`${animalsSentence} drown${conjugator} in ${river._liquid}.`);
     } else if (leadersDrowned <= 0){
         lines.push(`We ford the river without trouble.`);
     }
@@ -6398,7 +6427,12 @@ function subEventFerryRiver(argsObj,lines){
     var offer = {actualValue: river._price};
     var pilot = argsObj.pilot || generateLeader( {name: "The ferry pilot"} );
 
-    var isAccepted = subEventTradeAttempt({offer: offer,proposal: proposal, merchant: pilot},lines);
+    var isAccepted = subEventTradeAttempt({
+        offer: offer,
+        proposal: proposal,
+        merchant: pilot,
+        offerText: 'safe passage across',
+    },lines);
     if (isAccepted){
         lines.push(`We are able to book passage safely across the ${river.riverType} river of ${river._liquid}.`);
         removeTrade(proposal);
@@ -6413,11 +6447,32 @@ function subEventFerryRiver(argsObj,lines){
 
 function subEventAnnounceRiver(argsObj,lines){
     river = argsObj.river || generateRiver();
+    pilot = argsObj.pilot || generateLeader();
     var lines = [];
-    lines.push(`We come to ${river._description}.`);
+    var preamble = shuffle([
+        `We come to`,
+        `We arrive at the banks of`,
+        `We are faced with`,
+        `Our progress is impeded by`,
+        `An obstruction lies ahead:`,
+        `We find ourselves along`,
+    ])[0];
+    lines.push(`${preamble} ${river._description}.`);
     var fancyWidth = river._width * 17 + rollDice(1,9);
     var fancyDepth = (river._depth * 1.1 + Math.random()).toFixed(2);
-    lines.push(`The river is moving at ${river._speed} cubits/moment, ${fancyDepth} cubits deep, and ${fancyWidth} cubits wide.`);
+    lines.push(`The river is ${fancyDepth} cubits deep, ${fancyWidth} cubits wide, and moving at ${river._speed} cubits/moment.`);
+    var pilotAdjective = shuffle(['elderly','crusty','eccentric','wild-eyed','taciturn','overly-friendly','silent'])[0];
+    var pilotNamePhrase = shuffle(['named', 'who goes by', 'by the name of','who says to call them','who we are told is named'])[0];
+    var pilotDescription = `${indefiniteArticle(pilotAdjective)} ${pilot._raceName} ${pilotNamePhrase} ${pilot._name}`;
+    var ferryAdj = shuffle(['small','rickety','ancient-looking','rudimentary','well-maintained',`${generateMetal()}`])[0];
+    var ferryLine = shuffle([
+        `There is ${indefiniteArticle(ferryAdj)} ferry here, operated by ${pilotDescription}.`,
+        `We are told ${pilotDescription} can ferry us across, for a price.`,
+        `${capitalizeFirstLetter(indefiniteArticle(ferryAdj))} ferry is docked on the banks. We meet the pilot, ${pilotDescription}.`,
+        `${capitalizeFirstLetter(pilotDescription)} greets us, and informs us they offer passage across in their ${ferryAdj} ferry.`
+    ])[0];
+    lines.push(ferryLine);
+
     return lines;
 }
 
@@ -6692,25 +6747,21 @@ function subEventWormAttack(argObj,lines){
             var animal = getRandomAnimal();
             var good = getRandomGood();
             var targetPhrase = '... well, nothing, actually. We have nothing with us.';
-            var target = animal || good;
+            var possibleTargets = [];
+            animal !== undefined ? possibleTargets.push(animal) : '';
+            good !== undefined ? possibleTargets.push(good ) : '';
+            var target = shuffle(possibleTargets)[0];
             var amount = 0;
+            var damage = rollDice(2,100);
             if (target !== undefined){
                 if ( target === good ){
-                    var goodObj = trailGame.goodsClasses[good];
-                    amount = clamp(1,trailGame.goods[good],rollDice(5));
-                    var pluralPhrase = `${indefiniteArticle(goodObj.cacheName)} of ${amount} ${pluralize(good)}!`;
-                    var singlePhrase = `a single ${good},`
-                    targetPhrase = amount === 1 ? singlePhrase : pluralPhrase;
-                    removeGoods(good,amount);
+                    targetPhrase = sentenceForm(scrubTradeObj(damageGoods(damage)));
                 } else {
-                    amount = clamp(1,trailGame.animals[animal],rollDice(1,6));
-                    var pluralPhrase = `${amount} of our ${pluralize(animal)}!`;
-                    var singlePhrase = `a lone ${animal}.`
-                    targetPhrase = amount === 1 ? singlePhrase : pluralPhrase;
-                    removeAnimals(animal,amount);
+
+                    targetPhrase = sentenceForm(scrubTradeObj(damageAnimals(damage)));
                 }
             }
-            lines.push(`It emits a beam of orange light, vaporizing ${targetPhrase}`);
+            lines.push(`It emits a beam of orange light, vaporizing ${targetPhrase}.`);
         break;
         case 'yellow':
             // kills leader
@@ -6787,10 +6838,14 @@ function subEventMonsterAttack(argsObj,lines){
             var coinToss = getRandomInt(0,1) === 1 ? true : false;
             if (coinToss){
                 var animalsLost = damageAnimals(damage);
+                var animalsSentence = sentenceForm(scrubTradeObj(animalsLost));
+                var goodsLost = damageGoods(getRandomInt(1,animalsLost.capacity));
+                var goodsSentence = sentenceForm(scrubTradeObj(goodsLost), true);
+                goodsSentence = goodsSentence === 'nothing' ? '' : `, taking ${goodsSentence} with them`;
                 var typesLost = Object.keys(animalsLost);
                 var strings = [];
                 if( typesLost.length > 0){
-                    lines.push(`The ${hordeName} make${conjugator} off with ${sentenceForm(animalsLost)}.`);
+                    lines.push(`The ${hordeName} make${conjugator} off with ${animalsSentence}${goodsSentence}.`);
                 }else {
                      lines.push(`However, the ${hordeName} fail${conjugator} to drag away any of our animals.`);
                 }
@@ -7167,6 +7222,7 @@ function eventRiver(argsObj){
     var lines = [];
     trailGame.caravan.dayHasBeenPaused = true;
     argsObj.river = argsObj.river || generateRiver();
+    argsObj.pilot = argsObj.pilot || generateLeader();
     lines = subEventAnnounceRiver(argsObj,lines);
 
     function eventFordRiver(argsObj){
@@ -7189,6 +7245,7 @@ function eventRiver(argsObj){
 
     createRiverModal({
         river: argsObj.river,
+        pilot: argsObj.pilot,
         fordCallback: eventFordRiver,
         attemptCallback: eventAttemptFerry,
     },lines);
