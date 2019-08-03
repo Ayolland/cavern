@@ -76,8 +76,6 @@ $zeroToTen: ['zero','one','two','three','four','five','six','seven','eight','nin
 	}
 }
 
-// typography
-
 %typography-styles{
 
 	// all top elements in containers with this placeholder are flush with top.
@@ -131,6 +129,23 @@ $zeroToTen: ['zero','one','two','three','four','five','six','seven','eight','nin
 	text-shadow: 0 1px 0 white, 0 -1px 0 rgba(0, 0, 0, 0.5), 0 0 0.25em white;
 }
 
+%no-bullet-list{
+	display: flex;
+	flex-wrap: wrap;
+
+	margin: 0;
+	padding: 0;
+
+	list-style: none;
+}
+
+%inset-display{
+	background-color: $granite;
+	background-image: $marble-bg;
+	background-size: 400px;
+	@include emboss($color: $slate, $border-width: $button-border-width);
+}
+
 body{
 	background-color: $plum;
 	background-image: $marble-bg;
@@ -147,16 +162,6 @@ body{
 		font-family: $BenchNine;
 		font-weight: 300;
 	}
-}
-
-%no-bullet-list{
-	display: flex;
-	flex-wrap: wrap;
-
-	margin: 0;
-	padding: 0;
-
-	list-style: none;
 }
 
 .column{
@@ -564,10 +569,7 @@ input{
 	&_item-list{
 		@extend %no-bullet-list;
 
-		background-color: $granite;
-		background-image: $marble-bg;
-		background-size: 400px;
-		@include emboss($color: $slate, $border-width: $button-border-width);
+		@extend %inset-display;
 
 		&_item{
 			width: 100%;
@@ -667,6 +669,22 @@ input{
 
 	&.status {
 	    margin-bottom: -1em;
+	}
+}
+
+.obstacle-display{
+
+	&_description-display{
+		@extend %inset-display;
+
+		padding: 0.5rem;
+		color: white;
+	}
+
+	&_total{
+		padding: 0.12rem;
+		margin: $column-padding-width 0 (2 * $column-padding-width) 0;
+		text-align: right;
 	}
 }
 

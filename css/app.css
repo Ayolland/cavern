@@ -36,6 +36,22 @@ div#log, .modal .modal_content, .text-container {
 button {
   text-shadow: 0 1px 0 white, 0 -1px 0 rgba(0, 0, 0, 0.5), 0 0 0.25em white; }
 
+.controls, .roster-display, .leader-display_stats, .trade-display_item-list, .trade-display_item-list_item_extras {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none; }
+
+.trade-display_item-list, .obstacle-display_description-display {
+  background-color: #556f7b;
+  background-image: url("../assets/images/marble.png");
+  background-size: 400px;
+  border-width: 0.12rem;
+  border-style: solid;
+  box-sizing: border-box;
+  border-color: #1e2224 #6d7376 #8a8f91 #2d3336; }
+
 body {
   background-color: #664870;
   background-image: url("../assets/images/marble.png");
@@ -47,13 +63,6 @@ body {
   body.sans-serif * {
     font-family: "BenchNine", Sans-Serif;
     font-weight: 300; }
-
-.controls, .roster-display, .leader-display_stats, .trade-display_item-list, .trade-display_item-list_item_extras {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 0;
-  padding: 0;
-  list-style: none; }
 
 .column {
   box-sizing: border-box;
@@ -391,57 +400,49 @@ input {
   .leader-display_extra-info {
     margin-top: 0.25rem; }
 
-.trade-display_item-list {
-  background-color: #556f7b;
-  background-image: url("../assets/images/marble.png");
-  background-size: 400px;
-  border-width: 0.12rem;
-  border-style: solid;
-  box-sizing: border-box;
-  border-color: #1e2224 #6d7376 #8a8f91 #2d3336; }
-  .trade-display_item-list_item {
-    width: 100%;
-    padding: 0.12rem 0.5rem;
-    background-color: rgba(0, 0, 0, 0.25); }
-    .trade-display_item-list_item:nth-child(odd) {
-      background-color: rgba(46, 46, 46, 0.25); }
-    .trade-display_item-list_item:first-of-type {
-      padding-top: 0.24rem; }
-    .trade-display_item-list_item:last-of-type {
-      padding-bottom: 0.24rem; }
-    .trade-display_item-list_item_basics {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 0.24rem 0;
-      color: white; }
-      .trade-display_item-list_item_basics_name, .trade-display_item-list_item_basics_input-amount, .trade-display_item-list_item_basics_amount {
-        font-size: 0.85em; }
-      .trade-display_item-list_item_basics_input-amount {
-        width: 3.5em;
-        text-align: right;
-        border-width: 0.12rem;
-        border-style: solid;
+.trade-display_item-list_item {
+  width: 100%;
+  padding: 0.12rem 0.5rem;
+  background-color: rgba(0, 0, 0, 0.25); }
+  .trade-display_item-list_item:nth-child(odd) {
+    background-color: rgba(46, 46, 46, 0.25); }
+  .trade-display_item-list_item:first-of-type {
+    padding-top: 0.24rem; }
+  .trade-display_item-list_item:last-of-type {
+    padding-bottom: 0.24rem; }
+  .trade-display_item-list_item_basics {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0.24rem 0;
+    color: white; }
+    .trade-display_item-list_item_basics_name, .trade-display_item-list_item_basics_input-amount, .trade-display_item-list_item_basics_amount {
+      font-size: 0.85em; }
+    .trade-display_item-list_item_basics_input-amount {
+      width: 3.5em;
+      text-align: right;
+      border-width: 0.12rem;
+      border-style: solid;
+      box-sizing: border-box;
+      border-color: rgba(0, 0, 0, 0.625) rgba(179, 179, 179, 0.4375) rgba(210, 210, 210, 0.55) rgba(0, 0, 0, 0.4375); }
+  .trade-display_item-list_item_extras {
+    font-size: 0.5em; }
+    .trade-display_item-list_item_extras_item {
+      padding-right: 0.5rem;
+      color: #888; }
+      .trade-display_item-list_item_extras_item.buy, .trade-display_item-list_item_extras_item.sell, .trade-display_item-list_item_extras_item.have {
+        width: 50%;
         box-sizing: border-box;
-        border-color: rgba(0, 0, 0, 0.625) rgba(179, 179, 179, 0.4375) rgba(210, 210, 210, 0.55) rgba(0, 0, 0, 0.4375); }
-    .trade-display_item-list_item_extras {
-      font-size: 0.5em; }
-      .trade-display_item-list_item_extras_item {
-        padding-right: 0.5rem;
-        color: #888; }
-        .trade-display_item-list_item_extras_item.buy, .trade-display_item-list_item_extras_item.sell, .trade-display_item-list_item_extras_item.have {
-          width: 50%;
-          box-sizing: border-box;
-          padding-right: 0;
-          color: #ccc; }
-          .complex .trade-display_item-list_item_extras_item.buy, .complex .trade-display_item-list_item_extras_item.sell, .complex .trade-display_item-list_item_extras_item.have {
-            border-bottom: 1px solid #888; }
-        .trade-display_item-list_item_extras_item.have {
-          text-align: right; }
-        .shop .trade-display_item-list_item_extras_item.buy, .shop .trade-display_item-list_item_extras_item.sell {
-          width: 50%; }
-        .shop .trade-display_item-list_item_extras_item.buy {
-          text-align: right; }
+        padding-right: 0;
+        color: #ccc; }
+        .complex .trade-display_item-list_item_extras_item.buy, .complex .trade-display_item-list_item_extras_item.sell, .complex .trade-display_item-list_item_extras_item.have {
+          border-bottom: 1px solid #888; }
+      .trade-display_item-list_item_extras_item.have {
+        text-align: right; }
+      .shop .trade-display_item-list_item_extras_item.buy, .shop .trade-display_item-list_item_extras_item.sell {
+        width: 50%; }
+      .shop .trade-display_item-list_item_extras_item.buy {
+        text-align: right; }
 
 .trade-display_totals {
   padding: 0.12rem;
@@ -457,6 +458,15 @@ input {
 
 .trade-display.status {
   margin-bottom: -1em; }
+
+.obstacle-display_description-display {
+  padding: 0.5rem;
+  color: white; }
+
+.obstacle-display_total {
+  padding: 0.12rem;
+  margin: 0.5rem 0 1rem 0;
+  text-align: right; }
 
 .toggle-menu {
   display: flex;

@@ -3371,7 +3371,7 @@ function getTradeProposal(argsObj){
 
     var proposal = { actualValue: 0, expectedValue: approxValue };
 
-    var allItems = Object.keys(trailGame.goodsClasses).concat(Object.keys(trailGame.animalClasses));
+    var allItems = Object.keys(trailGame.goods).concat(Object.keys(trailGame.animals));
 
     if (argsObj.wants !== undefined){
         // if wants are provided, only create proposals including those;
@@ -3404,7 +3404,7 @@ function getTradeProposal(argsObj){
         timesTried++;
     }
 
-    return removeZerosFromTrade(proposal);
+    return proposal;
 }
 
 function getAllCaravanItems(){
@@ -3582,10 +3582,13 @@ function generateRiver(riverName){
     var pair = generateLiquidSicknessPair();
     river._liquid = pair[0];
     river._sickness = pair[1];
+    var sicknessSeriousness = trailGame.sicknesses[river._sickness].cureChance;
     river._speed = getRandomInt(river.minSpeed,river.maxSpeed);
     river._depth = getRandomInt(river.minDepth,river.maxDepth);
     river._width = getRandomInt(river.minWidth,river.maxWidth);
-    river._ferryPrice = clamp(river._speed * (river._width + river._depth) * 11,100,10000);
+    river._price = clamp(river._speed * (river._width + river._depth) * 11 + 31 * sicknessSeriousness,100,10000);
+    river._description = `${indefiniteArticle(river.riverType)} river of ${river._liquid}`;
+    river._accessWord = "Ferry";
     return river;
 }
 
@@ -5149,7 +5152,7 @@ function generateLiquidSicknessPair(getAll,liquidName,justLiquids){
         'ice' : 'frostbite',
         'dark energy': 'rune rash',
         'saltwater': 'pneumonia',
-        'fresh water': 'moth cough',
+        'fresh water': 'pneumonia',
         'blood': 'demon flu',
     };
 
@@ -6391,11 +6394,11 @@ function subEventFordRiver(argsObj,lines){
 function subEventFerryRiver(argsObj,lines){
     argsObj = argsObj || {};
     var river = argsObj.river || generateRiver();
-    var proposal = getTradeProposal({approxValue: river._ferryPrice});
-    var offer = {actualValue: river._ferryPrice};
-    var textProposal = sentenceForm(scrubTradeObj(proposal));
-    lines.push(`We speak to the ferry pilot and offer ${textProposal} for passage across.`);
-    var isAccepted = subEventTradeAttempt({offer: offer,proposal: proposal, merchantName: "The ferry pilot", giveExtra: true},lines);
+    var proposal = argsObj.proposal || getTradeProposal({approxValue: river._price});
+    var offer = {actualValue: river._price};
+    var pilot = argsObj.pilot || generateLeader( {name: "The ferry pilot"} );
+
+    var isAccepted = subEventTradeAttempt({offer: offer,proposal: proposal, merchant: pilot},lines);
     if (isAccepted){
         lines.push(`We are able to book passage safely across the ${river.riverType} river of ${river._liquid}.`);
         removeTrade(proposal);
@@ -6411,7 +6414,7 @@ function subEventFerryRiver(argsObj,lines){
 function subEventAnnounceRiver(argsObj,lines){
     river = argsObj.river || generateRiver();
     var lines = [];
-    lines.push(`We come to a ${river.riverType} river of ${river._liquid}.`);
+    lines.push(`We come to ${river._description}.`);
     var fancyWidth = river._width * 17 + rollDice(1,9);
     var fancyDepth = (river._depth * 1.1 + Math.random()).toFixed(2);
     lines.push(`The river is moving at ${river._speed} cubits/moment, ${fancyDepth} cubits deep, and ${fancyWidth} cubits wide.`);
@@ -6520,8 +6523,9 @@ function subEventTradeAttempt(argsObj,lines){
         god: argsObj.merchantGod,
         cultureName: argsObj.merchantRace || argsObj.merchantCultureName
     });
-    lines.push(`${merchant._name} is interested in trading ${sentenceForm(scrubTradeObj(removeZerosFromTrade(offer)))}.`);
-    lines.push(`We propose to give ${sentenceForm(scrubTradeObj(removeZerosFromTrade(proposal)))} in return.`);
+    var offerText = argsObj.offerText || sentenceForm(scrubTradeObj(removeZerosFromTrade(offer)));
+    var proposalText = argsObj.proposalText || sentenceForm(scrubTradeObj(removeZerosFromTrade(proposal)));
+    lines.push(`We propose to give ${merchant._name} ${proposalText} in exchange for ${offerText}.`);
     var capitalMerchant = capitalizeFirstLetter(merchant._name);
     var lowerMerchant = argsObj.properName === true ? merchant._name : merchant._name.toLowerCase();
     var leader = argsObj.leader || getRandomLeader();
@@ -7146,6 +7150,7 @@ function eventMakeTrade(argsObj){
         addDays(1);
         return lines;
     }
+
     createTradeModal({
         offer: offer,
         merchantName: `The merchant`,
@@ -7154,13 +7159,39 @@ function eventMakeTrade(argsObj){
         attemptCallback: eventAttemptTrade,
     },lines);
 
-    // lines.push(`We propose to give ${textProposal} in return.`);
-    // isAccepted = subEventTradeAttempt({offer: offer, proposal: proposal, merchantName: `The merchant`, merchantJob: 'trader', giveExtra: true},lines);
-    // if (isAccepted){
-    //     removeTrade(proposal);
-    //     addTrade(offer);
-    // }
-    // addDays(1);
+    return lines;
+}
+
+function eventRiver(argsObj){
+    argsObj = argsObj || {};
+    var lines = [];
+    trailGame.caravan.dayHasBeenPaused = true;
+    argsObj.river = argsObj.river || generateRiver();
+    lines = subEventAnnounceRiver(argsObj,lines);
+
+    function eventFordRiver(argsObj){
+        lines = [];
+        subEventFordRiver(argsObj,lines);
+        addDays(1);
+        return lines;
+    }
+
+    function eventAttemptFerry(argsObj){
+        lines = [];
+        var success = subEventFerryRiver(argsObj,lines);
+        if (!success){
+            argsObj.forced = true;
+            subEventFordRiver(argsObj,lines);
+        }
+        addDays(1);
+        return lines;
+    }
+
+    createRiverModal({
+        river: argsObj.river,
+        fordCallback: eventFordRiver,
+        attemptCallback: eventAttemptFerry,
+    },lines);
 
     return lines;
 }
@@ -8542,7 +8573,7 @@ function createTradeModal(argsObj,lines){
     var merchant = argsObj.merchant || generateLeader({
         name: argsObj.merchantName,
         job: argsObj.merchantJob,
-        god: argsObj.merchantGob
+        god: argsObj.merchantGod
     });
     var offer = argsObj.offer || getTradeOffer();
 
@@ -8557,7 +8588,7 @@ function createTradeModal(argsObj,lines){
     });
     modalContent.append(offerDisplay);
 
-    var leader = argsObj.leader || getRandomLeader()
+    var leader = argsObj.leader || getRandomLeader();
     var proposal = argsObj.proposal || getTradeProposal({leader: leader});
     var proposalText = `${leader._name} proposes we give ${sentenceForm(scrubTradeObj(removeZerosFromTrade(proposal)))} in exchange.`;
     modalContent.append(textArrayToP([proposalText]));
@@ -8613,6 +8644,110 @@ function createTradeModal(argsObj,lines){
     });
     modalContent.append(proposalDisplay);
     modalContent.append(createControlsUl([confirmButton,clearButton,refuseButton]));
+
+    return createModal({
+        contentNode: modalContent
+    });
+}
+
+function createObstacleDisplay(argsObj){
+    argsObj = argsObj || {};
+    var obstacle = argsObj.obstacle || generateRiver();
+
+    var obstacleDisplay = document.createElement("div");
+    obstacleDisplay.classList.add("obstacle-display");
+
+    var descriptionDisplay = document.createElement("div");
+    descriptionDisplay.classList.add("obstacle-display_description-display");
+    descriptionDisplay.append(toTitleCase(obstacle._description));
+    obstacleDisplay.append(descriptionDisplay);
+
+    var total = document.createElement("p");
+    total.className = "obstacle-display_total";
+    total.append(`Estimated ${obstacle._accessWord} Cost: ${obstacle._price}`);
+    obstacleDisplay.append(total);
+
+    return obstacleDisplay;
+}
+
+function createRiverModal(argsObj,lines){
+    argsObj = argsObj || {};
+    lines = lines || [];
+    var modalContent = createModalContentContainer();
+
+    var river = argsObj.river || generateRiver();
+    var pilot = argsObj.pilot || generateLeader({
+        name: 'The ferry pilot'
+    });
+
+    modalContent.append(textArrayToP(lines));
+    var warning = document.createElement("h5");
+    warning.innerHTML = (`Rivers of ${river._liquid} carry a chance of contracting ${river._sickness}.`);
+    modalContent.append(warning);
+
+    var obstacleDisplay = createObstacleDisplay({
+        obstacle: river
+    });
+    modalContent.append(obstacleDisplay);
+
+    var leader = argsObj.leader || getRandomLeader();
+    var proposal = argsObj.proposal || getTradeProposal({leader: leader, approxValue: river._price});
+    var proposalText = `${leader._name} proposes we give ${sentenceForm(scrubTradeObj(removeZerosFromTrade(proposal)))} in exchange for ferry passage.`;
+    modalContent.append(textArrayToP([proposalText]));
+    var instructionsB = document.createElement("h5");
+    instructionsB.innerHTML = (`Select what to add or remove to this proposal, or ford the river.`);
+    modalContent.append(instructionsB);
+
+    var confirmButton = createButton({
+        useLi: true,
+        liClassName: 'full-width',
+        buttonText: `Attempt to Book Passage`,
+        callback: function(event){
+            dismissActiveModal(true);
+            setTimeout(function(){
+                runAndLogEvent(argsObj.attemptCallback,{
+                    river: river,
+                    proposal: proposal, 
+                    pilot: pilot,
+                },true);
+            },400);
+        },
+    });
+
+    var clearButton = createButton({
+        useLi: true,
+        liClassName: 'full-width',
+        buttonText: `Clear Selection`,
+        buttonClassName: 'warning',
+        callback: function(event){
+        },
+    });
+
+    var fordButton = createButton({
+        useLi: true,
+        liClassName: 'full-width',
+        buttonText: `Attempt to Ford River`,
+        buttonClassName: 'warning',
+        callback: function(event){
+            dismissActiveModal(true);
+            setTimeout(function(){
+                runAndLogEvent(argsObj.fordCallback,{
+                    river: river,
+                    pilot: pilot
+                },true);
+            },400);
+        },
+    });
+
+    var proposalDisplay = createTradeDisplay({
+        trade: proposal, 
+        type: 'proposal', 
+        acceptButton: confirmButton,
+        clearButton: clearButton,
+    });
+    modalContent.append(proposalDisplay);
+    modalContent.append(createControlsUl([confirmButton,clearButton,fordButton]));
+
 
     return createModal({
         contentNode: modalContent
