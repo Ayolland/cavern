@@ -149,6 +149,8 @@ div#log {
     border-style: solid;
     box-sizing: border-box;
     border-color: #8a8f91 #2d3336 #1e2224 #6d7376; }
+    .modal .modal_background.has-title-bar {
+      justify-content: flex-start; }
   .modal .modal_title-bar {
     position: relative;
     width: 100%;

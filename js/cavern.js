@@ -1693,6 +1693,10 @@ trailGame.levels = {
     }
 }
 
+trailGame.settings = {
+    fontStyle: 'thematic',
+}
+
 function newJourney(journeyName){
     journeyName = journeyName || shuffle(Object.keys(trailGame.levels))[0];
 
@@ -3707,7 +3711,7 @@ function subEventAnimalStumbles(argObj,lines){
         lines.push(`${animalPhrase} stumbles near the edge...`);
         var animalObj = trailGame.animalClasses[animalName];
         if (animalObj.dexterity < danger ){
-            var goodsSentence = sentenceForm( scrubTradeObj( damageGoods(trailGame.animalClasses[animalName].capacity) ), true );
+            var goodsSentence = sentenceForm( scrubTradeObj( damageGoods(trailGame.animalClasses[animalName].capacity) ) );
             goodsSentence = goodsSentence === 'nothing' ? '' : `, taking ${goodsSentence} with them`
             lines.push(`...It ${death}${goodsSentence}.`);
             removeAnimals(animalName,1);
@@ -6371,7 +6375,6 @@ function subEventFordRiver(argsObj,lines){
         var roll = rollDice();
         animalDamage += roll < river._depth * 2 ? 1.5 : 0;
         leadersDrowned += roll < river._speed ? 1 : 0;
-        //lines.push(`** rolled ${roll} A:${animalDamage}/L:${leadersDrowned}**`);
     }
     leadersDrowned = clamp(leadersDrowned, 0, Object.keys(trailGame.leaders).length);
     var savedLeaders = [];
@@ -6410,11 +6413,14 @@ function subEventFordRiver(argsObj,lines){
     addSicknesses([[sickLeaderIds,[river._sickness]]]);
     var animalsDrowned = damageAnimals(animalDamage);
     var animalsSentence = capitalizeFirstLetter(sentenceForm(scrubTradeObj(animalsDrowned)));
+    var goodsWashedAway = damageGoods(getRandomInt(1,animalsDrowned.capacity));
+    var goodsSentence = sentenceForm(scrubTradeObj(goodsWashedAway));
+    goodsSentence = goodsSentence === 'nothing' ? '' : `, taking ${goodsSentence} downstream with them`;
     if( Object.keys(animalsDrowned).length ){
         var keys = Object.keys(animalsDrowned);
         var lastKeyVal = animalsDrowned[keys[keys.length - 1]]
         var conjugator = lastKeyVal === 1 && keys.length === 1 ? "s" : "";
-        lines.push(`${animalsSentence} drown${conjugator} in ${river._liquid}.`);
+        lines.push(`${animalsSentence} drown${conjugator} in ${river._liquid}${goodsSentence}.`);
     } else if (leadersDrowned <= 0){
         lines.push(`We ford the river without trouble.`);
     }
@@ -6432,6 +6438,7 @@ function subEventFerryRiver(argsObj,lines){
         proposal: proposal,
         merchant: pilot,
         offerText: 'safe passage across',
+        properName: pilot._name !== "The ferry pilot",
     },lines);
     if (isAccepted){
         lines.push(`We are able to book passage safely across the ${river.riverType} river of ${river._liquid}.`);
@@ -7634,6 +7641,9 @@ function createModal(argsObj){
 
     var modalBg = document.createElement("div");
     modalBg.className = 'modal_background';
+    if (argsObj.title !== ''){
+        modalBg.classList.add('has-title-bar');
+    }
     modalWrapper.append(modalBg);
 
     if(argsObj.hasTitleBar){
@@ -8888,6 +8898,33 @@ function createToggleMenu(argsObj){
     return toggleMenu;
 }
 
+function createSettingsModal(){
+    var modalContent = createModalContentContainer();
+
+    var fontMenu = createToggleMenu({
+        menuTitle : 'Font Style:',
+        currentVal : trailGame.settings.fontStyle,
+        inputName : 'fontStyle',
+        buttons: [{
+            label: 'Thematic',
+            value: 'thematic'
+        },{
+            label: 'Sans-Serif',
+            value: 'sans-serif'
+        }],
+        callback: function(event){
+            toggleFont(event.target.value);
+        }
+    });
+    modalContent.append(fontMenu);
+
+    return createModal({
+        contentNode: modalContent,
+        hasTitleBar: true,
+        title: 'Game Settings',
+    });
+}
+
 function createStatusModal(){
     var modalContent = createModalContentContainer();
 
@@ -8996,6 +9033,9 @@ function setUpMainControls(){
 
     trailGame.UI.statusButton = document.body.querySelector('button#status');
     trailGame.UI.statusButton.addEventListener("click",createStatusModal);
+
+    trailGame.UI.statusButton = document.body.querySelector('button#settings');
+    trailGame.UI.statusButton.addEventListener("click",createSettingsModal);
     enableMainControls();
 }
 
@@ -9028,12 +9068,14 @@ function setUpNewGame(){
     createPartyChoiceModal();
 }
 
-function toggleFont(){
+function toggleFont(fontStyle){
     var body = document.querySelector('body');
-    if (body.classList.contains('thematic')){
+    if (body.classList.contains('thematic') || fontStyle === 'sans-serif'){
+        trailGame.settings.fontStyle = 'sans-serif';
         body.classList.remove('thematic');
         body.classList.add('sans-serif');
-    } else {
+    } else if (fontStyle === undefined || fontStyle === 'thematic') {
+        trailGame.settings.fontStyle = 'thematic';
         body.classList.add('thematic');
         body.classList.remove('sans-serif');
     }

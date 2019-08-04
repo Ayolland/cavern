@@ -291,6 +291,10 @@ div#log{
 		box-shadow: 0.5em 0.5em 1em fade-out(black,0.25);
 
     	@include emboss($color: $slate, $inset: false);
+
+    	&.has-title-bar{
+    		justify-content: flex-start;
+    	}
     }
 
     .modal_title-bar {
