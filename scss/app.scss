@@ -339,6 +339,10 @@ div#log{
 	    //color: $dove;
 	}
 
+	.modal_controls {
+		margin-top: 1em;
+	}
+
     &.active{
     	background-color: fade-out(black,0.25);
     	pointer-events: auto;
@@ -452,6 +456,7 @@ input{
 
 	margin: $button-border-width 0;
 	padding: $column-padding-width;
+	list-style: none;
 
 	background-color: $mauve;
 	background-image: $marble-bg;

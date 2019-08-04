@@ -179,6 +179,8 @@ div#log {
     border-color: #1e2224 #6d7376 #8a8f91 #2d3336; }
   .modal .modal_content {
     padding: 0.5em; }
+  .modal .modal_controls {
+    margin-top: 1em; }
   .modal.active {
     background-color: rgba(0, 0, 0, 0.75);
     pointer-events: auto; }
@@ -274,6 +276,7 @@ input {
   width: 100%;
   margin: 0.12rem 0;
   padding: 0.5rem;
+  list-style: none;
   background-color: #833966;
   background-image: url("../assets/images/marble.png");
   background-size: 600px;

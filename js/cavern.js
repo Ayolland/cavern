@@ -3345,7 +3345,7 @@ function getTradeOffer(argsObj){
         var itemKey = allItems[itemIndex];
         var itemObj = findItemFromKey(itemKey);
         var isAnimal = itemObj.animalClass !== undefined;
-        var number = getRandomInt(1,Math.ceil( approxValue / itemObj.sell ));
+        var number = getRandomInt(1,Math.ceil( approxValue / Math.max(itemObj.sell,1) ));
         if (!isAnimal || numAnimalTypes > 0){
             addToTrade(offer,number,itemKey);
             numAnimalTypes -= isAnimal ? 1 : 0;
@@ -3922,18 +3922,18 @@ function subEventVisitLibrary(argsObj,lines){
     return lines;
 }
 
-function subEventNewLeader(argsObj,lines){
+function subEventAnnounceNewLeader(argsObj,lines){
     argsObj = argsObj || {};
-    var newLeader = generateLeader(argsObj);
+    var newLeader = argsObj.newLeader || generateLeader(argsObj);
     argsObj.oldLeader = argsObj.oldLeader || getRandomLeader();
-    argsObj.leaderMorale = argsObj.leaderMorale || rollDice(1,10);
-    argsObj.leaderMorale = clamp(argsObj.leaderMorale,1,10);
-    newLeader._health = argsObj.leaderMorale;
+    // argsObj.leaderMorale = argsObj.leaderMorale || rollDice(1,10);
+    // argsObj.leaderMorale = clamp(argsObj.leaderMorale,1,10);
+    // newLeader._health = argsObj.leaderMorale;
     argsObj.description = argsObj.description || '';
     argsObj.verb = argsObj.verb || 'meet';
     var otherLeaderName = getRandomLeader(argsObj.oldLeader._id)._name;
     var posssibleShapes = ['quite desperate','in bad shape','to have seen better days','in good health','in excellent spirits'];
-    var condition = posssibleShapes[clamp(Math.floor(argsObj.leaderMorale/2),0,4)];
+    var condition = posssibleShapes[clamp(Math.floor(newLeader._health/2),0,4)];
     var seem = shuffle(['seem','appear','look'])[0];
     lines.push(`We ${argsObj.verb} ${newLeader._name} the ${newLeader._raceName} ${newLeader._title}${argsObj.description}. They ${seem} ${condition}.`);
     var possibleFlavor = [
@@ -3946,9 +3946,16 @@ function subEventNewLeader(argsObj,lines){
         `${newLeader._name}'s ${generateBodyPart()} bears a tattoo of ${indefiniteArticle(generateCreature())}.`,
     ];
     lines.push(shuffle(possibleFlavor)[0]);
-    lines.push(`${argsObj.oldLeader._name} invites them to join our caravan.`);
+    return lines;
+}
+
+function subEventLeaderJoin(argsObj,lines){
+    argsObj = argsObj || {};
+    var newLeader = argsObj.newLeader || generateLeader(argsObj);
+    argsObj.oldLeader = argsObj.oldLeader || getRandomLeader();
+    lines.push(`${argsObj.oldLeader._name} invites ${newLeader._name} to join our caravan.`);
     var caravanStatus = trailGame.caravan.morale + getCaravanAverage('_health');
-    if (caravanStatus >= argsObj.leaderMorale * 2){
+    if (caravanStatus >= newLeader._health * 2){
         lines.push(`${newLeader._name} agrees to join us.`);
         addLeader({leader: newLeader});
     } else {
@@ -4417,6 +4424,7 @@ function generateStrangeCave(argObj){
                 lines.push(`The observatory has been ${constructed} to ${study} ${subjects[subjectIndex]}.`);
                 var researchers = ['geomancer','logician','alchemist','engineer'];
                 var dice = rollDice();
+                dice = 20; //DEBUG REMOVE
                 if( dice < 8 ){
                     lines.push(`We stop and visit the researchers' library.`);
                     var bookTypes = shuffle(['non-fiction','non-fiction','engineering','engineering','guide','guide','ya','novel','joke']);
@@ -4478,7 +4486,40 @@ function generateStrangeCave(argObj){
                         `. They are eager to put their theories to test in the field`,
                         `, who is no longer sure they're cut out for research work`
                     ];
-                    subEventNewLeader({subClassName: shuffle(researchers)[0], verb: "meet", description: shuffle(descriptions)[0], leaderMorale: 10},lines);
+                    trailGame.caravan.dayHasBeenPaused = true;
+                    var newLeader = generateLeader({job: shuffle(researchers)[0]});
+                    var oldLeader = getRandomLeader();
+                    subEventAnnounceNewLeader({
+                        newLeader : newLeader,
+                        oldLeader : oldLeader,
+                        verb : 'meet',
+                        description : shuffle(descriptions)[0],
+                    },lines);
+
+                    function eventDeclineJoin(argsObj){
+                        lines = [];
+                        lines.push(`We bid ${newLeader._name} farewell and continue on our journey.`);
+                        lines.push(`${oldLeader._name} is particularly sad to see them go.`);
+                        addDays(1);
+                        return lines;
+                    }
+
+                    function eventAttemptJoin(argsObj){
+                        lines = [];
+                        subEventLeaderJoin({
+                            newLeader : newLeader,
+                            oldLeader : oldLeader,
+                        },lines);
+                        addDays(1);
+                        return lines;
+                    }
+
+                    createLeaderJoinModal({
+                        newLeader : newLeader,
+                        declineCallback: eventDeclineJoin,
+                        inviteCallback: eventAttemptJoin,
+                    },lines);
+
                 }
             }
         },
@@ -7801,6 +7842,7 @@ function createLeaderDisplay(argsObj){
     argsObj.editable = argsObj.editable === true ? true : false;
     argsObj.showHealth = argsObj.showHealth === true ? true : false;
     argsObj.className = argsObj.className || ``;
+
     var leaderDisplay = document.createElement("li");
     leaderDisplay.className = `leader-display ${argsObj.className}`;
 
@@ -8815,6 +8857,53 @@ function createRiverModal(argsObj,lines){
     modalContent.append(proposalDisplay);
     modalContent.append(createControlsUl([confirmButton,clearButton,fordButton]));
 
+
+    return createModal({
+        contentNode: modalContent
+    });
+}
+
+function createLeaderJoinModal(argsObj,lines){
+
+    argsObj = argsObj || {};
+    lines = lines || [];
+    var modalContent = createModalContentContainer();
+    argsObj.newLeader = argsObj.newLeader || generateLeader();
+
+    modalContent.append(textArrayToP(lines));
+
+    var leaderDisplay = createLeaderDisplay({
+        leader: argsObj.newLeader,
+        showHealth: true,
+    });
+    modalContent.append(leaderDisplay);
+
+    var inviteButton = createButton({
+        useLi: true,
+        liClassName: 'full-width',
+        buttonText: `Ask Them to Join`,
+        callback: function(event){
+            dismissActiveModal(true);
+            setTimeout(function(){
+                runAndLogEvent(argsObj.inviteCallback,argsObj,true);
+            },400);
+        },
+    });
+
+    var declineButton = createButton({
+        useLi: true,
+        liClassName: 'full-width',
+        buttonText: `Continue Without Them`,
+        buttonClassName: 'warning',
+        callback: function(event){
+            dismissActiveModal(true);
+            setTimeout(function(){
+                runAndLogEvent(argsObj.declineCallback,argsObj,true);
+            },400);
+        },
+    });
+
+    modalContent.append(createControlsUl([inviteButton,declineButton]));
 
     return createModal({
         contentNode: modalContent
