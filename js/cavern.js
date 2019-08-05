@@ -1,12 +1,9 @@
 // TO-DO
 
-// - chasms + bridges
 // - lanterns!
 // - corpses
 //      - can you encounter people who knew them?
 // - trades
-//      - can currently trade things you don't have!!!
-//      - should not trade animals that force you to drop anything
 //      - maybe trades should exclude certain goods/animals? IE: same for same
 //      - some merchants can take advantage of you?
 // - fights / alteractions
@@ -25,7 +22,7 @@
 //      - attractive / memorable traits
 //      - addictions
 //      - add immunites directly to leaders
-// - backstory details
+//      - backstory details
 // - cites
 //      - schools
 //      - fortune tellers
@@ -39,18 +36,19 @@
 //      - more jokes
 // - caves
 //      - magma furnaces cause alchol to explode?
-//      - add swamps
 //      - encounter leviathans in tunnels
+// - bridges + chasms
 // - graveyard
 //      - keep track of leaders who have died this journey
 //      - leaders who have died in previous journeys in abandoned camps
-// - Journeys / Cards
-//      - more Cards
-//      - more Journeys
 // - cultures
 //      - add proverbs
 // - Win State
 //      - epilouges for all surving leaders
+
+// - Journeys / Cards
+//      - more Cards
+//      - more Journeys
 
 // - books (done for now)
 // - goods (done for now)
@@ -58,30 +56,33 @@
 // - preset parties (done for now)
 
 // - non-bitsy UI
+//      - leader display
+//          - show sicknesses, reduce sickness spam
 //      - splash modal
 //      - status modal
 //      - glossary modal
-//      - settings modal
 //      - about modal
 //      - help modal
-//      - river/gate modal
+//      - gate modal
 //      - slaughter animals modal
-//      - win game modal (done for now)
+//      - leader join modal (done for now)
 //      - start settings (music/font) modal
 //      - custom party modal (done for now)
+//      - river modal (done for now)
+//      - win game modal (done for now)
+//      - settings modal (done for now)
 //      - save last party
-//      - trail display
+//      - leader icons
+//      - music player
+//      - trail display ( on indefinite hold )
 //      - error catching
+
 
 // BUGS
 // - what if nothing is in a trade?
 // - banned jobs not working
 // - despair starvation immunity too easy
-// - eating way too much food?
-// - can currently trade things you don't have - fixed? maybe animals only
 // - spider event 'Papa Rye is undefined wounded'
-// - finding corpse in cave triggers wrong landmark
-// - leaders can have negative stats - fixed?
 
 // helpers
 
@@ -1607,35 +1608,283 @@ trailGame.parties = {
 
 // card + journey functions
 
-trailGame.cards = {
-    start : {
-        eventFunc: eventStartJourney,
-        args: {}
-    },
-    caveHauntedPyramid : {
-        eventFunc: eventCave,
-        args: {caveType: 'haunted', hauntedType: 'ancient pyramid'}
-    },
-    caveStrangeCamp : {
-        eventFunc: eventCave,
-        args: {caveType: 'strange', strangeType: 'abandoned camp'}
-    },
-    caveTunnelRandom : {
-        eventFunc: eventCave,
-        args: {caveType: 'tunnel'}
-    },
-    safe : {
-        eventFunc : eventSafeFlavor,
-        args: {}
-    },
-    reshoe : {
-        eventFunc : eventReshoe,
-        args: {}
-    },
-    simpleTrade : {
-        eventFunc : eventMakeTrade,
-        args: {}
-    },
+function eventFromCardName(cardName){
+    var cards = {
+        start : {
+            eventFunc: eventStartJourney,
+            args: {}
+        },
+        caveRandom : {
+            eventFunc: eventCave,
+            args: {}
+        },
+        caveTower : {
+            eventFunc: eventCave,
+            args: {caveType: 'tower'}
+        },
+        caveStairs : {
+            eventFunc: eventCave,
+            args: {caveType: 'stairs'}
+        },
+        caveStairsDown : {
+            eventFunc: eventCave,
+            args: {caveType: 'stairs', goingUp: false}
+        },
+        caveStairsDown : {
+            eventFunc: eventCave,
+            args: {caveType: 'stairs', goingUp: true}
+        },
+        caveTunnelRandom : {
+            eventFunc: eventCave,
+            args: {caveType: 'tunnel'}
+        },
+        caveStrangeRandom : {
+            eventFunc: eventCave,
+            args: {
+                caveType: 'strange',
+                ancientCulture: trailGame.journey.currentLeg.ancientCulture,
+                leviathan: trailGame.journey.currentLeg.leviathan,
+            }
+        },
+        caveStrangeBeacon : {
+            eventFunc: eventCave,
+            args: {
+                caveType: 'strange',
+                strangeType: 'beacon',
+                ancientCulture: trailGame.journey.currentLeg.ancientCulture,
+                leviathan: trailGame.journey.currentLeg.leviathan,
+            }
+        },
+        caveStrangeHermit : {
+            eventFunc: eventCave,
+            args: {caveType: 'strange', strangeType: "hermit's hut"}
+        },
+        caveStrangeMonastery : {
+            eventFunc: eventCave,
+            args: {caveType: 'strange', strangeType: 'monastery'}
+        },
+        caveStrangeObservatory : {
+            eventFunc: eventCave,
+            args: {caveType: 'strange', strangeType: 'observatory'}
+        },
+        caveStrangeCamp : {
+            eventFunc: eventCave,
+            args: {caveType: 'strange', strangeType: 'abandoned camp'}
+        },
+        caveNaturalRandom : {
+            eventFunc: eventCave,
+            args: {caveType: 'natural'}
+        },
+        caveNaturalVoid : {
+            eventFunc: eventCave,
+            args: {caveType: 'natural', naturalType: 'weightless void'}
+        },
+        caveNaturalPlain : {
+            eventFunc: eventCave,
+            args: {caveType: 'natural', naturalType: 'vast, shadowy plain'}
+        },
+        caveNaturalGlacier : {
+            eventFunc: eventCave,
+            args: {caveType: 'natural', naturalType: 'frozen glacier'}
+        },
+        caveNaturalBones : {
+            eventFunc: eventCave,
+            args: {caveType: 'natural', naturalType: 'field of bones'}
+        },
+        caveNaturalFungus : {
+            eventFunc: eventCave,
+            args: {caveType: 'natural', naturalType: 'fungus garden'}
+        },
+        caveNaturalCrystal : {
+            eventFunc: eventCave,
+            args: {caveType: 'natural', naturalType: 'crystal cavern'}
+        },
+        caveNaturalForest : {
+            eventFunc: eventCave,
+            args: {caveType: 'natural', naturalType: 'petrified forest'}
+        },
+        caveNaturalBog : {
+            eventFunc: eventCave,
+            args: {caveType: 'natural', naturalType: 'noxious bog'}
+        },
+        caveNaturalFlesh : {
+            eventFunc: eventCave,
+            args: {caveType: 'natural', naturalType: 'cave of living flesh'}
+        },
+        caveNaturalMagma : {
+            eventFunc: eventCave,
+            args: {caveType: 'natural', naturalType: 'magma furnace'}
+        },
+        caveStructureRandom : {
+            eventFunc: eventCave,
+            args: {caveType: 'structure'}
+        },
+        caveStructureLibrary : {
+            eventFunc: eventCave,
+            args: {
+                caveType: 'structure', 
+                structureType: 'lost library',
+                ancientCulture: trailGame.journey.currentLeg.ancientCulture
+            }
+        },
+        caveStructureDungeon : {
+            eventFunc: eventCave,
+            args: {
+                caveType: 'structure', 
+                structureType: 'abandoned dungeon',
+                ancientCulture: trailGame.journey.currentLeg.ancientCulture
+            }
+        },
+        caveStructureComplex : {
+            eventFunc: eventCave,
+            args: {
+                caveType: 'structure',
+                structureType: 'complex',
+                ancientCulture: trailGame.journey.currentLeg.ancientCulture
+            }
+        },
+        caveStructureLabyrinth : {
+            eventFunc: eventCave,
+            args: {
+                caveType: 'structure',
+                structureType: 'labyrinth',
+                ancientCulture: trailGame.journey.currentLeg.ancientCulture
+            }
+        },
+        caveHauntedRandom : {
+            eventFunc: eventCave,
+            args: {
+                caveType: 'haunted',
+                ancientCulture: trailGame.journey.currentLeg.ancientCulture
+            }
+        },
+        caveHauntedCastle : {
+            eventFunc: eventCave,
+            args: {
+                caveType: 'haunted',
+                hauntedType: "gothic castle",
+                ancientCulture: trailGame.journey.currentLeg.ancientCulture,
+            }
+        },
+        caveHauntedHut : {
+            eventFunc: eventCave,
+            args: {
+                caveType: 'haunted',
+                hauntedType: "abandoned hut",
+                ancientCulture: trailGame.journey.currentLeg.ancientCulture
+            }
+        },
+        caveHauntedGraveyard : {
+            eventFunc: eventCave,
+            args: {
+                caveType: 'haunted',
+                hauntedType: "dusty graveyard",
+                ancientCulture: trailGame.journey.currentLeg.ancientCulture
+            }
+        },
+        caveHauntedCrypt : {
+            eventFunc: eventCave,
+            args: {
+                caveType: 'haunted',
+                hauntedType: "forgotten crypt-tunnel",
+                ancientCulture: trailGame.journey.currentLeg.ancientCulture
+            }
+        },
+        caveHauntedBarrow : {
+            eventFunc: eventCave,
+            args: {
+                caveType: 'haunted',
+                hauntedType: "barrow mound",
+                ancientCulture: trailGame.journey.currentLeg.ancientCulture
+            }
+        },
+        caveHauntedPyramid : {
+            eventFunc: eventCave,
+            args: {
+                caveType: 'haunted', 
+                hauntedType: 'ancient pyramid',
+                ancientCulture: trailGame.journey.currentLeg.ancientCulture
+            }
+        },
+        caveHauntedPortal : {
+            eventFunc: eventCave,
+            args: {
+                caveType: 'haunted', 
+                hauntedType: "gaping black portal",
+                ancientCulture: trailGame.journey.currentLeg.ancientCulture
+            }
+        },
+        caveHauntedBattlefield : {
+            eventFunc: eventCave,
+            args: {
+                caveType: 'haunted', 
+                hauntedType: "ancient battlefield",
+                ancientCulture: trailGame.journey.currentLeg.ancientCulture
+            }
+        },
+        caveHauntedTemple : {
+            eventFunc: eventCave,
+            args: {
+                caveType: 'haunted', 
+                hauntedType: "desecrated temple",
+                ancientCulture: trailGame.journey.currentLeg.ancientCulture,
+                god: trailGame.journey.currentLeg.god,
+            }
+        },
+        riverRandom : {
+            eventFunc: eventRiver,
+            args: {
+                liquid: trailGame.journey.currentLeg.liquid,
+                pilot: generateLeader({race: trailGame.journey.currentLeg.raceName}),
+            }
+        },
+        riverEasy : {
+            eventFunc: eventRiver,
+            args: { 
+                riverName: shuffle(['dried up','trickling'])[0],
+                liquid: trailGame.journey.currentLeg.liquid,
+                pilot: generateLeader({race: trailGame.journey.currentLeg.raceName}),
+            }
+        },
+        riverMedium : {
+            eventFunc: eventRiver,
+            args: {
+                riverName: shuffle(['crystal clear','tranquil'])[0],
+                liquid: trailGame.journey.currentLeg.liquid,
+                pilot: generateLeader({race: trailGame.journey.currentLeg.raceName}),
+            }
+        },
+        riverHard : {
+            eventFunc: eventRiver,
+            args: {
+                riverName: shuffle(['rushing','raging'])[0],
+                liquid: trailGame.journey.currentLeg.liquid,
+                pilot: generateLeader({race: trailGame.journey.currentLeg.raceName}),
+            }
+        },
+        safe : {
+            eventFunc : eventSafeFlavor,
+            args: {}
+        },
+        reshoe : {
+            eventFunc : eventReshoe,
+            args: {}
+        },
+        simpleTrade : {
+            eventFunc : eventMakeTrade,
+            args: {}
+        },
+        oasis : {
+            eventFunc : eventDiscovery,
+            args: { findType: 'oasis'}
+        },
+        traps : {
+            eventFunc : eventTraps,
+            args: { }
+        }
+    };
+    cardName = cardName || shuffle(Object.keys(cards))[0];
+    return cards[cardName];
 }
 
 trailGame.levels = {
@@ -1643,13 +1892,16 @@ trailGame.levels = {
         title : 'Test City',
         description: `It's just a test level.`,
         sellMultiplier: 1,
+        debug : true,
         legs : {
             start : {
                 cards : ['safe'],
                 min: 3,
                 max: 7,
                 intervalCards: ['reshoe'],
-                firstCard: 'simpleTrade',
+                raceName: 'Crab-Folk',
+                liquid: 'churning mist',
+                firstCard: 'riverHard',
                 lastCard: 'caveHauntedPyramid',
                 exits : [
                     {
@@ -1688,6 +1940,72 @@ trailGame.levels = {
             legC : {
                 cards : ['caveHauntedPyramid'],
                 exits : []
+            }
+        }
+    },
+    'sisters' : {
+        title : 'The Two Sisters',
+        description: `Twin cities known for bustling bazarrs. To reach them, one must traverse a great wasteland, and possibly the valley of the dead.`,
+        sellMultiplier: 1,
+        legs : {
+            start : {
+                cards : ['caveNaturalPlain','caveNaturalPlain','oasis','safe','safe','caveNaturalBones','caveHauntedHut','caveStrangeHermit'],
+                min: 7,
+                max: 12,
+                intervalCards: ['reshoe','traps','reshoe'],
+                //firstCard: 'simpleTrade',
+                lastCard: 'simpleTrade',
+                exits : [
+                    {
+                        key: 'delta',
+                        title: 'head towards the Delta', 
+                        description: 'The road to the south heads into the delta, a swampy land cut with rivers.', 
+                    },
+                    {
+                        key: 'deadValley',
+                        title: 'enter the Valley of the Dead',
+                        description: 'To the south-east a shorter path cuts through the Valley of the Dead, truly a cursed plain.', 
+                    }
+                ]
+            },
+            delta : {
+                cards : ['caveNaturalBog','caveNaturalBog','caveNaturalFungus','caveNaturalBog','riverEasy','riverEasy','oasis','riverMedium','caveStrangeCamp','caveStrangeMonastery','simpleTrade','caveTower'],
+                liquid: 'saltwater',
+                min: 12,
+                max: 20,
+                intervalCards: ['reshoe','traps','reshoe','traps'],
+                firstCard: 'caveNaturalBog',
+                lastCard: 'riverHard',
+                exits : [
+                    {
+                        key: 'final',
+                        title: '...', 
+                        description: '...'
+                    }
+                ]
+            },
+            deadValley : {
+                cards : ['caveHauntedPyramid','caveHauntedBattlefield','caveStrangeBeacon','caveNaturalBones'],
+                min: 6,
+                max: 10,
+                intervalCards: ['traps','traps'],
+                firstCard: 'caveNaturalBones',
+                lastCard: 'caveHauntedPyramid',
+                exits : [
+                    {
+                        key: 'final',
+                        title: '...', 
+                        description: '...'
+                    }
+                ]
+            },
+            final : {
+               cards : ['caveNaturalPlain','caveNaturalPlain','oasis','oasis','safe','safe','caveStrangeObservatory'],
+               min: 5,
+               max: 9,
+               intervalCards: ['reshoe'],
+               lastCard: 'simpleTrade',
+               exits : []
             }
         }
     }
@@ -1734,8 +2052,7 @@ function loadLegOfJourney(legName){
 }
 
 function runCardEvent(cardName){
-    cardName = cardName || shuffle(Object.keys(trailGame.cards))[0];
-    var cardObj = trailGame.cards[cardName];
+    var cardObj = eventFromCardName(cardName);
     return cardObj.eventFunc(cardObj.args);
 }
 
@@ -2014,26 +2331,26 @@ function addStatObjectToLeader(statObj,leaderObj){
     });
 }
 
-function generateLeader(argObj){
-    argObj = argObj || {};
+function generateLeader(argsObj){
+    argsObj = argsObj || {};
     var leader = {};
-    if ( argObj.god !== undefined ){
-        argObj.religion = trailGame.gods[argObj.god];
+    if ( argsObj.god !== undefined ){
+        argsObj.religion = trailGame.gods[argsObj.god];
     }
-    if ( argObj.job !== undefined ){
-        argObj.subClassName = argObj.job;
+    if ( argsObj.job !== undefined ){
+        argsObj.subClassName = argsObj.job;
     }
-    if ( argObj.race !== undefined ){
-        argObj.cultureName = argObj.race;
+    if ( argsObj.race !== undefined ){
+        argsObj.cultureName = argsObj.race;
     }
-    if (argObj.subClassName !== undefined || argObj.religion !== undefined){
+    if (argsObj.subClassName !== undefined || argsObj.religion !== undefined){
         var validRacesByJob = [];
-        if ((argObj.job || argObj.subClassName) !== undefined){
-            validRacesByJob = trailGame.characterClasses.subClasses[(argObj.job || argObj.subClassName)].races;
+        if ((argsObj.job || argsObj.subClassName) !== undefined){
+            validRacesByJob = trailGame.characterClasses.subClasses[(argsObj.job || argsObj.subClassName)].races;
         }
         var validRacesByReligion = [];
-        if (argObj.religion !== undefined){
-            validRacesByReligion = argObj.religion.races;
+        if (argsObj.religion !== undefined){
+            validRacesByReligion = argsObj.religion.races;
         }
         var validRaces = [];
         validRacesByJob.map(function(raceName){
@@ -2041,13 +2358,13 @@ function generateLeader(argObj){
                 validRaces.push(raceName);
             }
         });
-        argObj.cultureName = argObj.cultureName || shuffle(validRaces)[0];
+        argsObj.cultureName = argsObj.cultureName || shuffle(validRaces)[0];
     }
-    var culture = generateCulture(false,argObj.cultureName);
+    var culture = generateCulture(false,argsObj.cultureName);
     var generatedSubClassName = '';
     var diceRoll = rollDice(1,8);
-    diceRoll = (argObj.job || argObj.subClassName) === 'wizard' ? 7 : diceRoll;
-    diceRoll = (argObj.job || argObj.subClassName) === 'entertainer' ? 8 : diceRoll;
+    diceRoll = (argsObj.job || argsObj.subClassName) === 'wizard' ? 7 : diceRoll;
+    diceRoll = (argsObj.job || argsObj.subClassName) === 'entertainer' ? 8 : diceRoll;
     switch(diceRoll){
         case 1:
         case 2:
@@ -2066,11 +2383,11 @@ function generateLeader(argObj){
         default:
             generatedSubClassName = generateSubClass();
     }
-    leader._god = argObj.god || shuffle(culture.gods)[0];
+    leader._god = argsObj.god || shuffle(culture.gods)[0];
     leader._religion = generateReligion(false,leader._god);
     //exceptions
     generatedSubClassName = leader._god === 'The Turtle-Father' ? 'turtle catcher' : generatedSubClassName;
-    var subClassName = (argObj.job || argObj.subClassName) || generatedSubClassName;
+    var subClassName = (argsObj.job || argsObj.subClassName) || generatedSubClassName;
     subClassName = subClassName.toLowerCase();
     var subclass = trailGame.characterClasses.subClasses[subClassName];
     if(typeof(subclass) === "undefined"){
@@ -2082,7 +2399,7 @@ function generateLeader(argObj){
     leader._race = culture;
     leader._raceName = culture.name
     leader._homeland = culture.capital;
-    leader._name = argObj.name || generateName();
+    leader._name = argsObj.name || generateName();
     leader._title = subClassName;
     var isPriest = subClassName === 'priest';
     leader._title += !isPriest ? '' : `${rollDice() > 10 ? '' : 'ess'} of ${leader._god}`;
@@ -2096,14 +2413,14 @@ function generateLeader(argObj){
     addStatObjectToLeader(leader._race.statBonuses,leader);
     gainImmunities([[[leader._id],leader._race.immunities]],true,leader);
     var totalLeaders = Object.keys(trailGame.leaders).length;
-    var idOffset = argObj.idOffset || getRandomInt(1,500)
+    var idOffset = argsObj.idOffset || getRandomInt(1,500)
     leader._id = Date.now() + totalLeaders + idOffset;
     return leader;
 }
 
-function addLeader(argObj){
-    argObj = argObj || {};
-    var leader = argObj.leader || generateLeader(argObj);
+function addLeader(argsObj){
+    argsObj = argsObj || {};
+    var leader = argsObj.leader || generateLeader(argsObj);
     var isOriginal = Object.keys(trailGame.leaders).length === 0;
     trailGame.leaders[leader._id] = leader;
     var action = isOriginal ? 'started a caravan!' : 'joined the caravan.';
@@ -3576,40 +3893,40 @@ function damageAnimals(damage){
 
 // monster functions
 
-function generateMonsters(argObj){
-    argObj = argObj || {};
+function generateMonsters(argsObj){
+    argsObj = argsObj || {};
     var monsterTypes = Object.keys(trailGame.monsterClasses);
-    monsterName = argObj.monsterName || shuffle(monsterTypes).shift();
+    monsterName = argsObj.monsterName || shuffle(monsterTypes).shift();
     var horde = Object.assign({},trailGame.monsterClasses[monsterName]);
     horde.monsterType = monsterName;
-    horde.packSize = clamp(argObj.number,1,horde.maxPackSize) || getRandomInt(1,horde.maxPackSize);
+    horde.packSize = clamp(argsObj.number,1,horde.maxPackSize) || getRandomInt(1,horde.maxPackSize);
     horde.totalFerocity = Math.round(horde.packSize * horde.ferocity);
     return horde;
 }
 
-function generateUndead(argObj){
-    argObj = argObj || {};
+function generateUndead(argsObj){
+    argsObj = argsObj || {};
     var undeadTypes = Object.keys(trailGame.undeadClasses);
-    undeadName = argObj.monsterName || shuffle(undeadTypes).shift();
+    undeadName = argsObj.monsterName || shuffle(undeadTypes).shift();
     var horde = Object.assign({},trailGame.undeadClasses[undeadName]);
     var possibleVarieties = generateUndeadDesc(true);
-    var variety = argObj.variety || shuffle([...possibleVarieties])[0];
+    var variety = argsObj.variety || shuffle([...possibleVarieties])[0];
     var bonusIndex = clamp(possibleVarieties.indexOf(variety),0,possibleVarieties.length - 1);
     horde.monsterType = `${variety} ${undeadName}`;
     horde.speed += bonusIndex;
     horde.ferocity += (bonusIndex * 0.25);
-    horde.packSize = clamp(argObj.number,1,horde.maxPackSize) || getRandomInt(1,horde.maxPackSize);
+    horde.packSize = clamp(argsObj.number,1,horde.maxPackSize) || getRandomInt(1,horde.maxPackSize);
     horde.totalFerocity = Math.round(horde.packSize * (horde.ferocity));
     return horde;
 }
 
 // river functions
 
-function generateRiver(riverName){
+function generateRiver(riverName,liquid){
     riverName = riverName || shuffle(Object.keys(trailGame.riverClasses))[0];
     var river = Object.assign({},trailGame.riverClasses[riverName]);
     river.riverType = riverName;
-    var pair = generateLiquidSicknessPair();
+    var pair = generateLiquidSicknessPair(false,liquid);
     river._liquid = pair[0];
     river._sickness = pair[1];
     var sicknessSeriousness = trailGame.sicknesses[river._sickness].cureChance;
@@ -3624,36 +3941,36 @@ function generateRiver(riverName){
 
 // multipurpose subevents
 
-function subEventHearJoke(argObj,lines){
-    argObj = argObj || {};
-    argObj.leader = argObj.leader || getRandomLeader();
-    argObj.joke = argObj.joke || generateJokeSubject(argObj.jokeType);
-    argObj.preamble = argObj.preamble || 'We hear a joke about';
-    lines.push(`${argObj.preamble} ${argObj.joke.punchline}.`);
+function subEventHearJoke(argsObj,lines){
+    argsObj = argsObj || {};
+    argsObj.leader = argsObj.leader || getRandomLeader();
+    argsObj.joke = argsObj.joke || generateJokeSubject(argsObj.jokeType);
+    argsObj.preamble = argsObj.preamble || 'We hear a joke about';
+    lines.push(`${argsObj.preamble} ${argsObj.joke.punchline}.`);
     addendums = [
-        `${argObj.leader._name} is irritated with how bad the joke is.`,
+        `${argsObj.leader._name} is irritated with how bad the joke is.`,
         `It's just a terrible joke.`,
         `It's... not very funny.`,
-        `It gets a chuckle out of ${argObj.leader._name}.`,
-        `${argObj.leader._name} laughs heartily.`,
-        `It's the best joke ${argObj.leader._name} has heard in a while.`
+        `It gets a chuckle out of ${argsObj.leader._name}.`,
+        `${argsObj.leader._name} laughs heartily.`,
+        `It's the best joke ${argsObj.leader._name} has heard in a while.`
     ];
     var jokeIndex = getRandomInt(0,5);
-    var isHurt = argObj.joke.offensive && ((argObj.leader._raceName === argObj.joke.race) || (argObj.leader._god === argObj.joke.god));
-    var jokeBombs = argObj.joke.offensive && (argObj.leader._culture > jokeIndex);
+    var isHurt = argsObj.joke.offensive && ((argsObj.leader._raceName === argsObj.joke.race) || (argsObj.leader._god === argsObj.joke.god));
+    var jokeBombs = argsObj.joke.offensive && (argsObj.leader._culture > jokeIndex);
     var moraleBoost = 0;
     var addendum = addendums[jokeIndex];
     if (isHurt){
         moraleBoost = -2;
-        var identitySingle = argObj.leader._god === argObj.joke.god ? argObj.leader._religion.follower : argObj.leader._raceName;
-            var identityPlural = argObj.leader._god === argObj.joke.god ? argObj.leader._religion.followerPlural : pluralize(argObj.leader._raceName);
+        var identitySingle = argsObj.leader._god === argsObj.joke.god ? argsObj.leader._religion.follower : argsObj.leader._raceName;
+            var identityPlural = argsObj.leader._god === argsObj.joke.god ? argsObj.leader._religion.followerPlural : pluralize(argsObj.leader._raceName);
         var addendum = shuffle([
-            `They try to brush it off, but as ${indefiniteArticle(identity)}, ${argObj.leader._name} is hurt.`,
-            `${argObj.leader._name} eyes flash red for their fellow ${identityPlural}.`,
-            `As ${indefiniteArticle(identity)}, ${argObj.leader._name} finds this deeply unamusing.`
+            `They try to brush it off, but as ${indefiniteArticle(identity)}, ${argsObj.leader._name} is hurt.`,
+            `${argsObj.leader._name} eyes flash red for their fellow ${identityPlural}.`,
+            `As ${indefiniteArticle(identity)}, ${argsObj.leader._name} finds this deeply unamusing.`
         ])[0];
     } else if (jokeBombs){
-        addendum = `${argObj.leader._name} does not appreciate the low-brow humor.`
+        addendum = `${argsObj.leader._name} does not appreciate the low-brow humor.`
     } else {
         moraleBoost = clamp(jokeIndex - 2,-1,3);
     }
@@ -3661,12 +3978,12 @@ function subEventHearJoke(argObj,lines){
     lines.push(addendum);
 }
 
-function subEventStatCheck(argObj,lines){
-    argObj = argObj || {};
-    var leader = argObj.leader || getRandomLeader();
-    var stat = argObj.stat || shuffle(['wits','culture','bravery','chance'])[0];
-    var check = argObj.check || getRandomInt(1,5);
-    var description = argObj.description || 'pass the test';
+function subEventStatCheck(argsObj,lines){
+    argsObj = argsObj || {};
+    var leader = argsObj.leader || getRandomLeader();
+    var stat = argsObj.stat || shuffle(['wits','culture','bravery','chance'])[0];
+    var check = argsObj.check || getRandomInt(1,5);
+    var description = argsObj.description || 'pass the test';
     var success = stat !== 'chance' ? leader['_' + stat] >= check : rollDice(1,check) === check;
     var result = success ? 'manages to' : 'is unable to';
     var punctuation = success ? '!' : '...';
@@ -3676,12 +3993,12 @@ function subEventStatCheck(argObj,lines){
     return success;
 }
 
-function subEventLeaderStumbles(argObj,lines){
-    argObj = argObj || {};
-    var leaderOne = argObj.leader || getRandomLeader();
-    var leaderTwo = argObj.leaderTwo || getRandomLeader(leaderOne._id);
-    var check = argObj.check || getRandomInt(1,6);
-    var death = argObj.death || 'is lost to the abyss below';
+function subEventLeaderStumbles(argsObj,lines){
+    argsObj = argsObj || {};
+    var leaderOne = argsObj.leader || getRandomLeader();
+    var leaderTwo = argsObj.leaderTwo || getRandomLeader(leaderOne._id);
+    var check = argsObj.check || getRandomInt(1,6);
+    var death = argsObj.death || 'is lost to the abyss below';
     lines.push(`${leaderOne._name} stumbles near the edge!`);
     var success = subEventStatCheck({leader: leaderOne, stat: 'wits', check: check, description: 'catch themselves'},lines);
     if (success){
@@ -3701,11 +4018,11 @@ function subEventLeaderStumbles(argObj,lines){
     return lines;
 }
 
-function subEventAnimalStumbles(argObj,lines){
-    argObj = argObj || {};
-    var animalName = argObj.animal || getRandomAnimal();
-    var danger = argObj.danger || rollDice(1,10);
-    var death = argObj.death || 'plummets into the blackness';
+function subEventAnimalStumbles(argsObj,lines){
+    argsObj = argsObj || {};
+    var animalName = argsObj.animal || getRandomAnimal();
+    var danger = argsObj.danger || rollDice(1,10);
+    var death = argsObj.death || 'plummets into the blackness';
     if( animalName !== undefined ){
         var animalPhrase = trailGame.animals[animalName] === 1 ? `Our only ${animalName}` : `One of our ${pluralize(animalName)}`;
         lines.push(`${animalPhrase} stumbles near the edge...`);
@@ -3730,39 +4047,39 @@ function subEventAnimalStumbles(argObj,lines){
     return lines;
 }
 
-function subEventDecipherText(argObj,lines){
-    argObj = argObj || {};
-    argObj.leader = argObj.leader || getRandomLeader();
-    argObj.stat = 'culture';
-    argObj.bookDesc = argObj.bookDesc || generatePuzzleBookDesc();
-    argObj.check = argObj.check || getRandomInt(1,5);
-    argObj.preamble = argObj.preamble || 'We discover a strange text:';
-    argObj.result = argObj.result || `It appears to be ${indefiniteArticle(generateHistoricDesc())} ${generateBookTypeAndPreposition()[0]}.`;
-    lines.push(`${argObj.preamble} ${argObj.bookDesc}.`);
-    argObj.description = 'decipher the text';
-    var success = subEventStatCheck(argObj,lines);
+function subEventDecipherText(argsObj,lines){
+    argsObj = argsObj || {};
+    argsObj.leader = argsObj.leader || getRandomLeader();
+    argsObj.stat = 'culture';
+    argsObj.bookDesc = argsObj.bookDesc || generatePuzzleBookDesc();
+    argsObj.check = argsObj.check || getRandomInt(1,5);
+    argsObj.preamble = argsObj.preamble || 'We discover a strange text:';
+    argsObj.result = argsObj.result || `It appears to be ${indefiniteArticle(generateHistoricDesc())} ${generateBookTypeAndPreposition()[0]}.`;
+    lines.push(`${argsObj.preamble} ${argsObj.bookDesc}.`);
+    argsObj.description = 'decipher the text';
+    var success = subEventStatCheck(argsObj,lines);
     if (success){
-        lines.push(argObj.result);
+        lines.push(argsObj.result);
         addMorale(1);
     }
     return success;
 }
 
-function subEventHearRumor(argObj,lines){
-    argObj = argObj || {};
-    argObj.leader = argObj.leader || getRandomLeader();
-    argObj.stat = 'wits';
-    argObj.check = argObj.check || getRandomInt(1,5);
-    argObj.rumor = argObj.rumor || generateRumor();
-    argObj.preamble = argObj.preamble || 'We hear a rumor that';
-    argObj.description = 'fact-check this rumor for us';
-    lines.push(`${argObj.preamble} ${argObj.rumor.rumor}.`);
-    var success = subEventStatCheck(argObj,lines);
+function subEventHearRumor(argsObj,lines){
+    argsObj = argsObj || {};
+    argsObj.leader = argsObj.leader || getRandomLeader();
+    argsObj.stat = 'wits';
+    argsObj.check = argsObj.check || getRandomInt(1,5);
+    argsObj.rumor = argsObj.rumor || generateRumor();
+    argsObj.preamble = argsObj.preamble || 'We hear a rumor that';
+    argsObj.description = 'fact-check this rumor for us';
+    lines.push(`${argsObj.preamble} ${argsObj.rumor.rumor}.`);
+    var success = subEventStatCheck(argsObj,lines);
     if (success){
-        if (argObj.rumor.rumorType === true){
-            lines.push(`${argObj.leader._name} confirms it is indeed true.`);
+        if (argsObj.rumor.rumorType === true){
+            lines.push(`${argsObj.leader._name} confirms it is indeed true.`);
         } else {
-            lines.push(`${argObj.leader._name} assures us that it is a lie.`);
+            lines.push(`${argsObj.leader._name} assures us that it is a lie.`);
         }
         addMorale(1);
     }
@@ -3926,9 +4243,6 @@ function subEventAnnounceNewLeader(argsObj,lines){
     argsObj = argsObj || {};
     var newLeader = argsObj.newLeader || generateLeader(argsObj);
     argsObj.oldLeader = argsObj.oldLeader || getRandomLeader();
-    // argsObj.leaderMorale = argsObj.leaderMorale || rollDice(1,10);
-    // argsObj.leaderMorale = clamp(argsObj.leaderMorale,1,10);
-    // newLeader._health = argsObj.leaderMorale;
     argsObj.description = argsObj.description || '';
     argsObj.verb = argsObj.verb || 'meet';
     var otherLeaderName = getRandomLeader(argsObj.oldLeader._id)._name;
@@ -3940,7 +4254,7 @@ function subEventAnnounceNewLeader(argsObj,lines){
         `${newLeader._name} hails from the surface lands, and still, at times, longs for the touch of the sun.`, 
         `${argsObj.oldLeader._name} is already smitten with ${newLeader._name}'s ${generateAttractiveTrait()}...`, 
         `${otherLeaderName} suspects they are actually ${indefiniteArticle(generateWizard())} in disguise...`,
-        `${newLeader._name} also moonlights as an ${generateEntertainer()}.`,
+        `${newLeader._name} also moonlights as ${indefiniteArticle(generateEntertainer())}.`,
         `${otherLeaderName} suspects they have a problem with ${generateDrug()}...`,
         `A wicked scar runs across ${newLeader._name}'s ${generateBodyPart()}.`,
         `${newLeader._name}'s ${generateBodyPart()} bears a tattoo of ${indefiniteArticle(generateCreature())}.`,
@@ -3955,7 +4269,9 @@ function subEventLeaderJoin(argsObj,lines){
     argsObj.oldLeader = argsObj.oldLeader || getRandomLeader();
     lines.push(`${argsObj.oldLeader._name} invites ${newLeader._name} to join our caravan.`);
     var caravanStatus = trailGame.caravan.morale + getCaravanAverage('_health');
+    var success = false;
     if (caravanStatus >= newLeader._health * 2){
+        success = true;
         lines.push(`${newLeader._name} agrees to join us.`);
         addLeader({leader: newLeader});
     } else {
@@ -3963,7 +4279,7 @@ function subEventLeaderJoin(argsObj,lines){
         var gamePair = shuffle(generateGame(true))[0];
         lines.push(`${newLeader._name} challenges ${argsObj.oldLeader._name} to a game of ${gamePair[0]} to decide if they should join.`);
         var outcome = gamePair[1] === 'chance' ? '(50% odds)' : `(${newLeader['_'+gamePair[1]]} to ${argsObj.oldLeader['_'+gamePair[1]]})`;
-        var success = subEventStatCheck({
+        success = subEventStatCheck({
             leader: argsObj.oldLeader,
             stat: gamePair[1],
             check: gamePair[1] === 'chance' ? 2 : newLeader['_'+gamePair[1]],
@@ -3975,17 +4291,51 @@ function subEventLeaderJoin(argsObj,lines){
             lines.push(`We bid ${newLeader._name} farewell.`);
         }
     }
-    return lines;
+    return success;
 }
 
 function subEventBottomOfAPit(argsObj,lines){
     argsObj = argsObj || {};
+
+    trailGame.caravan.dayHasBeenPaused = true;
+    var newLeader = generateLeader();
     var tool = generateEquipment();
-    argsObj.verb = 'find'
-    argsObj.description = ` down the bottom of a pit, with nothing but ${indefiniteArticle(tool)}`,
-    argsObj.leaderMorale = argsObj.leaderMorale || rollDice(1,6);
-    subEventNewLeader(argsObj,lines);
-    addGoods(tool,1);
+    newLeader._heath = argsObj.leaderMorale || rollDice(1,6);
+    var oldLeader = getRandomLeader();
+    subEventAnnounceNewLeader({
+        newLeader : newLeader,
+        oldLeader : oldLeader,
+        verb : 'find',
+        description : ` down the bottom of a pit, with nothing but ${indefiniteArticle(tool)}`,
+    },lines);
+
+    function eventDeclineJoin(argsObj){
+        lines = [];
+        lines.push(`We leave ${newLeader._name} in their pit and continue on our journey.`);
+        lines.push(`${oldLeader._name} questions whether this was the ethical decision to make.`);
+        addDays(1);
+        return lines;
+    }
+
+    function eventAttemptJoin(argsObj){
+        lines = [];
+        var success = subEventLeaderJoin({
+            newLeader : newLeader,
+            oldLeader : oldLeader,
+        },lines);
+        if (success){
+           addGoods(tool,1); 
+        }
+        addDays(1);
+        return lines;
+    }
+
+    createLeaderJoinModal({
+        newLeader : newLeader,
+        declineCallback: eventDeclineJoin,
+        inviteCallback: eventAttemptJoin,
+    },lines);
+    
     return lines;
 }
 
@@ -4000,7 +4350,8 @@ function generateCave(argsObj){
     return window[`generate${toTitleCase(argsObj.caveType)}Cave`](argsObj);
 }
 
-function generateBaseCave(){
+function generateBaseCave(argsObj){
+    argsObj = argsObj || {};
     var cave = {
         _length : 0,
         _complexity : 0,
@@ -4020,11 +4371,13 @@ function generateBaseCave(){
         _depths : 'another dimension',
         _tower : 'into the nothingness',
         _lair : 'somewhere in the void',
-        _stone : generateStone(),
-        _metal : generateMetal(),
-        _hutType : generateHutDesc(),
-        _leviathan: generateLeviathan(),
-        _religion: generateReligion(),
+        _stone : argsObj.stone || generateStone(),
+        _metal : argsObj.metal || generateMetal(),
+        _hutType : argsObj.hutType || generateHutDesc(),
+        _leviathan:  argsObj.leviathan || generateLeviathan(),
+        _religion: generateReligion(false,argsObj.god),
+        _ancientCulture: argsObj.ancientCulture || generateAncientCulture(),
+        _liquid: argsObj.liquid || generateLiquid(),
         _verb : 'pass through',
         _exitVerb : 'emerge',
         _preposition : 'in',
@@ -4036,7 +4389,7 @@ function generateBaseCave(){
 }
 
 function generateTowerCave(argsObj){
-    var cave = generateBaseCave();
+    var cave = generateBaseCave(argsObj);
     argsObj = argsObj || {};
     var rooms = shuffle(generateRoom(true));
     var towerType = generateTowerDesc();
@@ -4072,7 +4425,7 @@ function generateTowerCave(argsObj){
     cave._exitVerb = 'continue on';
     cave._corpseChance = 20;
     cave._additionalChance = 6;
-    cave._additionalAction = function(argObj,lines){
+    cave._additionalAction = function(argsObj,lines){
         var leader = getRandomLeader();
         var text = shuffle([`${generateMaterial()} plaque`,'inscription','logbook','mural','diagram','placard'])[0];
         var writing = shuffle([`etched with ${generateRunesDesc()} runes`,`written in ${generateLanguage(false,culture)}`,`written in ${generateHistoricDesc()} verse`])[0];
@@ -4087,9 +4440,9 @@ function generateTowerCave(argsObj){
 }
 
 function generateStairsCave(argsObj){
-    var cave = generateBaseCave();
+    var cave = generateBaseCave(argsObj);
     argsObj = argsObj || {};
-    var goingUp = rollDice() > 10;
+    var goingUp = typeof(argsObj.goingUp) === 'boolean' ? argsObj.goingUp : rollDice() > 10;
     cave._verb = goingUp ? 'ascend' : 'descend';
     var stones = generateStone(true);
     var tunnelStone =  argsObj.stone || cave._stone;
@@ -4120,21 +4473,54 @@ function generateStairsCave(argsObj){
     cave._undeadChance = 100;
     cave._additionalChance = 10;
     cave._preposition = 'on';
-    cave._additionalAction = function(argObj,lines){
+    cave._additionalAction = function(argsObj,lines){
         var chance = rollDice();
         if (chance === 1 ){
             subEventLeaderStumbles({check: 3},lines);
         } else if (chance < 15){
             subEventAnimalStumbles({danger: 4},lines);
         } else {
-            subEventNewLeader({verb: 'are greeted by', description: ', headed in the opposite direction', leaderMorale: rollDice(2,5)},lines);
+            trailGame.caravan.dayHasBeenPaused = true;
+            var newLeader = generateLeader();
+            var oldLeader = getRandomLeader();
+            newLeader._health = rollDice(2,5);
+            subEventAnnounceNewLeader({
+                newLeader : newLeader,
+                oldLeader : oldLeader,
+                verb : 'are greeted by',
+                description : ', headed in the opposite direction',
+            },lines);
+
+            function eventDeclineJoin(argsObj){
+                lines = [];
+                lines.push(`We bid ${newLeader._name} farewell and allow them to squeeze past our caravan before continuing.`);
+                lines.push(`${oldLeader._name} wonders what could've been.`);
+                addDays(1);
+                return lines;
+            }
+
+            function eventAttemptJoin(argsObj){
+                lines = [];
+                subEventLeaderJoin({
+                    newLeader : newLeader,
+                    oldLeader : oldLeader,
+                },lines);
+                addDays(1);
+                return lines;
+            }
+
+            createLeaderJoinModal({
+                newLeader : newLeader,
+                declineCallback: eventDeclineJoin,
+                inviteCallback: eventAttemptJoin,
+            },lines);
         }
     }
     return cave;
 }
 
 function generateTunnelCave(argsObj){
-    var cave = generateBaseCave();
+    var cave = generateBaseCave(argsObj);
     argsObj = argsObj || {};
     var stones = generateStone(true);
     var leviathans = generateLeviathan(true);
@@ -4154,18 +4540,18 @@ function generateTunnelCave(argsObj){
     return cave;
 }
 
-function generateStrangeCave(argObj){
-    var cave = generateBaseCave();
-    argObj = argObj || {};
-    var hermitType = typeof(argObj.hermitType) === "number" && argObj.hermitType <= 8 ? argObj.hermitType : getRandomInt(0,8);
+function generateStrangeCave(argsObj){
+    var cave = generateBaseCave(argsObj);
+    argsObj = argsObj || {};
+    var hermitType = typeof(argsObj.hermitType) === "number" && argsObj.hermitType <= 8 ? argsObj.hermitType : getRandomInt(0,8);
     var strangeLib = {
         'beacon': {
             _name: `${generateBeaconDesc()} beacon`,
             _exitVerb: 'continue on',
             _preposition: 'outside',
             _corpseChance: 20,
-            _additionalAction : function(argObj,lines){
-                var ancientCulture = generateAncientCulture();
+            _additionalAction : function(argsObj,lines){
+                var ancientCulture = argsObj.ancientCulture || cave._ancientCulture;
                 var beaconBehaviors = [
                     " forever broadcasts its final warning...", 
                     ` was long ago smashed by the enemies of ${ancientCulture}.`, 
@@ -4177,7 +4563,49 @@ function generateStrangeCave(argObj){
                 var chance = rollDice();
                 if (chance == 20){
                     lines.push(`The beacon${shuffle(beaconBehaviors)[0]}`);
-                    subEventNewLeader({verb: 'encounter', description: `, who has come here to study ${ancientCulture}`, leaderMorale: 10},lines);
+
+                    var randomRaces = trailGame.gods[cave._religion.god].races;
+                    var cultureName = shuffle(randomRaces)[0];
+                    var cultureObj = trailGame.cultures[cultureName];
+                    var academics = [...cultureObj.academics];
+
+                    trailGame.caravan.dayHasBeenPaused = true;
+                    var newLeader = generateLeader({
+                        job: shuffle(academics)[0],
+                        race: cultureName,
+                    });
+                    var oldLeader = getRandomLeader();
+                    subEventAnnounceNewLeader({
+                        newLeader : newLeader,
+                        oldLeader : oldLeader,
+                        verb : 'encounter',
+                        description : `, who has come here to study ${ancientCulture}`,
+                    },lines);
+
+                    function eventDeclineJoin(argsObj){
+                        lines = [];
+                        lines.push(`We leave ${newLeader._name} to their studies and continue.`);
+                        lines.push(`${oldLeader._name} wonders what secrets they could've taught us...`);
+                        addDays(1);
+                        return lines;
+                    }
+
+                    function eventAttemptJoin(argsObj){
+                        lines = [];
+                        subEventLeaderJoin({
+                            newLeader : newLeader,
+                            oldLeader : oldLeader,
+                        },lines);
+                        addDays(1);
+                        return lines;
+                    }
+
+                    createLeaderJoinModal({
+                        newLeader : newLeader,
+                        declineCallback: eventDeclineJoin,
+                        inviteCallback: eventAttemptJoin,
+                    },lines);
+
                 } else if (chance > 17){
                     var howMany = rollDice();
                     var animal = getRandomAnimal();
@@ -4202,9 +4630,9 @@ function generateStrangeCave(argObj){
             _name: `hermit's ${cave._hutType} hut`,
             _exitVerb: 'continue on',
             _hermitType: hermitType,
-            _additionalAction : function(argObj,lines){
+            _additionalAction : function(argsObj,lines){
                 var goods = generateGood();
-                var leader = argObj.leader || getRandomLeader();
+                var leader = argsObj.leader || getRandomLeader();
                 var pet = generatePet();
                 var hermits = [
                     "oddly shaped skulls", // 0
@@ -4217,6 +4645,7 @@ function generateStrangeCave(argObj){
                     "glittering gems, strewn carelessly about", // 7
                     `${generatePetDesc()} ${pluralize(pet.animalClass)}` // 8
                 ];
+                cave._hermitType = 5;
                 var hermitPhrase = hermits[Math.round(cave._hermitType)];
                 lines.push(`The hut is surrounded by ${hermitPhrase}...`);
                 switch (cave._hermitType){
@@ -4260,7 +4689,41 @@ function generateStrangeCave(argObj){
                         addCulture(1,2,leader._id);
                     break;
                     case 5:
-                        subEventNewLeader({verb: "learn the hermit once went by", description: `, and they have lived here in self-exile for ${rollDice(2,15)} years`, leaderMorale: 1},lines);
+                        trailGame.caravan.dayHasBeenPaused = true;
+                        var newLeader = generateLeader();
+                        var oldLeader = getRandomLeader();
+                        newLeader._health = rollDice(1,6);
+                        subEventAnnounceNewLeader({
+                            newLeader : newLeader,
+                            oldLeader : oldLeader,
+                            verb : 'learn the hermit once went by',
+                            description : `, and they have lived here in self-exile for ${rollDice(2,15)} years`,
+                        },lines);
+                        
+                        function eventDeclineJoin(argsObj){
+                            lines = [];
+                            lines.push(`We bid ${newLeader._name} farewell and leave them to their solitude.`);
+                            lines.push(`${oldLeader._name} can't forget the soulful look in their eyes.`);
+                            addDays(1);
+                            return lines;
+                        }
+
+                        function eventAttemptJoin(argsObj){
+                            lines = [];
+                            subEventLeaderJoin({
+                                newLeader : newLeader,
+                                oldLeader : oldLeader,
+                            },lines);
+                            addDays(1);
+                            return lines;
+                        }
+
+                        createLeaderJoinModal({
+                            newLeader : newLeader,
+                            declineCallback: eventDeclineJoin,
+                            inviteCallback: eventAttemptJoin,
+                        },lines);
+
                     break;
                     case 6:
                         var wormName = generateName();
@@ -4300,7 +4763,7 @@ function generateStrangeCave(argObj){
         "monastery" : {
             _name: `${generateHutDesc()} monastery`,
             _exitVerb: 'continue on',
-            _additionalAction : function(argObj,lines){
+            _additionalAction : function(argsObj,lines){
                 lines.push(`The monastery is maintained by ${cave._religion.followerPlural}.`);
                 var neutralLeaders = getLeadersNeutralToGod(cave._religion.god);
                 var neutralLeaderNames = getLeaderNames(neutralLeaders);
@@ -4394,7 +4857,44 @@ function generateStrangeCave(argObj){
                         if(cultureObj.jobs.indexOf('priest') > -1){
                             academics.push('priest');
                         }
-                        subEventNewLeader({cultureName: cultureName, subClassName: shuffle(academics)[0], god: cave._religion.god, verb: "meet", description: shuffle(descriptions)[0], leaderMorale: 10},lines);
+
+                        trailGame.caravan.dayHasBeenPaused = true;
+                        var newLeader = generateLeader({
+                            job: shuffle(academics)[0],
+                            race: cultureName,
+                            god: cave._religion.god,
+                        });
+                        var oldLeader = getRandomLeader();
+                        subEventAnnounceNewLeader({
+                            newLeader : newLeader,
+                            oldLeader : oldLeader,
+                            verb : 'meet',
+                            description : shuffle(descriptions)[0],
+                        },lines);
+
+                        function eventDeclineJoin(argsObj){
+                            lines = [];
+                            lines.push(`We bid ${newLeader._name} farewell and continue on our journey.`);
+                            lines.push(`${oldLeader._name} watches them leave with sadness.`);
+                            addDays(1);
+                            return lines;
+                        }
+
+                        function eventAttemptJoin(argsObj){
+                            lines = [];
+                            subEventLeaderJoin({
+                                newLeader : newLeader,
+                                oldLeader : oldLeader,
+                            },lines);
+                            addDays(1);
+                            return lines;
+                        }
+
+                        createLeaderJoinModal({
+                            newLeader : newLeader,
+                            declineCallback: eventDeclineJoin,
+                            inviteCallback: eventAttemptJoin,
+                        },lines);
                     }
                 }
                 return lines;
@@ -4404,7 +4904,7 @@ function generateStrangeCave(argObj){
             _name: `${cave._metal} observatory`,
             _verb: 'visit',
             _exitVerb: 'continue on',
-            _additionalAction : function(argObj,lines){
+            _additionalAction : function(argsObj,lines){
                 var constructed = shuffle(['built','set up','constructed'])[0];
                 var study = shuffle(['study','monitor','observe'])[0];
                 var subjects = [
@@ -4424,7 +4924,6 @@ function generateStrangeCave(argObj){
                 lines.push(`The observatory has been ${constructed} to ${study} ${subjects[subjectIndex]}.`);
                 var researchers = ['geomancer','logician','alchemist','engineer'];
                 var dice = rollDice();
-                dice = 20; //DEBUG REMOVE
                 if( dice < 8 ){
                     lines.push(`We stop and visit the researchers' library.`);
                     var bookTypes = shuffle(['non-fiction','non-fiction','engineering','engineering','guide','guide','ya','novel','joke']);
@@ -4532,7 +5031,7 @@ function generateStrangeCave(argObj){
             _additionalChance: 4,
             _bookTypes : ['romance','ya','game','guide','bad','novel'],
             _corpseChance : 8,
-            _additionalAction : function(argObj,lines){
+            _additionalAction : function(argsObj,lines){
                 var diceRoll = rollDice(1,2);
                 var moods = [
                     `${getRandomLeader()._name} get a chill up their spine.`,
@@ -4559,8 +5058,8 @@ function generateStrangeCave(argObj){
     cave._spiderChance = 0;
     cave._additionalChance = 1;
     var types = Object.keys(strangeLib);
-    argObj.strangeType = argObj.strangeType === undefined || types.indexOf(argObj.strangeType) < 0 ? shuffle([...types])[0] : argObj.strangeType;
-    var caveDetails = strangeLib[argObj.strangeType];
+    argsObj.strangeType = argsObj.strangeType === undefined || types.indexOf(argsObj.strangeType) < 0 ? shuffle([...types])[0] : argsObj.strangeType;
+    var caveDetails = strangeLib[argsObj.strangeType];
     Object.keys(caveDetails).map(function(key){
         cave[key] = caveDetails[key]
     });
@@ -4568,7 +5067,7 @@ function generateStrangeCave(argObj){
 }
 
 function generateNaturalCave(argsObj){
-    var cave = generateBaseCave();
+    var cave = generateBaseCave(argsObj);
     argsObj = argsObj || {};
     var naturalLib = {
         'weightless void': {
@@ -4581,7 +5080,7 @@ function generateNaturalCave(argsObj){
             _depths: 'the dark nothingness',
             _additionalChance: 50,
             _bookTypes : ['random'],
-            _additionalAction: function(argObj,lines){
+            _additionalAction: function(argsObj,lines){
                 if (rollDice() > 10){
                     var gem = generateGem();
                     lines.push(`${generateExclamation()} We light upon an asteroid composed entirely of ${gem}!`);
@@ -4601,7 +5100,7 @@ function generateNaturalCave(argsObj){
             _depths: 'amidst the shadows',
             _undeadChance: 20,
             _additionalChance: 50,
-            _additionalAction: function(argObj,lines){
+            _additionalAction: function(argsObj,lines){
                 var leaderOne = getRandomLeader();
                 var leaderTwo = getRandomLeader(leaderOne._id);
                 lines.push('We are pursued by a rogue zebraphant...');
@@ -4631,7 +5130,7 @@ function generateNaturalCave(argsObj){
             _depths: 'amid the frozen crags',
             _tower: `a stalagmite of ice`,
             _spiderChance: 50,
-            _additionalAction: function(argObj,lines){
+            _additionalAction: function(argsObj,lines){
                 var leader = getRandomLeader();
                 var bodypart = shuffle(["their nose", "an ear", `${rollDice(1,9)} fingers`, `${rollDice(1,9)} toes`])[0];
                 lines.push(`${leader._name} loses ${bodypart} to frostbite.`);
@@ -4649,10 +5148,11 @@ function generateNaturalCave(argsObj){
             _tower: `the rib of a ${cave._leviathan}`,
             _spiderChance: 20,
             _undeadChance: 20,
-            _additionalAction: function(argObj,lines){
-                if( rollDice() > 10 ){
+            _additionalAction: function(argsObj,lines){
+                if( rollDice() > 10 || false){
                     subEventOddFeature({verb: 'stumble upon', leviathan: cave._leviathan},lines);
                 } else {
+                    trailGame.caravan.dayHasBeenPaused = true;
                     subEventBottomOfAPit({},lines);
                 }
             }
@@ -4669,7 +5169,7 @@ function generateNaturalCave(argsObj){
             _spiderChance: 50,
             _wormChance: 0,
             _additionalChance: 100,
-            _additionalAction: function(argObj,lines){
+            _additionalAction: function(argsObj,lines){
                 lines.push(`We come across a miniature village populated by tiny blue imps!`);
                 var evilStuff = generateEvilDesc(true);
                 var feature = shuffle(['long, flowing hair','lustrous beard']);
@@ -4706,7 +5206,7 @@ function generateNaturalCave(argsObj){
             _depths: `behind a towering trunk of ${cave._stone}`,
             _wormChance: 40,
             _undeadChance: 40,
-            _additionalAction: function(argObj,lines){
+            _additionalAction: function(argsObj,lines){
                 if (rollDice() < 18){
                     subEventDiscovery({findType: 'curiosity', preamble: '',verb: 'picks',curiosity: `an apple made of ${cave._stone}.`},lines);
                 } else {
@@ -4734,7 +5234,7 @@ function generateNaturalCave(argsObj){
             _trapTypes: ['acid','suction'], 
             _depths: 'a puckering orifice',
             _wormChance: 30,
-            _additionalAction: function(argObj,lines){
+            _additionalAction: function(argsObj,lines){
                 if (rollDice() > 10){
                     lines.push(`We find a large pineal gland, which we harvest.`);
                     addGoods('pineal extract', rollDice(10));
@@ -4781,7 +5281,7 @@ function generateNaturalCave(argsObj){
 }
 
 function generateStructureCave(argsObj){
-    var cave = generateBaseCave();
+    var cave = generateBaseCave(argsObj);
     argsObj = argsObj || {};
     var structureLib = {
         'lost library': {
@@ -4794,7 +5294,7 @@ function generateStructureCave(argsObj){
             _monsterTypes: [],
             _findVerb: 'picks out',
             _bookTypes : ['empty','random','random'],
-            _additionalAction: function(argObj,lines){
+            _additionalAction: function(argsObj,lines){
                 subEventDiscovery({
                     findType: 'curiosity',
                     preamble: 'On one of the shelves, ',
@@ -4818,7 +5318,7 @@ function generateStructureCave(argsObj){
             _lootLocation: 'in an alcove of the maze', 
             _pluralName: 'labyrinths', 
             _depths: 'deep within the maze',
-            _additionalAction: function(argObj,lines){
+            _additionalAction: function(argsObj,lines){
                 subEventOddFeature({preamble: 'In the center of the labyrinth, ', verb: 'discover', stone: cave._stone},lines);
             },
         },
@@ -4864,7 +5364,7 @@ function generateStructureCave(argsObj){
 }
 
 function generateHauntedCave(argsObj){
-    var cave = generateBaseCave();
+    var cave = generateBaseCave(argsObj);
     argsObj = argsObj || {};
     var altVerb = shuffle(['explore','investigate','search'])[0];
     var ancientCultures = shuffle(generateAncientCulture(true));
@@ -4883,7 +5383,7 @@ function generateHauntedCave(argsObj){
             _complexity: 5,
             _verb: altVerb,
             _additionalChance: 4,
-            _additionalAction: function (argObj,lines){
+            _additionalAction: function (argsObj,lines){
                 subEventReadBook({bookType: 'evil', verb: 'is drawn to', location: `they find in ${indefiniteArticle(generateAbandonedDesc())} ${generateRoom()}`},lines);
             }
         },
@@ -4897,8 +5397,41 @@ function generateHauntedCave(argsObj){
             _length: 1,
             _verb: altVerb,
             _bookTypes : ['empty','rumor','evil','random'],
-            _additionalAction: function(argObj,lines){
-                subEventNewLeader({verb: 'come upon', description: ', lost in memories of a time long past', leaderMorale: rollDice(1,6)},lines);
+            _additionalAction: function(argsObj,lines){
+                trailGame.caravan.dayHasBeenPaused = true;
+                var newLeader = generateLeader();
+                newLeader._health = rollDice(1,6);
+                var oldLeader = getRandomLeader();
+                subEventAnnounceNewLeader({
+                    newLeader : newLeader,
+                    oldLeader : oldLeader,
+                    verb : 'come upon',
+                    description : ', lost in memories of a time long past',
+                },lines);
+
+                function eventDeclineJoin(argsObj){
+                    lines = [];
+                    lines.push(`We leave ${newLeader._name} to their ruminations and continue on.`);
+                    lines.push(`${oldLeader._name} wonders what their story was...`);
+                    addDays(1);
+                    return lines;
+                }
+
+                function eventAttemptJoin(argsObj){
+                    lines = [];
+                    subEventLeaderJoin({
+                        newLeader : newLeader,
+                        oldLeader : oldLeader,
+                    },lines);
+                    addDays(1);
+                    return lines;
+                }
+
+                createLeaderJoinModal({
+                    newLeader : newLeader,
+                    declineCallback: eventDeclineJoin,
+                    inviteCallback: eventAttemptJoin,
+                },lines);
             }
         },
         "dusty graveyard":{
@@ -4912,6 +5445,7 @@ function generateHauntedCave(argsObj){
             _complexity: 5,
             _bookTypes : ['empty','rumor','evil'],
             _additionalChance: function(argsObj,lines){
+                trailGame.caravan.dayHasBeenPaused = true;
                 subEventBottomOfAPit({},lines);
             }
         },
@@ -4937,6 +5471,7 @@ function generateHauntedCave(argsObj){
             _verb: altVerb,
             _bookTypes : ['empty','evil','culture'],
             _additionalChance: function(argsObj,lines){
+                trailGame.caravan.dayHasBeenPaused = true;
                 subEventBottomOfAPit({},lines);
             }
         },
@@ -4944,13 +5479,14 @@ function generateHauntedCave(argsObj){
             _lootLocation: `in an ornate burial chamber decorated in ${cave._metal}`,
             _tower: `a ${cave._metal} pillar`,
             _pluralName: 'ancient pyramids',
+            _ancientCulture : 'Arachnoid Pharoahs',
             _trapTypes: ['fire','spikes','crusher','acid'],
             _trapChance: 6,
             _length: rollDice(2),
             _complexity: 5,
             _verb: altVerb,
             _bookTypes : ['empty','rumor','evil','culture'],
-            _additionalAction: function(argObj,lines){
+            _additionalAction: function(argsObj,lines){
                 var gem = generateGem();
                 lines.push(`${getRandomLeader()._name} discovers a ${cave._metal} statue of a ${generateCreature()} encrusted with ${pluralize(gem)} in a tomb carved with spiderous shapes.`);
                 lines.push(`A feeling of doom washes over us all.`);
@@ -4969,11 +5505,44 @@ function generateHauntedCave(argsObj){
             _verb: 'encounter',
             _bookTypes : ['rumor','evil','random'],
             _preposition: 'by',
-            _additionalAction: function (argObj,lines){
-                if(rollDice() < 17 ){
+            _additionalAction: function (argsObj,lines){
+                if(rollDice() < 17){
                     subEventOddFeature({preamble: 'Beyond the portal, ', verb: 'catch a glimpse of', feature: generateBadPlace()},lines);
                 } else {
-                    subEventNewLeader({verb: 'are taken by surprise by', description: ' emerging from beyond the portal', leaderMorale: rollDice(1,10)},lines);
+                    trailGame.caravan.dayHasBeenPaused = true;
+                    var newLeader = generateLeader();
+                    newLeader._health = rollDice(1,10)
+                    var oldLeader = getRandomLeader();
+                    subEventAnnounceNewLeader({
+                        newLeader : newLeader,
+                        oldLeader : oldLeader,
+                        verb : 'are taken by surprise by',
+                        description : ' emerging from beyond the portal',
+                    },lines);
+                    
+                    function eventDeclineJoin(argsObj){
+                        lines = [];
+                        lines.push(`We are leery of ${newLeader._name} and let them wander away alone.`);
+                        lines.push(`${oldLeader._name} wonders what plane of reality they haled from.`);
+                        addDays(1);
+                        return lines;
+                    }
+
+                    function eventAttemptJoin(argsObj){
+                        lines = [];
+                        subEventLeaderJoin({
+                            newLeader : newLeader,
+                            oldLeader : oldLeader,
+                        },lines);
+                        addDays(1);
+                        return lines;
+                    }
+
+                    createLeaderJoinModal({
+                        newLeader : newLeader,
+                        declineCallback: eventDeclineJoin,
+                        inviteCallback: eventAttemptJoin,
+                    },lines);
                 }
             }
         },
@@ -4987,7 +5556,7 @@ function generateHauntedCave(argsObj){
             _length: rollDice(1),
             _complexity: 5,
             _bookTypes : ['empty','rumor','culture','evil'],
-            _additionalAction: function (argObj,lines){
+            _additionalAction: function (argsObj,lines){
                 var remains = generateSoliderRemains(false,mainCulture);
                 remains += (rollDice() > 10) ? ` and ${generateSoliderRemains(false,altCulture)}` : '';
                 lines.push(`The ground is strewn with ${remains}.`);
@@ -5003,12 +5572,12 @@ function generateHauntedCave(argsObj){
             _verb: altVerb,
             _additionalChance: 4,
             _bookTypes : ['empty','rumor','evil','cuture'],
-            _additionalAction: function (argObj,lines){
+            _additionalAction: function (argsObj,lines){
                 var object = cave._religion.canHaveImage ? 'statue' : 'altar';
                 var verb = cave._religion.canHaveImage ? 'depicting' : 'for the worship of';
                 var enemyReligion = generateReligion(false,shuffle(cave._religion.enemies)[0]);
                 var zealots = cave._religion.enemies.length ? enemyReligion.followerPlural : 'unknown zealots';
-                var leader = argObj.leader || getRandomLeader();
+                var leader = argsObj.leader || getRandomLeader();
                 if (rollDice() > 10){
                     var  addendums = [
                         `. Blood stains smear the ${cave._religion.material} walls.`,
@@ -5698,9 +6267,9 @@ function generateSubjectMatter(argsObj){
     return argsObj.getMany === true ? subjects : subjects.shift();
 }
 
-function generateInnDesc(argObj){
-    argObj = argObj || {};
-    var job = argObj.job || generateSubClass();
+function generateInnDesc(argsObj){
+    argsObj = argsObj || {};
+    var job = argsObj.job || generateSubClass();
     var subjects = generateSubjectMatter({job: job, getMany:true, includeMaterials: false, includeSicknesses: false});
     var subjectA = subjects[0];
     var subjectB = subjects[1];
@@ -5711,9 +6280,9 @@ function generateInnDesc(argObj){
     var maybePub = rollDice(1,5) !== 5 ? '' : ' ' + shuffle(['Pub','Inn','Tavern'])[0];
     var maybeSuperlative = maybePub === '' || rollDice(1,2) === 2 ? '' : ' ' + shuffle(['Cavern-Famous','Famous','Old-Fashioned','Historic','Legendary'])[0];
     var cultures = generateCulture(true);
-    var food = argObj.food || rollDice(1,4) !== 4 ? generateFood() : `${cultures[0]}-${cultures[1]} Fusion`;
+    var food = argsObj.food || rollDice(1,4) !== 4 ? generateFood() : `${cultures[0]}-${cultures[1]} Fusion`;
     var restaurant = shuffle(['Shack','Place','Hut','Joint','Stand','Restaurant'])[0];
-    var name = argObj.name || generateName();
+    var name = argsObj.name || generateName();
     var innNames = [
         `The ${maybeAdjectiveA}${subjectA}${maybePub}`,
         `The ${subjectA} & ${maybeThe}${maybeAdjectiveB}${subjectB}${maybePub}`,
@@ -5725,14 +6294,14 @@ function generateInnDesc(argObj){
     if (rollDice(1,6)===6){
         `${cultures[0]} Food Restaurant`;
     }
-    var innName = argObj.innName || toTitleCase(shuffle(innNames)[0]);
-    var gem = generateGood(generateGem(argObj.gem));
-    var alcohol = generateGood(generateAlcohol(argObj.alcohol));
-    var creature = argObj.creature || generateCreature();
-    var equipment = argObj.equipment || generateEquipment();
-    var game = argObj.game || generateGame();
-    var drug = argObj.drug || generateDrug();
-    var pet = argObj.pet || generatePet().animalClass;
+    var innName = argsObj.innName || toTitleCase(shuffle(innNames)[0]);
+    var gem = generateGood(generateGem(argsObj.gem));
+    var alcohol = generateGood(generateAlcohol(argsObj.alcohol));
+    var creature = argsObj.creature || generateCreature();
+    var equipment = argsObj.equipment || generateEquipment();
+    var game = argsObj.game || generateGame();
+    var drug = argsObj.drug || generateDrug();
+    var pet = argsObj.pet || generatePet().animalClass;
     var shapes = [
         `${gem.cacheName} of ${pluralize(gem.goodsType)}`,
         `${alcohol.cacheName} of ${pluralize(alcohol.goodsType)}`,
@@ -5785,9 +6354,9 @@ function generateAdjective(getMany){
     return getMany === true ? adjectives : adjectives.shift();
 }
 
-function generateNonFictionTitle(argObj){
-    argObj = argObj || {};
-    var subjectMatter = rollDice() >= 19 ? 'Ulm-Rosh' : toTitleCase(pluralize(generateSubjectMatter({culture: argObj.culture})));
+function generateNonFictionTitle(argsObj){
+    argsObj = argsObj || {};
+    var subjectMatter = rollDice() >= 19 ? 'Ulm-Rosh' : toTitleCase(pluralize(generateSubjectMatter({culture: argsObj.culture})));
     var titleOne = `${rollDice() > 5 ? "" : toTitleCase(generateHistoricDesc()) + " "}${toTitleCase(generateKnowledge())} of ${generateAncientCulture()}`;
     var titleTwo = `${toTitleCase(generateFieldOfStudy())} in ${generateAncientCulture()}${rollDice() > 2 ? "" : `, circa ${generateNumeral(2000,5000)}`}`;
     var titleThree = `${shuffle(['','Beginner ','Intermediate ','Advanced '])[0]}${shuffle(['','Exercizes in ','Case Studies in ','Explorations in '])[0]}${toTitleCase(generateFieldOfStudy())}`;
@@ -5901,10 +6470,10 @@ function generateGamebookTitle(){
     return title;
 }
 
-function generateSelfHelpTitle(argObj){
-    argObj = argObj || {};
+function generateSelfHelpTitle(argsObj){
+    argsObj = argsObj || {};
     var possibleSubjects = [];
-    generateSubjectMatter({getMany: true, culture: argObj.culture}).map(function(subject,index){
+    generateSubjectMatter({getMany: true, culture: argsObj.culture}).map(function(subject,index){
         possibleSubjects.push( pluralize(subject) );
     });
     possibleSubjects.push(generateGod());
@@ -5927,8 +6496,8 @@ function generateSelfHelpTitle(argObj){
         `${toTitleCase(generateKnowledge())} of the ${shuffle([coolThing,dependents[0]])[0]}`,
         `The Last Book on ${subject} You'll Ever Need`
     ];
-    if (argObj.originalIndex !== undefined){
-        possibleTitles.splice(argObj.originalIndex, 1)
+    if (argsObj.originalIndex !== undefined){
+        possibleTitles.splice(argsObj.originalIndex, 1)
     }
     var titleIndex = getRandomInt(0,possibleTitles.length - 1);
     var bookTitle = possibleTitles[titleIndex];
@@ -5938,16 +6507,16 @@ function generateSelfHelpTitle(argObj){
         ` - ${copies} Copies Sold!`,
         `: The Classic ${shuffle(['',toTitleCase(generateAdjective())+' '])[0]}Book for ${dependents[1]}`
     ];
-    if (!argObj.singleTitle){
+    if (!argsObj.singleTitle){
         possibleSuffixes.push(': ' + generateSelfHelpTitle({singleTitle: true, originalIndex: titleIndex}))
     }
     bookTitle += (rollDice() < 15) ? '' : shuffle(possibleSuffixes)[0];
     return bookTitle;
 }
 
-function generateSeriousNovelTitle(argObj){
-    argObj = argObj || {};
-    var manyThings = generateSubjectMatter({getMany: true, culture: argObj.culture});
+function generateSeriousNovelTitle(argsObj){
+    argsObj = argsObj || {};
+    var manyThings = generateSubjectMatter({getMany: true, culture: argsObj.culture});
     var objectOne = manyThings[0];
     var objectTwo = manyThings[1];
 
@@ -5961,7 +6530,7 @@ function generateSeriousNovelTitle(argObj){
     var titleThreePrefix = rollDice > 10 ? 'The ' : '';
     var bookTitleThree = titleThreePrefix === '' ? `${toTitleCase(indefiniteArticle(objectOne))}` : titleThreePrefix + toTitleCase(objectOne);
     var specialThing = `${generateRunesDesc()} ${rollDice(1,2) == 1 ? generateStone() : generateMetal()}`;
-    var cultureName = argObj.culture === undefined ?  generateCulture().name : argObj.culture.name;
+    var cultureName = argsObj.culture === undefined ?  generateCulture().name : argsObj.culture.name;
     var limitedObject = shuffle([
         'The ' + pluralize(generateAnimal().animalClass),
         'The ' + pluralize(generateLeader()._title),
@@ -5989,12 +6558,12 @@ function generateSeriousNovelTitle(argObj){
         novelType = rollDice() < 2 ? `${novelType} Told in ${shuffle(['Two','Three','Four','Five','Six','Seven','Eight','Nine'])[0]} Parts` : novelType;
         subTitle = `: ${novelType}`;
     }
-    bookTitle += !argObj.singleTitle ? subTitle : "";
+    bookTitle += !argsObj.singleTitle ? subTitle : "";
     return bookTitle;
 }
 
-function generateRomanceTitle(argObj){
-    argObj = argObj || {};
+function generateRomanceTitle(argsObj){
+    argsObj = argsObj || {};
     var romance = shuffle(['Passion','Romance','Love','A Night'])[0];
     var modifiedRomance = romance === 'A Night' ? 'For A Night' : romance;
     var job1 = toTitleCase(generateLeader()._title);
@@ -6022,37 +6591,37 @@ function generateRomanceTitle(argObj){
         `${sexy}${job1} ${parent}`,
         `The Erotic Adventures of ${toTitleCase(desire)}`
     ];
-    if (argObj.originalIndex !== undefined){
-        possibleTitles.splice(argObj.originalIndex, 1);
+    if (argsObj.originalIndex !== undefined){
+        possibleTitles.splice(argsObj.originalIndex, 1);
     }
     var titleIndex = getRandomInt(0,possibleTitles.length - 1);
     var bookTitle = possibleTitles[titleIndex];
     var possibleSuffixes = [
         `: ${toTitleCase(indefiniteArticle(company))} Romance${rollDice() < 15 ? '' : `, Book ${rollDice(1,30)}`}`,
     ];
-    if (!argObj.singleTitle){
+    if (!argsObj.singleTitle){
         possibleSuffixes.push(` - By ${generateName()}, Author of '${generateRomanceTitle({singleTitle: true, originalIndex: titleIndex})}'`);
     }
-    bookTitle += (rollDice() < 15 || argObj.singleTitle) ? '' : shuffle(possibleSuffixes)[0];
+    bookTitle += (rollDice() < 15 || argsObj.singleTitle) ? '' : shuffle(possibleSuffixes)[0];
     return bookTitle;
 }
 
-function generateBiographyDesc(argObj){
-    argObj = argObj || {};
-    var titleOptions = {singleTitle: true, culture: argObj.culture};
-    var bookTitle = argObj.bookTitle || (rollDice() !== 20 ? generateSeriousNovelTitle(titleOptions) : generateRomanceTitle(titleOptions));
-    var typeAndPrep = argObj.typeAndPrep || generateBookTypeAndPreposition(argObj.bookType);
+function generateBiographyDesc(argsObj){
+    argsObj = argsObj || {};
+    var titleOptions = {singleTitle: true, culture: argsObj.culture};
+    var bookTitle = argsObj.bookTitle || (rollDice() !== 20 ? generateSeriousNovelTitle(titleOptions) : generateRomanceTitle(titleOptions));
+    var typeAndPrep = argsObj.typeAndPrep || generateBookTypeAndPreposition(argsObj.bookType);
     var bookType = typeAndPrep[0];
     var preposition = typeAndPrep[1];
     var person = generateLeader();
-    var adjective = argObj.adjective || generateHistoricDesc();
+    var adjective = argsObj.adjective || generateHistoricDesc();
     var jobTitle = `${indefiniteArticle(adjective)} ${person._raceName} ${person._title}`;
     var desc = `"${bookTitle}," ${indefiniteArticle(bookType)} ${preposition} ${person._name}, ${jobTitle}.`
     return desc;
 }
 
-function generateTurtleBookDesc(argObj){
-    argObj = argObj || {};
+function generateTurtleBookDesc(argsObj){
+    argsObj = argsObj || {};
     var adjectives = generatePaintingDesc(true);
     var adjective = rollDice(1,2) === 2 ? '' : shuffle(adjectives)[0] + ' ';
     var drawings = shuffle(['sketches','drawings','paintings','illustrations','etchings'])[0];
@@ -6072,11 +6641,11 @@ function generateTurtleBookDesc(argObj){
     return desc;
 }
 
-function generateEvilBiographyDesc(argObj){
-    argObj = argObj || {};
-    argObj.typeAndPrep = argObj.typeAndPrep || generateScaryBookTypeAndPreposition(argObj.bookType);
-    argObj.adjective = argObj.adjective || generateEvilDesc();
-    return generateBiographyDesc(argObj);
+function generateEvilBiographyDesc(argsObj){
+    argsObj = argsObj || {};
+    argsObj.typeAndPrep = argsObj.typeAndPrep || generateScaryBookTypeAndPreposition(argsObj.bookType);
+    argsObj.adjective = argsObj.adjective || generateEvilDesc();
+    return generateBiographyDesc(argsObj);
 }
 
 function generateEmptyBookDesc(){
@@ -6115,14 +6684,14 @@ function generateEmptyBookDesc(){
     return description;
 }
 
-function generateEvilBookDesc(argObj){
-    argObj = argObj || {};
-    var typeAndPrep = argObj.typeAndPrep || generateScaryBookTypeAndPreposition();
-    var author = argObj.author || generateName();
-    var job = argObj.job || generateLeader()._title;
+function generateEvilBookDesc(argsObj){
+    argsObj = argsObj || {};
+    var typeAndPrep = argsObj.typeAndPrep || generateScaryBookTypeAndPreposition();
+    var author = argsObj.author || generateName();
+    var job = argsObj.job || generateLeader()._title;
     var adjectives = shuffle(generateEvilDesc(true));
-    var bookAdjective = argObj.bookAdjective || adjectives[0];
-    var authorAdjective = argObj.authorAdjective || adjectives[1];
+    var bookAdjective = argsObj.bookAdjective || adjectives[0];
+    var authorAdjective = argsObj.authorAdjective || adjectives[1];
     authorAdjective = typeAndPrep[0] === 'incantation' ? 'banished, ' + authorAdjective : authorAdjective;
     var basics = `${capitalizeFirstLetter(indefiniteArticle(bookAdjective))} ${typeAndPrep[0]}`;
     var byline = `${typeAndPrep[1]} ${author}, ${indefiniteArticle(authorAdjective)} ${job}`
@@ -6145,12 +6714,12 @@ function generateEvilBookDesc(argObj){
     return desc;
 }
 
-function generatePuzzleBookDesc(argObj){
-    argObj = argObj || {};
-    var place = argObj.place || generateBuilding();
-    var hogwash = argObj.hogwash || shuffle(["power","truth","perception","reality","life","happiness"])[0];
-    var knowledge = argObj.knowledge || generateKnowledge();
-    var culture = argObj.culture || generateAncientCulture();
+function generatePuzzleBookDesc(argsObj){
+    argsObj = argsObj || {};
+    var place = argsObj.place || generateBuilding();
+    var hogwash = argsObj.hogwash || shuffle(["power","truth","perception","reality","life","happiness"])[0];
+    var knowledge = argsObj.knowledge || generateKnowledge();
+    var culture = argsObj.culture || generateAncientCulture();
     var desc1 = `"The ${toTitleCase(place)} of ${toTitleCase(hogwash)}: ${toTitleCase(knowledge)} of ${culture}." It's written in ${generateLanguage(false,culture)}`;
     var desc2 = `${indefiniteArticle(generateStone())} tablet etched in ${generateRunesDesc()} runes`;
     var final = rollDice() > 10 ? desc1 : desc2;
@@ -6774,13 +7343,13 @@ function subEventSpiderAttack(argsObj,lines){
     return lines;
 }
 
-function subEventWormAttack(argObj,lines){
-    argObj = argObj || {};
+function subEventWormAttack(argsObj,lines){
+    argsObj = argsObj || {};
     var possibleColors = ['red','orange','yellow','green','blue','indigo','violet'];
-    var color = (argObj.color !== undefined && possibleColors.indexOf(argObj.color) !== -1) ? argObj.color : shuffle(possibleColors)[0];
-    var location = argObj.location || `the depths`;
-    var leader = argObj.leader || getRandomLeader();
-    var stone = argObj.stone || generateStone();
+    var color = (argsObj.color !== undefined && possibleColors.indexOf(argsObj.color) !== -1) ? argsObj.color : shuffle(possibleColors)[0];
+    var location = argsObj.location || `the depths`;
+    var leader = argsObj.leader || getRandomLeader();
+    var stone = argsObj.stone || generateStone();
     lines.push(`A prysmatic worm emerges from ${location}!`);
     var possibleEffects = [];
     switch(color){
@@ -6906,10 +7475,10 @@ function subEventMonsterAttack(argsObj,lines){
     return lines;
 }
 
-function subEventAdditionalActions(argObj,lines){
-    argObj = argObj || {};
-    if (typeof(argObj.callback) === 'function'){
-        argObj.callback(argObj,lines);
+function subEventAdditionalActions(argsObj,lines){
+    argsObj = argsObj || {};
+    if (typeof(argsObj.callback) === 'function'){
+        argsObj.callback(argsObj,lines);
     }
     return lines;
 }
@@ -7009,7 +7578,7 @@ function eventReshoe(argsObj){
     return lines;
 }
 
-function eventSafeFlavor(argObj){
+function eventSafeFlavor(argsObj){
     var lines = [];
     var pachyderm = shuffle(trailGame.pachyderms)[0];
     var leaderName = getRandomLeader()._name;
@@ -7269,7 +7838,7 @@ function eventRiver(argsObj){
     argsObj = argsObj || {};
     var lines = [];
     trailGame.caravan.dayHasBeenPaused = true;
-    argsObj.river = argsObj.river || generateRiver();
+    argsObj.river = argsObj.river || generateRiver(argsObj.riverName,argsObj.liquid);
     argsObj.pilot = argsObj.pilot || generateLeader();
     lines = subEventAnnounceRiver(argsObj,lines);
 
@@ -7315,7 +7884,7 @@ function eventCave(argsObj){
     var thingsFound = {};
     for (var i = days; i >= 1; i--) {
         thingsToFind.map(function(thing){
-            if (Object.keys(trailGame.leaders).length <= 0){
+            if (Object.keys(trailGame.leaders).length <= 0 || trailGame.caravan.dayHasBeenPaused === true){
                 return lines;
             }
             var chance = cave[`_${thing}Chance`];
@@ -7343,7 +7912,7 @@ function eventCave(argsObj){
                     subEventMonsterAttack({monsterName: shuffle(cave._undeadTypes)[0], undead: true},lines);
                     thingsFound[thing] = true;
                 } else if (thing === 'corpse' && (thingsFound.corpse !== true) ){
-                    subEventFindCorpse({religion: cave._religion, monsterType: shuffle(cave._monsterTypes)[0]},lines);
+                    subEventFindCorpse({religion: cave._religion, monsterType: shuffle(cave._monsterTypes)[0], location: `${cave._preposition} ${indefiniteArticle(cave._name)}`},lines);
                     thingsFound[thing] = true;
                 } else if ( thing === 'additional' && cave._additionalAction !== undefined && thingsFound.additional !== true){
                     subEventAdditionalActions({callback: cave._additionalAction},lines);
@@ -8374,7 +8943,7 @@ function createTradeDisplay(argsObj){
     totalValue.className = "trade-display_totals_value-display_total-value";
     var loanMax = document.createElement("span");
     loanMax.className = "trade-display_totals_value-display_loan-max";
-    if (['shop','overweight','offer','proposal'].indexOf(argsObj.type) !== -1){
+    if (['shop','overweight','offer','proposal','status'].indexOf(argsObj.type) !== -1){
         valueDisplay.append(totalValue);
         totalValue.append(trade.actualValue);
     }
