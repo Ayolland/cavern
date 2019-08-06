@@ -61,7 +61,7 @@ $zeroToTen: ['zero','one','two','three','four','five','six','seven','eight','nin
 }
 
 @mixin button-behavior($bg-color){
-	&:hover, &:focus, &:active{
+	&:hover, &:active{
 
 		&:not(.disabled){
 			background-color: lighten($bg-color, 0.75);
@@ -161,6 +161,14 @@ body{
 	&.sans-serif * {
 		font-family: $BenchNine;
 		font-weight: 300;
+	}
+
+	&:not(.keyboard-navigation-used){
+		button,input,select,textarea{
+			&:focus{
+				outline: none;
+			}
+		}
 	}
 }
 
@@ -351,6 +359,10 @@ div#log{
     		margin-top: 0;
     	}
     }
+}
+
+.modal#splash{
+	text-align: center;
 }
 
 .text-container{
@@ -649,6 +661,13 @@ input{
 						}
 
 						&.buy{
+							text-align: right;
+						}
+					}
+
+					.status &{
+						&.sell{
+							width: 100%;
 							text-align: right;
 						}
 					}

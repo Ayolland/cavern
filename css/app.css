@@ -63,6 +63,8 @@ body {
   body.sans-serif * {
     font-family: "BenchNine", Sans-Serif;
     font-weight: 300; }
+  body:not(.keyboard-navigation-used) button:focus, body:not(.keyboard-navigation-used) input:focus, body:not(.keyboard-navigation-used) select:focus, body:not(.keyboard-navigation-used) textarea:focus {
+    outline: none; }
 
 .column {
   box-sizing: border-box;
@@ -187,6 +189,9 @@ div#log {
     .modal.active .column {
       margin-top: 0; }
 
+.modal#splash {
+  text-align: center; }
+
 button {
   border-radius: 0;
   padding: 0.25rem 0.75rem;
@@ -201,7 +206,7 @@ button {
   border-style: solid;
   box-sizing: border-box;
   border-color: #c0bac6 #716978 #4b4650 #b0a9b8; }
-  button:hover:not(.disabled), button:focus:not(.disabled), button:active:not(.disabled) {
+  button:hover:not(.disabled), button:active:not(.disabled) {
     background-color: #988ea2;
     filter: brightness(120%);
     box-shadow: 0 0 5px #ad48d0; }
@@ -220,7 +225,7 @@ button {
     border-style: solid;
     box-sizing: border-box;
     border-color: #b588a3 #622b4d #421d33 #a26b8c; }
-    button.warning:hover:not(.disabled), button.warning:focus:not(.disabled), button.warning:active:not(.disabled) {
+    button.warning:hover:not(.disabled), button.warning:active:not(.disabled) {
       background-color: #863a68;
       filter: brightness(120%);
       box-shadow: 0 0 5px #ad48d0; }
@@ -297,7 +302,7 @@ input {
       border-style: solid;
       box-sizing: border-box;
       border-color: #2b383e #80939c #99a9b0 #40535c; }
-  .leader-display.button:hover:not(.disabled), .leader-display.button:focus:not(.disabled), .leader-display.button:active:not(.disabled) {
+  .leader-display.button:hover:not(.disabled), .leader-display.button:active:not(.disabled) {
     background-color: #57717d;
     filter: brightness(120%);
     box-shadow: 0 0 5px #ad48d0; }
@@ -447,6 +452,9 @@ input {
       .shop .trade-display_item-list_item_extras_item.buy, .shop .trade-display_item-list_item_extras_item.sell {
         width: 50%; }
       .shop .trade-display_item-list_item_extras_item.buy {
+        text-align: right; }
+      .status .trade-display_item-list_item_extras_item.sell {
+        width: 100%;
         text-align: right; }
 
 .trade-display_totals {

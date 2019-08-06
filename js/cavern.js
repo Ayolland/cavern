@@ -45,6 +45,7 @@
 //      - add proverbs
 // - Win State
 //      - epilouges for all surving leaders
+// - rebalance re-shoeing
 
 // - Journeys / Cards
 //      - more Cards
@@ -79,7 +80,7 @@
 
 
 // BUGS
-// - what if nothing is in a trade?
+
 // - banned jobs not working
 // - despair starvation immunity too easy
 // - spider event 'Papa Rye is undefined wounded'
@@ -134,9 +135,6 @@ function sentenceForm(input,plural){
         return;
     }
     if( Array.isArray(input)){
-        if( arraysEqual(input,Object.keys(trailGame.sicknesses)) ){
-            return 'all known ailments';
-        }
         if (plural){
             var newInput = [];
             input.map(function(string){
@@ -633,7 +631,7 @@ trailGame.animalClasses = {
         capacity: 150,
         hunger: 3,
         dexterity: 1,
-        ferocity: 15,
+        ferocity: 8,
         meat: 200,
         buy: 400,
         sell: 300,
@@ -643,10 +641,10 @@ trailGame.animalClasses = {
     'spider camel':{
         speed: 10,
         shoes: 8,
-        capacity: 45,
+        capacity: 70,
         hunger: 1,
         dexterity: 6,
-        ferocity: 3,
+        ferocity: 5,
         meat: 60,
         buy: 150,
         sell: 90,
@@ -656,7 +654,7 @@ trailGame.animalClasses = {
     'skeletal steed':{
         speed:7,
         shoes: 4,
-        capacity: 25,
+        capacity: 30,
         hunger: 0,
         dexterity: 4,
         ferocity: 5,
@@ -685,9 +683,9 @@ trailGame.animalClasses = {
         capacity: 150,
         hunger: 2,
         dexterity: 10,
-        ferocity: 1,
+        ferocity: 2,
         meat: 30,
-        buy: 300,
+        buy: 100,
         sell: 250,
         pet: false,
         turtle: false,
@@ -698,7 +696,7 @@ trailGame.animalClasses = {
         capacity: 5,
         hunger: 1,
         dexterity: 4,
-        ferocity: 3,
+        ferocity: 5,
         meat: 10,
         buy: 25,
         sell: 20,
@@ -763,7 +761,7 @@ trailGame.animalClasses = {
         capacity: 3,
         hunger: 1,
         dexterity: 2,
-        ferocity: 1,
+        ferocity: 0,
         meat: 40,
         buy: 25,
         sell: 50,
@@ -1502,14 +1500,14 @@ trailGame.parties = {
             }
         ],
         animals : {
-            'skeletal steed' : 6,
+            'skeletal steed' : 8,
             'cat' : 2,
         },
         goods : {
             'mystic sextant' : 10,
             'garnet' : 70,
             'ruby' : 20,
-            'food' : 200,
+            'food' : 150,
         }
     },
     clanRye : {
@@ -1630,7 +1628,7 @@ function eventFromCardName(cardName){
             eventFunc: eventCave,
             args: {caveType: 'stairs', goingUp: false}
         },
-        caveStairsDown : {
+        caveStairsUp: {
             eventFunc: eventCave,
             args: {caveType: 'stairs', goingUp: true}
         },
@@ -1661,7 +1659,11 @@ function eventFromCardName(cardName){
         },
         caveStrangeMonastery : {
             eventFunc: eventCave,
-            args: {caveType: 'strange', strangeType: 'monastery'}
+            args: {
+                caveType: 'strange',
+                strangeType: 'monastery',
+                god: trailGame.journey.currentLeg.god,
+            }
         },
         caveStrangeObservatory : {
             eventFunc: eventCave,
@@ -1866,6 +1868,10 @@ function eventFromCardName(cardName){
             eventFunc : eventSafeFlavor,
             args: {}
         },
+        safeSickTheif : {
+            eventFunc : eventSafeSickOrTheif,
+            args: {}
+        },
         reshoe : {
             eventFunc : eventReshoe,
             args: {}
@@ -1881,7 +1887,12 @@ function eventFromCardName(cardName){
         traps : {
             eventFunc : eventTraps,
             args: { }
+        },
+        signpost : {
+            eventFunc : eventSignpost,
+            args: { }
         }
+
     };
     cardName = cardName || shuffle(Object.keys(cards))[0];
     return cards[cardName];
@@ -1949,11 +1960,11 @@ trailGame.levels = {
         sellMultiplier: 1,
         legs : {
             start : {
-                cards : ['caveNaturalPlain','caveNaturalPlain','oasis','safe','safe','caveNaturalBones','caveHauntedHut','caveStrangeHermit'],
-                min: 7,
-                max: 12,
+                cards : ['caveNaturalPlain','caveNaturalPlain','oasis','safeSickTheif','safeSickTheif','caveNaturalBones','caveHauntedHut','caveStrangeHermit'],
+                min: 10,
+                max: 15,
                 intervalCards: ['reshoe','traps','reshoe'],
-                //firstCard: 'simpleTrade',
+                firstCard: 'safe',
                 lastCard: 'simpleTrade',
                 exits : [
                     {
@@ -1969,10 +1980,10 @@ trailGame.levels = {
                 ]
             },
             delta : {
-                cards : ['caveNaturalBog','caveNaturalBog','caveNaturalFungus','caveNaturalBog','riverEasy','riverEasy','oasis','riverMedium','caveStrangeCamp','caveStrangeMonastery','simpleTrade','caveTower'],
+                cards : ['caveNaturalBog','caveNaturalBog','caveNaturalFungus','caveNaturalBog','safeSickTheif','riverEasy','riverEasy','oasis','riverMedium','caveStrangeCamp','caveStrangeMonastery','simpleTrade','caveTower'],
                 liquid: 'saltwater',
-                min: 12,
-                max: 20,
+                min: 15,
+                max: 24,
                 intervalCards: ['reshoe','traps','reshoe','traps'],
                 firstCard: 'caveNaturalBog',
                 lastCard: 'riverHard',
@@ -1986,8 +1997,8 @@ trailGame.levels = {
             },
             deadValley : {
                 cards : ['caveHauntedPyramid','caveHauntedBattlefield','caveStrangeBeacon','caveNaturalBones'],
-                min: 6,
-                max: 10,
+                min: 10,
+                max: 14,
                 intervalCards: ['traps','traps'],
                 firstCard: 'caveNaturalBones',
                 lastCard: 'caveHauntedPyramid',
@@ -2000,13 +2011,161 @@ trailGame.levels = {
                 ]
             },
             final : {
-               cards : ['caveNaturalPlain','caveNaturalPlain','oasis','oasis','safe','safe','caveStrangeObservatory'],
+               cards : ['caveNaturalPlain','caveNaturalPlain','oasis','oasis','safeSickTheif','safeSickTheif'],
                min: 5,
                max: 9,
                intervalCards: ['reshoe'],
+               firstCard: 'signpost',
                lastCard: 'simpleTrade',
                exits : []
             }
+        }
+    },
+    'coreWorm':{
+        title : 'Core Worm Keep',
+        description: `A smithing town deep in high, cold caverns. A warren of tunnels is said to run underground along the road to the keep.`,
+        sellMultiplier: 1.25,
+        legs: {
+            start : {
+                cards : ['caveNaturalForest','caveNaturalForest','safeSickTheif','safeSickTheif'],
+                min: 4,
+                max: 6,
+                intervalCards: ['traps'],
+                firstCard: 'safe',
+                exits : [
+                    {
+                        key: 'upper1',
+                        title: 'stay above', 
+                        description: 'The road continues into more large caverns, ahead.', 
+                    },
+                    {
+                        key: 'lower1',
+                        title: 'enter the tunnels',
+                        description: 'A path leads down into what smaller winding tunnels.', 
+                    }
+                ]
+            },
+            upper1 : {
+                cards : ['safeSickTheif','safeSickTheif','caveNaturalFungus','caveStrangeCamp','caveHauntedGraveyard','caveHauntedBarrow','caveStrangeHermit'],
+                min: 6,
+                max: 12,
+                intervalCards: ['traps','reshoe'],
+                lastCard: 'simpleTrade',
+                exits : [
+                    {
+                        key: 'upper2',
+                    }
+                ]
+            },
+            lower1 : {
+                cards : ['safeSickTheif','safeSickTheif','caveTunnelRandom','caveTunnelRandom','caveStructureComplex','caveNaturalFungus','caveStrangeObservatory','caveStructureLabyrinth','caveStrangeHermit'],
+                min: 9,
+                max: 14,
+                intervalCards: ['reshoe','traps','reshoe'],
+                firstCard: 'caveStairsDown',
+                lastCard: 'caveStairsUp',
+                exits : [
+                    {
+                        key: 'upper2',
+                    }
+                ]
+            },
+            upper2 : {
+                cards : ['safeSickTheif','caveNaturalForest','caveNaturalForest','caveNaturalForest','caveStrangeCamp'],
+                min: 4,
+                max: 6,
+                intervalCards: ['traps'],
+                firstCard: 'caveNaturalForest',
+                exits : [
+                    {
+                        key: 'upper3',
+                        title: 'head into the rocky caverns', 
+                        description: 'The road continues above into rockier, colder caverns.', 
+                    },
+                    {
+                        key: 'lower2',
+                        title: 'descend below',
+                        description: 'Another smaller path leads deep into the ground.', 
+                    }
+                ]
+            },
+            upper3 : {
+                cards : ['caveNaturalGlacier','caveNaturalGlacier','caveNaturalCrystal','caveNaturalCrystal','caveTower','caveHauntedTemple','riverRandom','safeSickTheif','safeSickTheif','caveStrangeHermit'],
+                min: 6,
+                max: 10,
+                liquid: 'ice',
+                intervalCards: ['reshoe','traps'],
+                firstCard: 'caveNaturalGlacier',
+                lastCard: 'caveStrangeMonastery',
+                exits : [
+                    {
+                        key: 'upper4',
+                    }
+                ]
+            },
+            lower2 : {
+                cards : ['caveTunnelRandom','caveStructureComplex','caveStructureDungeon','caveStructureLabyrinth'],
+                min: 4,
+                max: 6,
+                intervalCards: ['traps'],
+                firstCard: 'caveStairsDown',
+                exits : [
+                    {
+                        key: 'upper4',
+                        title: 'head back up towards the ice', 
+                        description: 'A frost-lined path leads upward into colder caverns.', 
+                    },
+                    {
+                        key: 'deepStairsDown',
+                        title: 'descend below',
+                        description: 'Narrow staircases lead even deeper below.', 
+                    }
+                ]
+            },
+            deepStairsDown : {
+                cards : ['caveStairsDown'],
+                min: 2,
+                max: 3,
+                liquid: 'blood',
+                raceName: 'Demon',
+                lastCard: 'riverMedium',
+                exits : [
+                    {
+                        key: 'hell',
+                    }
+                ]
+            },
+            hell : {
+                cards : ['caveNaturalMagma','caveNaturalMagma','caveNaturalFlesh','caveStrangeMonastery'],
+                min: 2,
+                max: 3,
+                liquid: 'magma',
+                raceName: 'Demon',
+                intervalCards: ['riverMedium'],
+                exits : [
+                    {
+                        key: 'deepStairsUp',
+                    }
+                ]
+            },
+            deepStairsUp : {
+                cards : ['caveStairsUp'],
+                min: 2,
+                max: 4,
+                firstCard: 'signpost',
+                lastCard: 'simpleTrade',
+                exits : []
+            },
+            upper4 : {
+                cards : ['safeSickTheif','caveNaturalGlacier','caveNaturalForest','riverEasy','caveHauntedCastle','caveHauntedBarrow','safeSickTheif','caveNaturalGlacier','caveNaturalForest'],
+                min: 9,
+                max: 13,
+                liquid: 'ice',
+                intervalCards: ['riverHard '],
+                firstCard: 'signpost',
+                lastCard: 'simpleTrade',
+                exits : []
+            },
         }
     }
 }
@@ -2037,16 +2196,21 @@ function loadLegOfJourney(legName){
         if (!cardPool.length){
             cardPool = shuffle([...leg.cards]);
         }
-        if (leg.firstCard !== undefined && i === 1){
-            leg.deck.push(leg.firstCard);
-        } else if (leg.lastCard !== undefined && i === numberOfCards){
-            leg.deck.push(leg.lastCard);
+        var cardName = undefined;
+        if (i === 1){
+            cardName = leg.firstCard
+        } else if (i === numberOfCards){
+            cardName = leg.lastCard;
         } else if (leg.intervalCards.length && i === Math.ceil(intervalCounter * numberOfCards / totalNumberOfIntervals)){
-            leg.deck.push(leg.intervalCards[intervalCounter - 1]);
+            cardName = leg.intervalCards[intervalCounter - 1];
             intervalCounter++;
-        } else {
-            leg.deck.push(cardPool.shift());
         }
+
+        if(cardName === undefined){
+            cardName = cardPool.shift();
+        }
+
+        leg.deck.push(cardName);
     }
     trailGame.journey.currentLeg = leg;
 }
@@ -2062,6 +2226,7 @@ function runNextCard(){
         if (trailGame.caravan.daysElapsed !== 0){
             cardName = trailGame.journey.currentLeg.deck.shift();
         }
+        console.log(`running card: '${cardName}'`);
         runAndLogEvent(runCardEvent,cardName);
     } else if (trailGame.journey.currentLeg.exits.length > 1){
         runAndLogEvent(eventStartCrossroads);
@@ -2706,7 +2871,8 @@ function boostLeaderImmunity(leaderObj,sicknessName){
     }
     var sicknessObj = trailGame.sicknesses[sicknessName];
     var immunityChance = clamp(sicknessObj.cureChance - immunityLevel,1,10) * 2;
-    var hasGainedImmunity = rollDice(1,immunityChance) === immunityChance;
+    var nerfDespairStarvation = ['despair','starvation'].indexOf(sicknessName) !== -1 && rollDice() !== 20;
+    var hasGainedImmunity = rollDice(1,immunityChance) === immunityChance && !nerfDespairStarvation;
     if (!hasGainedImmunity){
         leaderObj._immunities[sicknessName] = immunityLevel + 1;
     }
@@ -3273,7 +3439,7 @@ function dinnerTime(){
             break
             case 3:
                 moraleBonus = ( trailGame.caravan.morale <= 7 ) ? 1 : 0;
-                healthBonus = (getRandomInt(1,4) === 6) ? 1 : 0;
+                healthBonus = (getRandomInt(1,4) === 4) ? 1 : 0;
             break;
         }
         addMorale(moraleBonus);
@@ -3646,7 +3812,7 @@ function mergeTradeObjs(tradeA,tradeB){
 function getTradeOffer(argsObj){
     argsObj = argsObj || {};
     argsObj.level = clamp(argsObj.level,1,20) || rollDice(1,20);
-    argsObj.approxValue = argsObj.approxValue || rollDice(argsObj.level,50);
+    argsObj.approxValue = argsObj.approxValue || rollDice(argsObj.level + 1, 30 + (argsObj.level * 5));
     var cultureModifier = 1;
     var approxValue = Math.round(argsObj.approxValue * cultureModifier);
     var offer = { actualValue: 0, expectedValue: argsObj.approxValue };
@@ -3666,8 +3832,8 @@ function getTradeOffer(argsObj){
         if (!isAnimal || numAnimalTypes > 0){
             addToTrade(offer,number,itemKey);
             numAnimalTypes -= isAnimal ? 1 : 0;
+            approxValue -= number * itemObj.sell;
         }
-        approxValue -= number * itemObj.sell;
         itemIndex = itemIndex === allItems.length - 1 ? 0 : itemIndex + 1;
         timesTried++;
     }
@@ -4220,7 +4386,14 @@ function subEventReadBook(argsObj,lines){
 function subEventVisitLibrary(argsObj,lines){
     argsObj = argsObj || {};
     var bookTypes = argsObj.bookTypes || [];
-    var leaders = argsObj.leaders || [getRandomLeader(),getRandomLeader(),getRandomLeader()];
+    var leaders = argsObj.leaders;
+    if (leaders === undefined){
+        // getting 3 unique leaders
+        leaders = [];
+        leaders.push(getRandomLeader());
+        leaders.push(getRandomLeader(leaders[0]._id));
+        leaders.push(getRandomLeader(leaders[1]._id));
+    }
     leaders = shuffle(leaders);
     bookTypes = shuffle(bookTypes);
     var locations = shuffle([
@@ -4363,7 +4536,7 @@ function generateBaseCave(argsObj){
         _trapTypes : [],
         _monsterTypes : [],
         _undeadTypes : [],
-        _lootChance: 20,
+        _lootChance: 40,
         _corpseChance: 0,
         _name : 'eerie void',
         _pluralName : 'eerie voids',
@@ -4415,7 +4588,7 @@ function generateTowerCave(argsObj){
     cave._trapTypes = ['fire','acid','spikes','crusher'];
     cave._monsterTypes = Object.keys(trailGame.monsterClasses);
     cave._undeadTypes = Object.keys(trailGame.undeadClasses);
-    cave._lootChance = 10;
+    cave._lootChance = 20;
     cave._name = `${towerType} ${cave._stone} tower`;
     cave._pluralName = `${towerType} towers of ${cave._stone}`,
     cave._lootLocation = `in ${indefiniteArticle(generateAbandonedDesc())} ${rooms[0]}`;
@@ -4622,7 +4795,7 @@ function generateStrangeCave(argsObj){
                 } else {
                     lines.push(`The beacon${shuffle(beaconBehaviors)[0]}`);
                     lines.push(`We collect a few artifacts from ${ancientCulture} before we leave.`);
-                    addGoods('ancient artifacts',rollDice(1,10));
+                    addGoods('ancient artifact',rollDice(1,10));
                 }
             }
         },
@@ -4645,7 +4818,6 @@ function generateStrangeCave(argsObj){
                     "glittering gems, strewn carelessly about", // 7
                     `${generatePetDesc()} ${pluralize(pet.animalClass)}` // 8
                 ];
-                cave._hermitType = 5;
                 var hermitPhrase = hermits[Math.round(cave._hermitType)];
                 lines.push(`The hut is surrounded by ${hermitPhrase}...`);
                 switch (cave._hermitType){
@@ -5024,7 +5196,7 @@ function generateStrangeCave(argsObj){
         },
         "abandoned camp" : {
             _name: `hastily abandoned camp`,
-            _lootChance: 2,
+            _lootChance: 4,
             _additionalChance: 2,
             _lootLocation: 'left behind among the tents and ashes',
             _lootTypes: ['book','goods','animal'],
@@ -5159,7 +5331,7 @@ function generateNaturalCave(argsObj){
         },
         'fungus garden': {
             _lootLocation: 'under a blanket of lichen',
-            _lootChance: 6,
+            _lootChance: 12,
             _pluralName: 'fungus gardens', 
             _monsterTypes: ['filth ogre','flue harpy','pit mauler','centipede'],
             _undeadTypes: ['ghoul'],
@@ -5216,7 +5388,7 @@ function generateNaturalCave(argsObj){
             },
         },
         'noxious bog' : {
-            _lootChance: 6,
+            _lootChance: 12,
             _lootLocation: 'preserved in the muck', 
             _pluralName: 'noxious bogs',
             _monsterTypes: ['filth ogre','flue harpy','six-legged tiger','centipede'],
@@ -5264,7 +5436,7 @@ function generateNaturalCave(argsObj){
     var caveDetails = naturalLib[naturalType];
     var level = types.indexOf(naturalType) + 1;
     cave._length = rollDice(level,10);
-    cave._lootChance = 8;
+    cave._lootChance = 16;
     cave._wormChance = 100;
     cave._monsterChance = 20;
     cave._undeadChance = 50;
@@ -5329,7 +5501,7 @@ function generateStructureCave(argsObj){
     var structureDetails = structureLib[structureType];
     cave._name = structureType;
     cave._exitVerb = 'find our way out';
-    cave._lootChance = 10;
+    cave._lootChance = 20;
     cave._length = rollDice(level+2,10);
     cave._complexity = clamp(level * level,1,10);
     cave._wormChance = 50;
@@ -5377,7 +5549,7 @@ function generateHauntedCave(argsObj){
             _pluralName: 'gothic castles',
             _trapTypes: ['spikes','crusher'],
             _trapChance: 6,
-            _lootChance: 4,
+            _lootChance: 8,
             _lootTypes: ['goods'],
             _length: rollDice(1),
             _complexity: 5,
@@ -5465,7 +5637,7 @@ function generateHauntedCave(argsObj){
             _pluralName: 'barrow mound',
             _trapTypes: ['suction','spikes'],
             _trapChance: 4,
-            _lootChance: 4,
+            _lootChance: 8,
             _length: 2,
             _complexity: 5,
             _verb: altVerb,
@@ -5619,7 +5791,7 @@ function generateHauntedCave(argsObj){
     cave._exitVerb = 'continue on';
     cave._spiderChance = 30;
     cave._wormChance = 0;
-    cave._lootChance = 6;
+    cave._lootChance = 12;
     cave._undeadTypes = Object.keys(trailGame.undeadClasses);
     cave._undeadChance = 10;
     Object.keys(hauntedDetails).map(function(key){
@@ -5796,6 +5968,7 @@ function generateLiquidSicknessPair(getAll,liquidName,justLiquids){
         'saltwater': 'pneumonia',
         'fresh water': 'pneumonia',
         'blood': 'demon flu',
+        'magma': 'third-degree burns',
     };
 
     function getPair(liquidName){
@@ -7568,7 +7741,7 @@ function eventReshoe(argsObj){
         var animalClass = trailGame.animalClasses[animalToShoe];
         var totalShoes = totalAnimals * animalClass.shoes;
         var workers = Object.keys(trailGame.leaders).length * clamp(trailGame.caravan.morale,1,10);
-        var hours = Math.max(Math.ceil(totalShoes / workers),totalAnimals);
+        var hours = Math.max(Math.ceil((totalShoes * 2) / workers),totalAnimals * 2);
         var days = Math.ceil(hours/12);
         var plural = (totalAnimals > 1) ? pluralize(animalToShoe) : animalToShoe;
         lines.push(`We stop to re-shoe our ${totalAnimals} ${plural}.`);
@@ -7588,6 +7761,19 @@ function eventSafeFlavor(argsObj){
         `We stop at a shrine to ${generateGod()}. ${leaderName} says a silent prayer.`,
     ];
     lines.push(shuffle(randomness)[0]);
+    addDays(1);
+    return lines;
+}
+
+function eventSignpost(argsObj){
+    var lines = [];
+    var destination = 'the crossroads';
+    if (trailGame.journey.currentLeg.exits.length === 0){
+        destination = trailGame.journey.title;
+    }
+    var distance = trailGame.journey.currentLeg.deck.length * 21 + rollDice();
+    lines.push(`We come across a sign post that reads: '${distance} Furloughs To ${destination}'`);
+    lines.push(`We've almost made it!`);
     addDays(1);
     return lines;
 }
@@ -7749,6 +7935,17 @@ function eventThief(argsObj){
     return lines;
 }
 
+function eventSafeSickOrTheif(argsObj){
+    var dice = rollDice(1,6);
+    if (dice >= 6){
+        return eventThief(argsObj);
+    } else if ( dice === 5){
+        return eventSickness(argsObj);
+    } else {
+        return eventSafeFlavor(argsObj);
+    }
+}
+
 function eventSpiderAttack(argsObj){
     var lines = [];
     argsObj = argsObj || {};
@@ -7836,11 +8033,13 @@ function eventMakeTrade(argsObj){
 
 function eventRiver(argsObj){
     argsObj = argsObj || {};
-    var lines = [];
-    trailGame.caravan.dayHasBeenPaused = true;
+    lines = [];
+
     argsObj.river = argsObj.river || generateRiver(argsObj.riverName,argsObj.liquid);
     argsObj.pilot = argsObj.pilot || generateLeader();
     lines = subEventAnnounceRiver(argsObj,lines);
+
+    trailGame.caravan.dayHasBeenPaused = true;
 
     function eventFordRiver(argsObj){
         lines = [];
@@ -8173,7 +8372,6 @@ function runAndLogEvent(funct,args,dayIsResolution){
 
     if ((trailGame.caravan.daysSinceLastMeal > 0 || dayIsResolution) && !trailGame.lostGame){
         var nightLines = nightPhase();
-        trailGame.caravan.dayIsResolution = false;
         trailGame.caravan.dayHasBeenPaused = false;
         addTextArrayToLog(nightLines.events,'night events');
         addTextArrayToLog(nightLines.ledgerLines,'night updates');
@@ -8242,7 +8440,7 @@ function createModal(argsObj){
     var modal = document.createElement("div");
     modal.className = 'modal';
     if (argsObj.modalId !== undefined){
-        modal.setAttribute('id',argsObj.modal);
+        modal.setAttribute('id',argsObj.modalId);
     }
 
     var modalWrapper = document.createElement("div");
@@ -8346,6 +8544,43 @@ function createSimpleModal(argsObj){
 
     argsObj.contentNode = modalContent;
     return createModal(argsObj);
+}
+
+function createSplashModal(){
+    var modalContent = createModalContentContainer();
+
+    var gameTitle = document.createElement("h1");
+    gameTitle.innerHTML = 'Cavern<br>Caravan<br>Trail';
+    modalContent.append(gameTitle);
+
+    var version = document.createElement("h5");
+    version.innerHTML = 'Ver 0.1';
+    modalContent.append(version);
+
+    var creditsA = document.createElement("h5");
+    creditsA.innerHTML = 'World & Setting, Writing By <span>@skeleton_hugs</span>';
+    modalContent.append(creditsA);
+
+    var creditsB = document.createElement("h5");
+    creditsB.innerHTML = 'Programming, Design, Writing By <span>@AYolland</span>';
+    modalContent.append(creditsB);
+
+    modalContent.append(createButton({
+        buttonText: `Start A New Game`,
+        useLi: false,
+        callback: function(){
+            dismissActiveModal(true);
+            setTimeout(function(){
+                setUpNewGame();
+            },400);
+        },
+    }));
+
+    return createModal({
+        contentNode: modalContent,
+        active: true,
+        modalId: 'splash',
+    });
 }
 
 function createPartyChoiceModal(){
@@ -8475,17 +8710,36 @@ function createLeaderDisplay(argsObj){
     }
     leaderDisplay.append(statDisplay);
 
-    var extraSections = ['sicknesses','immunities'];
-    extraSections.map(function(objectName){
-        var statObj = leader['_'+objectName];
+    var extraSections = [
+        { 
+            leaderKey: 'sicknesses',
+            relevantClasses: trailGame.sicknesses,
+            pluralNoun: 'diseases'
+        },
+        { 
+            leaderKey: 'immunities',
+            relevantClasses: trailGame.sicknesses,
+            pluralNoun: 'ailments'
+        },
+    ];
+    extraSections.map(function(sectionLegend){
+        var statObj = leader['_'+sectionLegend.leaderKey];
         var keys = Object.keys(statObj);
         if (keys.length){
             var info = document.createElement("div");
-            info.className = `leader-display_extra-info ${objectName}`;
+            info.className = `leader-display_extra-info ${sectionLegend.leaderKey}`;
             var label = document.createElement("span");
-            label.append(`${capitalizeFirstLetter(objectName)}: `);
+            label.append(`${capitalizeFirstLetter(sectionLegend.leaderKey)}: `);
             info.append(label);
-            info.append(capitalizeFirstLetter(sentenceForm(keys))+'.');
+            var list = '';
+            if (keys.length >= Object.keys(sectionLegend.relevantClasses).length){
+                list = `All known ${sectionLegend.pluralNoun}.`;
+            } else if (keys.length >= 5){
+                list = `Too many to list!`
+            } else {
+                list = capitalizeFirstLetter(sentenceForm(keys))+'.';
+            }
+            info.append(list);
             leaderDisplay.append(info);
         }
     });
@@ -8875,6 +9129,8 @@ function createTradeDisplay(argsObj){
         if (argsObj.type === 'shop'){
             extrasLegend[1] = ['sell','Sell Value'];
             extrasLegend[1] = ['buy','Cost'];
+        } else if (argsObj.type === 'status'){
+            extrasLegend.splice(1, 1);
         }
         var hasComplexInfo =  false;
         for (var j = 0; j <= extrasLegend.length - 1; j++) {
@@ -8883,6 +9139,7 @@ function createTradeDisplay(argsObj){
             if (pair[0] === 'have'){
                 var isGood = findItemFromKey(itemName).goodsType !== undefined;
                 value = isGood ? trailGame.goods[itemName] : trailGame.animals[itemName];
+                value = itemName === 'food' ? trailGame.caravan.food : value;
                 value = value || 0;
             } else {
                 value = itemObj[pair[0]];
@@ -8891,7 +9148,9 @@ function createTradeDisplay(argsObj){
                 var extraItem = document.createElement("li");
                 extraItem.className = "trade-display_item-list_item_extras_item";
                 var outputString = '';
-                if (typeof(value) === 'number'){
+                if (pair[0] === 'sell') {
+                    outputString = `${pair[1]}: ${value} ea`;
+                } else if (typeof(value) === 'number'){
                     outputString = `${pair[1]}: ${value}`;
                 } else if (value === true){
                    outputString = `${pair[1]}`;
@@ -9120,6 +9379,11 @@ function createJourneyChoiceModal(partyName){
 
     Object.keys(trailGame.levels).sort().map(function(levelKey){
         levelObj = trailGame.levels[levelKey];
+
+        if (levelObj.debug === true && true){
+            // do not add debug levels
+            return
+        }
 
         var title = document.createElement("h3");
         modalContent.append(title);
@@ -9674,8 +9938,16 @@ function runFuncIfControlsEnabled(functionName,args){
     }
 }
 
-function continueButtonHandler(){
+function checkForKeyboardUsers(e) {
+    if (e.keyCode === 9) { // the "I am a keyboard user" key
+        document.body.classList.add('keyboard-navigation-used');
+        window.removeEventListener('keydown', handleFirstTab);
+    }
+}
+
+function continueButtonHandler(event){
     runFuncIfControlsEnabled(runNextCard);
+    event.target.blur();
 }
 
 function resetButtonHandler(){
@@ -9683,10 +9955,14 @@ function resetButtonHandler(){
 }
 
 function setUpMainControls(){
+
+    window.addEventListener('keydown', checkForKeyboardUsers);
+
     trailGame.UI.isControlsDisabled = false;
 
     trailGame.UI.continueButton = document.body.querySelector('button#continue');
     trailGame.UI.continueButton.innerHTML = '<span>Continue</span>';
+    trailGame.UI.continueButton.removeEventListener("click",resetButtonHandler);
     trailGame.UI.continueButton.addEventListener("click",continueButtonHandler);
 
     trailGame.UI.statusButton = document.body.querySelector('button#status');
@@ -9979,4 +10255,5 @@ function getCartList(){
     return `You decide to purchase ${receipt} for ${trailGame.temp.cart.actualValue} silver.`;
 }
 
-setUpNewGame();
+//setUpNewGame();
+createSplashModal();
