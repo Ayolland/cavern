@@ -227,6 +227,10 @@ div#log{
     	color: lighten($plum, 20%);
     }
 
+    .error{
+    	color: $salmon;
+    }
+
     .night.events::before{
     	content: "that night, by the fire...";
     	display: block;

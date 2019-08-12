@@ -84,7 +84,6 @@
 // - modals randomly cause double-dinners
 // - Hermit trades for pet needs modal
 // - Hermit can give useful book?
-// - Core Worm keep error out on final leg (mobile only?)
 // - deal sweetening not working (mobile only?)
 // - banned jobs not working
 // - spider event 'Papa Rye is undefined wounded'
@@ -2241,7 +2240,12 @@ function runNextCard(){
             console.log(`card: '${cardName}' not found!`);
             cardObj = eventFromCardName();
         }
-        runAndLogEvent(cardObj.eventFunc,cardObj.args);
+        try {
+            runAndLogEvent(cardObj.eventFunc,cardObj.args);
+        } catch(err) {
+            var errorArray = err.stack.split("\n")
+            addTextArrayToLog(errorArray,'error');
+        }
     } else if (trailGame.journey.currentLeg.exits.length > 1){
         runAndLogEvent(eventStartCrossroads);
     } else if (trailGame.journey.currentLeg.exits.length === 1){
@@ -2619,7 +2623,6 @@ function removeLeader(id,reason){
     delete trailGame.leaders[id];
     var moraleHit = Math.ceil(trailGame.caravan.morale / 3);
     removeMorale(moraleHit);
-    //removeMorale(3);
 }
 
 function getRandomLeader(notThisLeaderId){

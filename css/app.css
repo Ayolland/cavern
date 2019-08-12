@@ -101,6 +101,8 @@ div#log {
   div#log .stats {
     margin-top: 0.25em;
     color: #9b77a7; }
+  div#log .error {
+    color: #ea5672; }
   div#log .night.events::before {
     content: "that night, by the fire...";
     display: block;
