@@ -8631,7 +8631,7 @@ function createSplashModal(){
     modalContent.append(gameTitle);
 
     var version = document.createElement("h5");
-    version.innerHTML = 'Ver 0.1';
+    version.innerHTML = 'Ver 0.2';
     modalContent.append(version);
 
     var creditsA = document.createElement("h5");
