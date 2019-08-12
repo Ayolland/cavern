@@ -82,7 +82,6 @@
 // BUGS
 
 // - modals randomly cause double-dinners
-// - Hermit trades for pet needs modal
 // - Hermit can give useful book?
 // - deal sweetening not working (mobile only?)
 // - banned jobs not working
@@ -1296,7 +1295,7 @@ function generateGem(getAll){
 function generateCraft(getAll){
     var crafts = [
         ["fungus pillow",'bundle'], 
-        ["mushroom cap bowl",'crate'], 
+        ["mushroom-cap bowl",'crate'], 
         ["mandrake doll",'collection'], 
         ["bone figurine",'collection'], 
         ["hex quilt",'bolt'], 
@@ -3632,6 +3631,12 @@ function validateGoods(className){
 }
 
 function modGoods(className,number){
+    if(findItemFromKey(className) === undefined){
+        var errorMsg = `attempted to modify unknown key: ${className}`;
+        addTextArrayToLog([errorMsg],'error');
+        console.log(errorMsg);
+        return;
+    }
     if ( className === 'food'){
         return modFood(number);
     }
@@ -3747,6 +3752,12 @@ function addToTrade(tradeObj,number,key,price){
     tradeObj.actualValue = tradeObj.actualValue || 0;
     number = parseInt(number);
     var item = findItemFromKey(key);
+    if(item === undefined){
+        var errorMsg = `attempted to add unknown key to trade: ${key}`;
+        addTextArrayToLog([errorMsg],'error');
+        console.log(errorMsg);
+        return;
+    }
     price = price || item.sell;
     tradeObj[key] = tradeObj[key] === undefined ? parseInt(number) : parseInt(tradeObj[key]) + number;
     tradeObj.actualValue += number * price;
@@ -3926,7 +3937,7 @@ function getAllCaravanItems(){
 function findItemFromKey(key){
     var isGoods = Object.keys(trailGame.goodsClasses).indexOf(key) !== -1;
     var isAnimal = Object.keys(trailGame.animalClasses).indexOf(key) !== -1;
-    var item = {};
+    var item = undefined;
     item = isGoods ? generateGood(key) : item;
     item = isAnimal ? generateAnimal(key) : item;
     return item;
@@ -3977,7 +3988,13 @@ function getFinalSale(){
 // animal functions
 
 function modAnimals(className,number,removeGoods){
-    removeGoods = (removeGoods === true) ? true : false; // not currently used
+    if(findItemFromKey(className) === undefined){
+        var errorMsg = `attempted to modify unknown key: ${className}`;
+        addTextArrayToLog([errorMsg],'error');
+        console.log(errorMsg);
+        return;
+    }
+    // removeGoods = (removeGoods === true) ? true : false; // not currently used
     if ( trailGame.animals[className] === undefined ){
         if( number > 0 ){
             trailGame.animals[className] = number;
@@ -4852,18 +4869,36 @@ function generateStrangeCave(argsObj){
                     break;
                     case 2:
                         // trade
-                        //tradeObj,number,key,keySellPrice
                         var offer = {};
-                        addToTrade(offer,rollDice(),goods.goodsType);
-                        var proposal = getTradeProposal({approxValue: offer.actualValue});
-                        var textOffer = sentenceForm(scrubTradeObj(offer));
-                        var textProposal = sentenceForm(scrubTradeObj(proposal));
-                        lines.push(`We propose to give the hermit ${textProposal} for ${textOffer}.`);
-                        isAccepted = subEventTradeAttempt({offer: offer, proposal: proposal, merchantName: `The hermit`, giveExtra: true},lines);
-                        if (isAccepted){
-                            removeTrade(proposal);
-                            addTrade(offer);
+                        addToTrade(offer,rollDice(5,20),goods.goodsType);
+                        lines.push(`We persue the hermit's wares.`);
+                        trailGame.caravan.dayHasBeenPaused = true;
+
+                        function eventRefuseTrade(argsObj){
+                            lines = [];
+                            lines.push(`We opt not to trade with the hermit.`);
+                            addDays(1);
+                            return lines;
                         }
+
+                        function eventAttemptTrade(argsObj){
+                            lines = [];
+                            isAccepted = subEventTradeAttempt(argsObj,lines);
+                            if (isAccepted){
+                                removeTrade(argsObj.proposal);
+                                addTrade(argsObj.offer);
+                            }
+                            addDays(1);
+                            return lines;
+                        }
+
+                        createTradeModal({
+                            offer: offer,
+                            merchantName: `The hermit`,
+                            merchantJob: 'trader',
+                            refuseCallback: eventRefuseTrade,
+                            attemptCallback: eventAttemptTrade,
+                        },lines);
                     break;
                     case 3:
                         lines.push(`The hermit babbles incoherently about their religion. They return from their hut with a stack of books they insist will explain everthing.`);
@@ -4932,19 +4967,44 @@ function generateStrangeCave(argsObj){
                         addGoods(generateGem(),rollDice(1,10));
                     break;
                     case 8:
-                        lines.push(`One of the ${pluralize(pet.animalClass)} takes a shining to ${leader._name}.`);
+                        var amountOfPets = rollDice(1,4);
+
+                        lines.push(`${amountOfPets > 1 ? 'A few' : 'One'} of the ${pluralize(pet.animalClass)} take${amountOfPets > 1 ? '' : 's'} a shining to ${leader._name}.`);
                         //tradeObj,number,key,keySellPrice
                         var offer = {};
-                        addToTrade(offer,1,pet.animalClass);
-                        var proposal = getTradeProposal({approxValue: offer.actualValue});
-                        var textProposal = sentenceForm(scrubTradeObj(proposal));
-                        lines.push(`We offer to give the hermit ${textProposal} in exchange for the ${pet.animalClass}.`);
-                        isAccepted = subEventTradeAttempt({offer: offer, proposal: proposal, merchantName: `The hermit`, giveExtra: true},lines);
-                        if (isAccepted){
-                            removeTrade(proposal);
-                            addTrade(offer);
-                            lines.push(`${leader._name} is enamoured with their new friend.`);
+                        addToTrade(offer,amountOfPets,pet.animalClass);
+                        lines.push(`We attempt to barter with the hermit for the ${amountOfPets > 1 ? pluralize(pet.animalClass) : pet.animalClass}.`);
+                        trailGame.caravan.dayHasBeenPaused = true;
+
+                        function eventRefuseTrade(argsObj){
+                            lines = [];
+                            lines.push(`On second thought, we decide not to trade for the ${amountOfPets > 1 ? pluralize(pet.animalClass) : pet.animalClass}.`);
+                            lines.push(`${leader._name} is crestfallen.`);
+                            removeMorale(1)
+                            addDays(1);
+                            return lines;
                         }
+
+                        function eventAttemptTrade(argsObj){
+                            lines = [];
+                            isAccepted = subEventTradeAttempt(argsObj,lines);
+                            if (isAccepted){
+                                removeTrade(argsObj.proposal);
+                                addTrade(argsObj.offer);
+                                 lines.push(`${leader._name} is enamoured with their new friend${amountOfPets > 1 ? 's' : ''}.`);
+                            }
+                            addDays(1);
+                            return lines;
+                        }
+
+                        createTradeModal({
+                            offer: offer,
+                            merchantName: `The hermit`,
+                            merchantJob: 'trader',
+                            refuseCallback: eventRefuseTrade,
+                            attemptCallback: eventAttemptTrade,
+                        },lines);
+
                     break;
                 }
             }
@@ -5372,7 +5432,7 @@ function generateNaturalCave(argsObj){
                 lines.push(addendum);
                 lines.push(`They generously give us provisions and send us on our way.`);
                 addFood(rollDice(4));
-                addGoods('mushroom cap bowl', rollDice(2));
+                addGoods('mushroom-cap bowl', rollDice(2));
                 addGoods('fungus pillow', rollDice(2));
             }
         },
