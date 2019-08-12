@@ -314,7 +314,36 @@ input {
     padding: 0.12rem; }
     .leader-display_basics_icon {
       font-size: 2.5rem;
-      background-image: url("../assets/images/placeholder-person.png"); }
+      background-size: 6em 8em;
+      background-image: url("../assets/images/sprites-test.png"); }
+      .leader-display_basics_icon.roshian {
+        background-position-y: 0em; }
+      .leader-display_basics_icon.fungaloid {
+        background-position-y: -1em; }
+      .leader-display_basics_icon.crab-folk {
+        background-position-y: -2em; }
+      .leader-display_basics_icon.amazon {
+        background-position-y: -3em; }
+      .leader-display_basics_icon.tud {
+        background-position-y: -4em; }
+      .leader-display_basics_icon.serpent-cultist {
+        background-position-y: -5em; }
+      .leader-display_basics_icon.snout-goblin {
+        background-position-y: -6em; }
+      .leader-display_basics_icon.demon {
+        background-position-y: -7em; }
+      .leader-display_basics_icon.generalist {
+        background-position-x: 0em; }
+      .leader-display_basics_icon.brawler {
+        background-position-x: -1em; }
+      .leader-display_basics_icon.schemer {
+        background-position-x: -2em; }
+      .leader-display_basics_icon.academic {
+        background-position-x: -3em; }
+      .leader-display_basics_icon.wizard {
+        background-position-x: -4em; }
+      .leader-display_basics_icon.fool {
+        background-position-x: -5em; }
     .leader-display_basics_lockup {
       display: flex;
       flex-direction: column;

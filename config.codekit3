@@ -88,6 +88,17 @@
 		"oT": 1,
 		"q": 100
 		},
+	"/assets/images/sprites-test.png": {
+		"ft": 32768,
+		"iS": 1780,
+		"oA": 0,
+		"oAP": "/assets/images/sprites-test.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
 	"/css/app.css": {
 		"aP": 1,
 		"bl": 0,

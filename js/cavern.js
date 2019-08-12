@@ -81,9 +81,18 @@
 
 // BUGS
 
+// - modals randomly cause double-dinners
+// - Hermit trades for pet needs modal
+// - Hermit can give useful book?
+// - Core Worm keep error out on final leg (mobile only?)
+// - deal sweetening not working (mobile only?)
 // - banned jobs not working
-// - despair starvation immunity too easy
 // - spider event 'Papa Rye is undefined wounded'
+
+// MOBILE BUGS
+// - form inputs need to be type:number and have border-radius removed
+// - trade display totals not updating correctly
+//
 
 // helpers
 
@@ -1894,7 +1903,7 @@ function eventFromCardName(cardName){
         }
 
     };
-    cardName = cardName || shuffle(Object.keys(cards))[0];
+    cardName = cardName === undefined ? shuffle(Object.keys(cards))[0] : cardName;
     return cards[cardName];
 }
 
@@ -2161,8 +2170,8 @@ trailGame.levels = {
                 min: 9,
                 max: 13,
                 liquid: 'ice',
-                intervalCards: ['riverHard '],
-                firstCard: 'signpost',
+                intervalCards: ['riverHard'],
+                firstCard: 'signpostHonkle',
                 lastCard: 'simpleTrade',
                 exits : []
             },
@@ -2171,7 +2180,7 @@ trailGame.levels = {
 }
 
 trailGame.settings = {
-    fontStyle: 'thematic',
+    fontStyle: 'sans-serif',
 }
 
 function newJourney(journeyName){
@@ -2215,10 +2224,10 @@ function loadLegOfJourney(legName){
     trailGame.journey.currentLeg = leg;
 }
 
-function runCardEvent(cardName){
-    var cardObj = eventFromCardName(cardName);
-    return cardObj.eventFunc(cardObj.args);
-}
+// function runCardEvent(cardName){
+//     var cardObj = eventFromCardName(cardName);
+//     return cardObj.eventFunc(cardObj.args);
+// }
 
 function runNextCard(){
     if(trailGame.journey.currentLeg.deck.length > 0){
@@ -2227,7 +2236,12 @@ function runNextCard(){
             cardName = trailGame.journey.currentLeg.deck.shift();
         }
         console.log(`running card: '${cardName}'`);
-        runAndLogEvent(runCardEvent,cardName);
+        var cardObj = eventFromCardName(cardName);
+        if (cardObj === undefined) {
+            console.log(`card: '${cardName}' not found!`);
+            cardObj = eventFromCardName();
+        }
+        runAndLogEvent(cardObj.eventFunc,cardObj.args);
     } else if (trailGame.journey.currentLeg.exits.length > 1){
         runAndLogEvent(eventStartCrossroads);
     } else if (trailGame.journey.currentLeg.exits.length === 1){

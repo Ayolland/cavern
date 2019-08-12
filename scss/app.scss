@@ -501,7 +501,24 @@ input{
 
 		&_icon{
 			font-size: 2.5rem;
-			background-image: url('../assets/images/placeholder-person.png');
+			background-size: 6em 8em;
+			background-image: url('../assets/images/sprites-test.png');
+
+			$races: 'roshian' 'fungaloid' 'crab-folk' 'amazon' 'tud' 'serpent-cultist' 'snout-goblin' 'demon';
+			@for $i from 1 through length($races){
+				$race: nth($races,$i);
+				&.#{unquote($race)}{
+					background-position-y: ($i - 1) * -1em;
+				}
+			}
+
+			$classes: 'generalist' 'brawler' 'schemer' 'academic' 'wizard' 'fool';
+			@for $i from 1 through length($classes){
+				$class: nth($classes,$i);
+				&.#{unquote($class)}{
+					background-position-x: ($i - 1) * -1em;
+				}
+			}
 		}
 
 		&_lockup{
